@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+dist-ssr/
+*.local
+
+# Capacitor native projects (generated, jangan di-commit kecuali ada custom native code)
+android/
+ios/
+
+# TypeScript incremental build
+*.tsbuildinfo
+node_modules/.tmp/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Editor & OS
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Vitest
+coverage/
+
+# Playwright
+test-results/
+playwright-report/

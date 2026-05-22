@@ -1,0 +1,26 @@
+{
+  "name": "AMAN Kasir",
+  "short_name": "AMAN Kasir",
+  "description": "Kasir yang Jalan Terus, Walau Sinyal Pergi",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F1F5F9",
+  "theme_color": "#1E3A8A",
+  "lang": "id-ID",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

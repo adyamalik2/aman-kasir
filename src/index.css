@@ -1,0 +1,30 @@
+/*
+ * AMAN Kasir — Global Styles
+ * Urutan @tailwind directive ini HARUS dipertahankan
+ *
+ * @tailwind base    → Preflight reset (normalize CSS antar browser)
+ * @tailwind components → Class .komponen yang bisa di-override
+ * @tailwind utilities → Utility classes (bg-, text-, flex-, dll)
+ *
+ * Custom global styles ditambahkan di BAWAH directive ini
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Pastikan seluruh app tidak bisa di-zoom di mobile (prinsip Mobile-First) */
+html {
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
+/* Scroll smooth untuk navigasi */
+html,
+body {
+  scroll-behavior: smooth;
+}
+
+/* Prevent overscroll/bounce di iOS */
+body {
+  overscroll-behavior: none;
+}

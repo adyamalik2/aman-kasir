@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem \"d:\\\\Bukak toko Photo Copy dan percetakan\\\\WEB\\\\aman-kasir\" -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object Name, Length, LastWriteTime)"
+    ]
+  }
+}
