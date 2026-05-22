@@ -1,10 +1,13 @@
 export default function POSScreen() {
   return (
-    <section className="space-y-3">
-      <p className="text-sm font-medium text-neutral-500">Kasir</p>
-      <h2 className="text-2xl font-bold text-neutral-900">Transaksi</h2>
-      <div className="rounded-lg border border-neutral-200 bg-surface p-4 text-sm text-neutral-500">
-        Area kasir akan dibuat pada langkah berikutnya.
+    <section className="space-y-4">
+      <div>
+        <p className="text-sm font-medium text-neutral-500">Kasir</p>
+        <h2 className="mt-1 text-2xl font-bold text-neutral-900">Kasir</h2>
+      </div>
+
+      <div className="rounded-lg border border-neutral-200 bg-surface p-4 text-sm leading-6 text-neutral-500">
+        Fitur transaksi kasir akan dibuat di Fase 1.
       </div>
     </section>
   )
