@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { useAppStore } from '@/store/appStore'
+import { seedDemoData } from '@/infra/db/seed'
 
 interface ProvidersProps {
   children: ReactNode
@@ -31,10 +32,22 @@ function OnlineStatusProvider({ children }: ProvidersProps) {
   return children
 }
 
+function DbInitProvider({ children }: ProvidersProps) {
+  useEffect(() => {
+    seedDemoData().catch((err) => {
+      console.error('[AMAN Kasir] Gagal inisialisasi data awal:', err)
+    })
+  }, [])
+
+  return children
+}
+
 export default function Providers({ children }: ProvidersProps) {
   return (
     <BrowserRouter>
-      <OnlineStatusProvider>{children}</OnlineStatusProvider>
+      <DbInitProvider>
+        <OnlineStatusProvider>{children}</OnlineStatusProvider>
+      </DbInitProvider>
     </BrowserRouter>
   )
 }

@@ -1,4 +1,6 @@
 export type { BaseSyncFields, SyncStatus } from './sync'
 export { SYNC_STATUSES } from './sync'
 export type { Product } from './product'
+export type { Category } from './category'
+export type { StockMovement, StockMovementType } from './stock-movement'
 export type { PaymentMethod, Transaction, TransactionItem, TransactionStatus } from './transaction'
