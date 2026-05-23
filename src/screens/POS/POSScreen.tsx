@@ -94,6 +94,86 @@ function buildReceiptText(snapshot: ReceiptSnapshot): string {
   return lines.filter((line) => line !== '').join('\n')
 }
 
+function formatWhatsAppDate(value: string): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '-'
+
+  const dateText = new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date)
+  const timeText = new Intl.DateTimeFormat('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date)
+
+  return `${dateText}, ${timeText}`
+}
+
+function buildWhatsAppReceiptText(snapshot: ReceiptSnapshot): string {
+  const { transaction, items, storeProfile, cashierName } = snapshot
+  const lines: string[] = [`🧾 *${storeProfile.namaToko}*`]
+  const address = storeProfile.alamat.trim()
+  const phone = storeProfile.nomorTelepon.trim()
+
+  if (address) lines.push(address)
+  if (phone) lines.push(`Telp: ${phone}`)
+
+  lines.push(
+    '',
+    `*No. Invoice:* ${transaction.invoiceNo}`,
+    `*Tanggal:* ${formatWhatsAppDate(transaction.date)}`,
+    `*Kasir:* ${cashierName || 'Kasir'}`,
+    '',
+    '*Detail Belanja*',
+    '',
+  )
+
+  items.forEach((item, index) => {
+    lines.push(
+      `${index + 1}. ${item.productName}`,
+      `   Qty: ${item.qty} x ${formatCurrency(item.price)}`,
+      `   Subtotal: ${formatCurrency(item.subtotal)}`,
+      '',
+    )
+  })
+
+  lines.push('---', `Subtotal: ${formatCurrency(transaction.subtotal)}`)
+
+  if (transaction.discount > 0) {
+    lines.push(`Diskon: ${formatCurrency(transaction.discount)}`)
+  }
+  if (transaction.tax > 0) {
+    lines.push(`Pajak: ${formatCurrency(transaction.tax)}`)
+  }
+
+  lines.push(
+    `*TOTAL: ${formatCurrency(transaction.total)}*`,
+    '',
+    `Metode Bayar: ${PAYMENT_LABELS[transaction.paymentMethod]}`,
+  )
+
+  if (transaction.paidAmount > 0) {
+    lines.push(`Bayar: ${formatCurrency(transaction.paidAmount)}`)
+  }
+  if (transaction.changeAmount > 0) {
+    lines.push(`Kembalian: ${formatCurrency(transaction.changeAmount)}`)
+  }
+
+  lines.push(
+    '',
+    'Terima kasih telah berbelanja 🙏',
+    '',
+    'AMAN Kasir',
+    'Kasir yang Jalan Terus,',
+    'Walau Sinyal Pergi',
+  )
+
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n')
+}
+
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (char) => {
     const entities: Record<string, string> = {
@@ -667,7 +747,7 @@ export default function POSScreen() {
 
   const handleWhatsAppReceipt = () => {
     if (!receiptSnapshot) return
-    const text = encodeURIComponent(buildReceiptText(receiptSnapshot))
+    const text = encodeURIComponent(buildWhatsAppReceiptText(receiptSnapshot))
     window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer')
   }
 
