@@ -4,7 +4,7 @@ import { useAppStore } from '@/store/appStore'
 import { useAuthStore } from '@/store/authStore'
 import { authService } from '@/services/auth/AuthService'
 import { seedDemoData } from '@/infra/db/seed'
-import { getLastBackupAt } from '@/lib/storage'
+import { getBackupStatusMetadata } from '@/lib/storage'
 
 interface ProvidersProps {
   children: ReactNode
@@ -46,14 +46,11 @@ function DbInitProvider({ children }: ProvidersProps) {
 }
 
 function BackupHydrationProvider({ children }: ProvidersProps) {
-  const setLastBackupAt = useAppStore((state) => state.setLastBackupAt)
+  const setBackupStatus = useAppStore((state) => state.setBackupStatus)
 
   useEffect(() => {
-    const stored = getLastBackupAt()
-    if (stored) {
-      setLastBackupAt(stored)
-    }
-  }, [setLastBackupAt])
+    setBackupStatus(getBackupStatusMetadata())
+  }, [setBackupStatus])
 
   return children
 }

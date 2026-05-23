@@ -25,6 +25,10 @@ function formatBytes(bytes: number): string {
 
 export default function BackupScreen() {
   const lastBackupAt = useAppStore((s) => s.lastBackupAt)
+  const lastCloudBackupAt = useAppStore((s) => s.lastCloudBackupAt)
+  const hasLocalChanges = useAppStore((s) => s.hasLocalChanges)
+  const lastChangeAt = useAppStore((s) => s.lastChangeAt)
+  const lastChangeReason = useAppStore((s) => s.lastChangeReason)
   const { user, isLoggedIn } = useAuthStore()
 
   // Local backup state
@@ -214,11 +218,62 @@ export default function BackupScreen() {
     }
   }
 
+  const hasAnyBackup = Boolean(lastBackupAt || lastCloudBackupAt)
+  const backupSafetyLabel = hasLocalChanges
+    ? 'Ada perubahan lokal yang belum dibackup'
+    : hasAnyBackup
+      ? 'Data terakhir sudah dibackup'
+      : 'Belum ada backup'
+  const backupSafetyDetail = hasLocalChanges
+    ? `${lastChangeReason ?? 'Data lokal berubah'}${
+        lastChangeAt ? ` - ${formatDate(lastChangeAt)}` : ''
+      }`
+    : hasAnyBackup
+      ? 'Backup lokal atau cloud sudah pernah berhasil.'
+      : 'Buat backup lokal atau cloud untuk mengamankan data.'
+
   return (
     <section className="space-y-6">
       <div>
         <p className="text-sm font-medium text-neutral-500">Lainnya</p>
         <h2 className="mt-1 text-2xl font-bold text-neutral-900">Backup & Restore</h2>
+      </div>
+
+      <div
+        className={`rounded-lg border p-5 ${
+          hasLocalChanges
+            ? 'border-warning-200 bg-warning-50'
+            : 'border-neutral-200 bg-surface'
+        }`}
+      >
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase text-neutral-500">Status Data</p>
+            <h3 className="mt-1 text-base font-bold text-neutral-900">{backupSafetyLabel}</h3>
+            <p className="mt-1 text-sm text-neutral-600">{backupSafetyDetail}</p>
+          </div>
+          <span
+            className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-bold ${
+              hasLocalChanges ? 'bg-warning-100 text-warning-700' : 'bg-success-50 text-success-700'
+            }`}
+          >
+            {hasLocalChanges ? 'Perlu Backup' : 'Aman'}
+          </span>
+        </div>
+        <div className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+          <p className="rounded-md bg-white/70 px-3 py-2 text-neutral-600">
+            Lokal:{' '}
+            <span className="font-semibold text-neutral-900">
+              {lastBackupAt ? formatDate(lastBackupAt) : 'Belum pernah'}
+            </span>
+          </p>
+          <p className="rounded-md bg-white/70 px-3 py-2 text-neutral-600">
+            Cloud:{' '}
+            <span className="font-semibold text-neutral-900">
+              {lastCloudBackupAt ? formatDate(lastCloudBackupAt) : 'Belum pernah'}
+            </span>
+          </p>
+        </div>
       </div>
 
       {/* ── Login & Akun ─────────────────────────────────────────── */}
@@ -286,6 +341,12 @@ export default function BackupScreen() {
       {isFirebaseConfigured && isLoggedIn && user && (
         <div className="rounded-lg border border-neutral-200 bg-surface p-5 space-y-4">
           <h3 className="text-sm font-bold text-neutral-900">Cloud Backup</h3>
+          <p className="text-sm text-neutral-500">
+            Backup cloud terakhir:{' '}
+            <span className="font-semibold text-neutral-800">
+              {lastCloudBackupAt ? formatDate(lastCloudBackupAt) : 'Belum pernah'}
+            </span>
+          </p>
 
           <button
             type="button"

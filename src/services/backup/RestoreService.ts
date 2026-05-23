@@ -101,6 +101,7 @@ export class RestoreService {
       if (data.settings.storeName) {
         useAppStore.getState().setStoreName(data.settings.storeName)
       }
+      useAppStore.getState().markLocalChange('Restore lokal')
 
       return { success: true, restored }
     } catch (err) {

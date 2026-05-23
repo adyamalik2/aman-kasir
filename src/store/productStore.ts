@@ -9,6 +9,7 @@ import type { UpdateProductInput } from '@/usecases/product/UpdateProductUseCase
 import { ToggleProductActiveUseCase } from '@/usecases/product/ToggleProductActiveUseCase'
 import { DeleteProductUseCase } from '@/usecases/product/DeleteProductUseCase'
 import { db } from '@/infra/db/dexie'
+import { useAppStore } from './appStore'
 
 const repo = new DexieProductRepository()
 
@@ -59,6 +60,7 @@ export const useProductStore = create<ProductState>((set) => ({
     const useCase = new CreateProductUseCase(repo)
     const product = await useCase.execute(input)
     set((state) => ({ products: [product, ...state.products] }))
+    useAppStore.getState().markLocalChange('Produk ditambahkan')
     return product
   },
 
@@ -68,6 +70,7 @@ export const useProductStore = create<ProductState>((set) => ({
     set((state) => ({
       products: state.products.map((p) => (p.id === id ? updated : p)),
     }))
+    useAppStore.getState().markLocalChange('Produk diperbarui')
     return updated
   },
 
@@ -85,11 +88,15 @@ export const useProductStore = create<ProductState>((set) => ({
           : [updated, ...state.products],
       }))
     }
+    useAppStore.getState().markLocalChange(
+      updated.isActive ? 'Produk diaktifkan' : 'Produk dinonaktifkan',
+    )
   },
 
   async deleteProduct(id) {
     const useCase = new DeleteProductUseCase(repo)
     await useCase.execute(id)
     set((state) => ({ products: state.products.filter((p) => p.id !== id) }))
+    useAppStore.getState().markLocalChange('Produk dihapus')
   },
 }))

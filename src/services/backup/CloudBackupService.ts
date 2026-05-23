@@ -30,7 +30,7 @@ import {
 } from 'firebase/firestore'
 import LZString from 'lz-string'
 import { firestore } from '@/infra/cloud/firebase'
-import { setLastCloudBackupAt } from '@/lib/storage'
+import { useAppStore } from '@/store/appStore'
 import { BackupService } from './BackupService'
 import type { BackupFile } from './types'
 
@@ -115,8 +115,8 @@ export class CloudBackupService {
 
     const uploadedAt = new Date().toISOString()
 
-    // 4. Catat waktu di localStorage
-    setLastCloudBackupAt(uploadedAt)
+    // 4. Catat waktu dan bersihkan indikator perubahan lokal
+    useAppStore.getState().markBackupClean({ lastCloudBackupAt: uploadedAt })
 
     return { success: true, backupId: docRef.id, uploadedAt }
   }

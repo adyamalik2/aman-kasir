@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAppStore } from '@/store/appStore'
 import { useProductStore } from '@/store/productStore'
 import { getStoreProfile, setStoreProfile, STORE_PROFILE_KEY } from '@/lib/storeProfile'
+import { markLocalDataChanged } from '@/lib/storage'
 import type { StoreProfile } from '@/lib/storeProfile'
 import { generateId } from '@/lib/id-generator'
 import { db } from '@/infra/db/dexie'
@@ -21,6 +22,7 @@ const SEED_CATEGORY_NAMES = [
 
 export default function SettingsScreen() {
   const setStoreName = useAppStore((s) => s.setStoreName)
+  const markLocalChange = useAppStore((s) => s.markLocalChange)
 
   // ── Profil Toko ───────────────────────────────────────────────────────────
   const [form, setForm] = useState<StoreProfile>(() => getStoreProfile())
@@ -47,6 +49,7 @@ export default function SettingsScreen() {
     setStoreProfile(trimmed)
     setStoreName(trimmed.namaToko)
     setForm(trimmed)
+    markLocalChange('Profil toko diperbarui')
     setToast('Profil toko disimpan')
   }
 
@@ -107,6 +110,7 @@ export default function SettingsScreen() {
       setDemoMessage(
         `Selesai. ${seedProducts.length} produk demo dan ${deletableCategoryIds.length} kategori dihapus.`,
       )
+      markLocalChange('Data demo dihapus')
       setDemoConfirm(0)
     } catch (err) {
       setDemoStatus('error')
@@ -171,6 +175,7 @@ export default function SettingsScreen() {
     setAddingCat(false)
     await loadCatRows()
     void loadProductCategories()
+    markLocalChange('Kategori ditambahkan')
   }
 
   const handleStartEdit = (row: CatRow) => {
@@ -189,6 +194,7 @@ export default function SettingsScreen() {
     setEditingCatId(null)
     await loadCatRows()
     void loadProductCategories()
+    markLocalChange('Kategori diperbarui')
   }
 
   const handleDeleteCat = async (row: CatRow) => {
@@ -207,6 +213,7 @@ export default function SettingsScreen() {
     await categoryRepo.delete(row.id)
     await loadCatRows()
     void loadProductCategories()
+    markLocalChange('Kategori dihapus')
   }
 
   // ── Reset Aplikasi ────────────────────────────────────────────────────────
@@ -251,6 +258,7 @@ export default function SettingsScreen() {
       if (savedProfile) {
         localStorage.setItem(STORE_PROFILE_KEY, savedProfile)
       }
+      markLocalDataChanged('Reset aplikasi')
 
       // 5. Reload — seed akan berjalan ulang karena DB kosong
       window.location.reload()

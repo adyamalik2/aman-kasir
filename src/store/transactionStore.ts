@@ -5,6 +5,7 @@ import { CreateTransactionUseCase } from '@/usecases/transaction/CreateTransacti
 import type { CartItemInput } from '@/usecases/transaction/CreateTransactionUseCase'
 import { GetTodaySummaryUseCase } from '@/usecases/transaction/GetTodaySummaryUseCase'
 import type { TodaySummary } from '@/usecases/transaction/GetTodaySummaryUseCase'
+import { useAppStore } from './appStore'
 
 const repo = new DexieTransactionRepository()
 
@@ -77,6 +78,7 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
         transactionCount: state.todaySummary.transactionCount + 1,
       },
     }))
+    useAppStore.getState().markLocalChange('Transaksi baru')
 
     return transaction
   },

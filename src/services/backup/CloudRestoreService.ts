@@ -4,6 +4,7 @@
 import { CloudBackupService, type CloudBackupMeta } from './CloudBackupService'
 import { RestoreService } from './RestoreService'
 import type { RestoreMode, RestoreResult } from './types'
+import { useAppStore } from '@/store/appStore'
 
 const cloudBackupService = new CloudBackupService()
 const restoreService = new RestoreService()
@@ -54,6 +55,10 @@ export class CloudRestoreService {
     }
 
     // 3. Restore ke IndexedDB
-    return restoreService.restoreFromBackup(validation.data, mode)
+    const result = await restoreService.restoreFromBackup(validation.data, mode)
+    if (result.success) {
+      useAppStore.getState().markBackupClean()
+    }
+    return result
   }
 }

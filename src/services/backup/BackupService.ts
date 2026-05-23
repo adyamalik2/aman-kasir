@@ -1,6 +1,5 @@
 import { db } from '@/infra/db/dexie'
 import { useAppStore } from '@/store/appStore'
-import { setLastBackupAt } from '@/lib/storage'
 import { BACKUP_VERSION, type BackupFile } from './types'
 import { downloadBlob } from '@/services/export/download'
 
@@ -41,8 +40,7 @@ export class BackupService {
   async backupNow(): Promise<{ timestamp: string }> {
     const data = await this.exportFullDatabase()
     this.downloadAsFile(data)
-    setLastBackupAt(data.timestamp)
-    useAppStore.getState().setLastBackupAt(data.timestamp)
+    useAppStore.getState().markBackupClean({ lastBackupAt: data.timestamp })
     return { timestamp: data.timestamp }
   }
 }
