@@ -7,7 +7,7 @@ import { CsvExportService } from '@/services/export/CsvExportService'
 import { PdfExportService } from '@/services/export/PdfExportService'
 import { useAppStore } from '@/store/appStore'
 import ExportButtons, { ExportButton } from './ExportButtons'
-import { transactionRepo } from './reportApi'
+import { exportTransactionItems } from './reportApi'
 
 const PAYMENT_LABEL: Record<PaymentMethod, string> = {
   cash: 'Tunai',
@@ -80,7 +80,7 @@ export default function SalesTab() {
     setExporting(true)
     try {
       const ids = transactions.map((t) => t.id)
-      const items = await transactionRepo.getItemsByTransactionIds(ids)
+      const items = await exportTransactionItems.execute(ids)
       csvService.exportTransactionItems(items, transactions, 'laporan-detail-item.csv')
     } finally {
       setExporting(false)

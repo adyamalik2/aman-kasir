@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAppStore } from '@/store/appStore'
+import { useAuthStore } from '@/store/authStore'
 import { useTransactionStore } from '@/store/transactionStore'
+import { isFirebaseConfigured } from '@/infra/cloud/firebase'
 import { formatCurrency } from '@/lib/currency'
 import { formatDate } from '@/lib/date'
 
@@ -9,12 +11,20 @@ export default function DashboardScreen() {
   const isOnline = useAppStore((state) => state.isOnline)
   const lastBackupAt = useAppStore((state) => state.lastBackupAt)
   const { todaySummary, loadTodaySummary } = useTransactionStore()
+  const { user, isLoggedIn } = useAuthStore()
 
   useEffect(() => {
     void loadTodaySummary()
   }, [loadTodaySummary])
 
-  const backupLabel = lastBackupAt ? formatDate(lastBackupAt) : 'Belum ada backup'
+  const localBackupLabel = lastBackupAt ? formatDate(lastBackupAt) : 'Belum ada backup'
+
+  // Label status cloud
+  const cloudStatusLabel = !isFirebaseConfigured
+    ? null
+    : isLoggedIn && user
+      ? `${user.email ?? 'Terhubung'}`
+      : 'Belum login'
 
   return (
     <section className="space-y-5">
@@ -65,11 +75,23 @@ export default function DashboardScreen() {
           </p>
         </div>
 
-        {/* Backup status */}
-        <div className="rounded-lg border border-neutral-200 bg-surface p-4">
+        {/* Backup status — klik → /lainnya/backup */}
+        <Link
+          to="/lainnya/backup"
+          className="rounded-lg border border-neutral-200 bg-surface p-4 hover:bg-neutral-50 transition-colors"
+        >
           <p className="text-xs font-semibold uppercase text-neutral-500">Status Backup</p>
-          <p className="mt-2 text-lg font-bold text-neutral-900">{backupLabel}</p>
-        </div>
+          <p className="mt-2 text-base font-bold text-neutral-900 truncate">{localBackupLabel}</p>
+          {cloudStatusLabel && (
+            <p
+              className={`mt-1 truncate text-xs font-semibold ${
+                isLoggedIn ? 'text-success-700' : 'text-neutral-400'
+              }`}
+            >
+              {isLoggedIn ? `☁ ${cloudStatusLabel}` : `☁ ${cloudStatusLabel}`}
+            </p>
+          )}
+        </Link>
       </div>
     </section>
   )

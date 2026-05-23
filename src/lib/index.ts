@@ -10,4 +10,10 @@ export {
   toDayKey,
 } from './period'
 export type { PeriodInput, PeriodPreset, DateRange } from './period'
-export { getLastBackupAt, setLastBackupAt, STORAGE_KEYS } from './storage'
+export {
+  getLastBackupAt,
+  setLastBackupAt,
+  getLastCloudBackupAt,
+  setLastCloudBackupAt,
+  STORAGE_KEYS,
+} from './storage'

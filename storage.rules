@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Setiap user hanya bisa baca/tulis file di folder miliknya sendiri.
+    // Path: backups/{uid}/{filename}
+    match /backups/{uid}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Tolak semua akses lain secara default.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

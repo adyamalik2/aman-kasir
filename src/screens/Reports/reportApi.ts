@@ -5,6 +5,7 @@ import { GetSalesReportUseCase } from '@/usecases/reports/GetSalesReportUseCase'
 import { GetTopProductsUseCase } from '@/usecases/reports/GetTopProductsUseCase'
 import { GetLowStockUseCase } from '@/usecases/reports/GetLowStockUseCase'
 import { GetProfitReportUseCase } from '@/usecases/reports/GetProfitReportUseCase'
+import { ExportTransactionItemsUseCase } from '@/usecases/transaction/ExportTransactionItemsUseCase'
 
 const transactionRepo = new DexieTransactionRepository()
 const productRepo = new DexieProductRepository()
@@ -18,5 +19,4 @@ export const getProfitReport = new GetProfitReportUseCase(
   productRepo,
   categoryRepo,
 )
-
-export { transactionRepo }
+export const exportTransactionItems = new ExportTransactionItemsUseCase(transactionRepo)

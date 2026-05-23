@@ -1,6 +1,8 @@
 import { useEffect, type ReactNode } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { useAppStore } from '@/store/appStore'
+import { useAuthStore } from '@/store/authStore'
+import { authService } from '@/services/auth/AuthService'
 import { seedDemoData } from '@/infra/db/seed'
 import { getLastBackupAt } from '@/lib/storage'
 
@@ -56,12 +58,30 @@ function BackupHydrationProvider({ children }: ProvidersProps) {
   return children
 }
 
+function AuthProvider({ children }: ProvidersProps) {
+  const setUser = useAuthStore((s) => s.setUser)
+
+  useEffect(() => {
+    // Subscribe ke perubahan status Firebase Auth.
+    // Bila Firebase tidak dikonfigurasi, authService.onAuthStateChanged
+    // langsung memanggil callback(null) dan mengembalikan no-op.
+    const unsubscribe = authService.onAuthStateChanged((user) => {
+      setUser(user)
+    })
+    return unsubscribe
+  }, [setUser])
+
+  return children
+}
+
 export default function Providers({ children }: ProvidersProps) {
   return (
     <BrowserRouter>
       <DbInitProvider>
         <BackupHydrationProvider>
-          <OnlineStatusProvider>{children}</OnlineStatusProvider>
+          <OnlineStatusProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </OnlineStatusProvider>
         </BackupHydrationProvider>
       </DbInitProvider>
     </BrowserRouter>
