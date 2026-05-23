@@ -299,7 +299,13 @@ export default function POSScreen() {
     setCart((prev) => prev.filter((item) => item.productId !== productId))
   }
 
-  const clearCart = () => setCart([])
+  const clearCart = () => {
+    if (cart.length === 0) return
+    const confirmed = window.confirm('Kosongkan semua item di keranjang?')
+    if (confirmed) {
+      setCart([])
+    }
+  }
 
   const handleCheckout = async (paymentMethod: PaymentMethod, paidAmount: number) => {
     setIsSaving(true)

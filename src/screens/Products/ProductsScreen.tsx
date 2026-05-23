@@ -149,6 +149,9 @@ function ProductFormModal({
 
   const handleDeactivate = async () => {
     if (!onDeactivate) return
+    const confirmed = window.confirm('Nonaktifkan produk ini? Produk tidak akan muncul di kasir.')
+    if (!confirmed) return
+
     setIsSaving(true)
     try {
       await onDeactivate()

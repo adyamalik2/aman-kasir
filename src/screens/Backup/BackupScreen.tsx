@@ -166,6 +166,9 @@ export default function BackupScreen() {
 
   const handleDeleteCloud = async (meta: CloudBackupMeta) => {
     if (!user) return
+    const confirmed = window.confirm('Hapus backup cloud ini? Aksi ini tidak bisa dibatalkan.')
+    if (!confirmed) return
+
     setDeletingId(meta.id)
     try {
       await cloudBackupService.deleteCloudBackup(user.uid, meta.id)
