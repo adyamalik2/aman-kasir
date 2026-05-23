@@ -1,0 +1,38 @@
+# AMAN Kasir — Cursor Project Rules
+
+## Konteks
+Aplikasi POS offline-first untuk UMKM Indonesia.
+Single source of truth: CLAUDE.md dan AMAN_Kasir_Blueprint_v2.docx.
+SELALU baca CLAUDE.md sebelum membuat perubahan besar.
+
+## Stack (TIDAK BOLEH DIUBAH)
+React 18 + Vite + TypeScript strict + Tailwind 3
+State: Zustand
+Local DB: Dexie.js (IndexedDB)
+Future: Capacitor 6 (Android), Firebase (cloud — Fase 3+)
+
+## Bahasa
+- Komunikasi denganku: Bahasa Indonesia
+- UI string (label, button, error): Bahasa Indonesia
+- Code (variable, function): English
+- Komentar bisnis: Bahasa Indonesia; komentar teknis: English
+
+## Aturan Coding
+- TypeScript strict mode aktif, tidak boleh ada `any` tanpa alasan
+- File max 300 baris, component max 150 baris
+- Format Rupiah: Rp1.234.567 (no desimal, titik separator)
+- Repository pattern wajib — JANGAN query Dexie langsung dari component
+- Stok via stock_movements (event sourcing), JANGAN update angka stok langsung
+- syncStatus default "local_only" untuk data baru di mode offline
+
+## Aturan Eksekusi
+- Mode default: batch — kerjakan beberapa langkah tanpa stop konfirmasi
+- Stop HANYA kalau ada blocking error (compile/dependency)
+- Setelah task: jalankan npm run lint && npm run build
+- Jangan install dependency baru tanpa izin
+- Jangan refactor kode existing tanpa alasan jelas
+
+## Larangan
+- Tidak ada multi-device sync sampai Fase 7
+- Tidak ada cloud features sampai Fase 3
+- Tidak ada Capacitor Android sync sampai siap install Android Studio

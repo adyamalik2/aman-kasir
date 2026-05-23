@@ -8,4 +8,5 @@ export interface IProductRepository {
   update(product: Product): Promise<void>
   /** Soft delete: sets isActive = false */
   delete(id: string): Promise<void>
+  getLowStock(): Promise<Product[]>
 }

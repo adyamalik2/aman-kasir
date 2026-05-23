@@ -19,4 +19,21 @@ export class DexieTransactionRepository implements ITransactionRepository {
   async getItemsByTransactionId(transactionId: string): Promise<TransactionItem[]> {
     return db.transactionItems.where('transactionId').equals(transactionId).toArray()
   }
+
+  async getCompletedInRange(start: Date, end: Date): Promise<Transaction[]> {
+    const startIso = start.toISOString()
+    const endIso = end.toISOString()
+    return db.transactions
+      .filter(
+        (t) => t.status === 'completed' && t.date >= startIso && t.date <= endIso,
+      )
+      .toArray()
+  }
+
+  async getItemsByTransactionIds(transactionIds: string[]): Promise<TransactionItem[]> {
+    if (transactionIds.length === 0) {
+      return []
+    }
+    return db.transactionItems.where('transactionId').anyOf(transactionIds).toArray()
+  }
 }

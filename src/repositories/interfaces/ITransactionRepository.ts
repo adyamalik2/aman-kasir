@@ -5,4 +5,6 @@ export interface ITransactionRepository {
   getById(id: string): Promise<Transaction | undefined>
   create(transaction: Transaction, items: TransactionItem[]): Promise<void>
   getItemsByTransactionId(transactionId: string): Promise<TransactionItem[]>
+  getCompletedInRange(start: Date, end: Date): Promise<Transaction[]>
+  getItemsByTransactionIds(transactionIds: string[]): Promise<TransactionItem[]>
 }

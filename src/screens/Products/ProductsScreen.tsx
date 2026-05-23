@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useProductStore } from '@/store/productStore'
 import type { Product } from '@/domain'
 import { formatCurrency } from '@/lib/currency'
@@ -336,6 +337,7 @@ function ProductFormModal({
 export default function ProductsScreen() {
   const { products, categories, isLoading, error, loadProducts, loadCategories, addProduct, updateProduct, toggleActive } =
     useProductStore()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -348,6 +350,22 @@ export default function ProductsScreen() {
     void loadCategories()
   }, [loadProducts, loadCategories])
 
+  const openEditForm = (product: Product) => {
+    setEditingProduct(product)
+    setFormInitialValues(productToFormValues(product))
+    setIsFormOpen(true)
+  }
+
+  useEffect(() => {
+    const editId = searchParams.get('edit')
+    if (!editId || products.length === 0) return
+    const product = products.find((p) => p.id === editId)
+    if (product) {
+      openEditForm(product)
+      setSearchParams({}, { replace: true })
+    }
+  }, [searchParams, products, setSearchParams])
+
   const filtered = products.filter((p) => {
     const q = search.toLowerCase()
     const matchSearch =
@@ -359,12 +377,6 @@ export default function ProductsScreen() {
   const openAddForm = () => {
     setEditingProduct(null)
     setFormInitialValues(DEFAULT_FORM_VALUES)
-    setIsFormOpen(true)
-  }
-
-  const openEditForm = (product: Product) => {
-    setEditingProduct(product)
-    setFormInitialValues(productToFormValues(product))
     setIsFormOpen(true)
   }
 

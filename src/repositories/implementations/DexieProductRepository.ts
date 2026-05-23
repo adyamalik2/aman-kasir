@@ -31,4 +31,10 @@ export class DexieProductRepository implements IProductRepository {
       syncStatus: 'local_only',
     })
   }
+
+  async getLowStock(): Promise<Product[]> {
+    return db.products
+      .filter((p) => p.isActive && p.minStock > 0 && p.stock <= p.minStock)
+      .toArray()
+  }
 }
