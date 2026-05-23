@@ -6,6 +6,9 @@ import { formatDate } from '@/lib/date'
 import { CsvExportService } from '@/services/export/CsvExportService'
 import { PdfExportService } from '@/services/export/PdfExportService'
 import { useAppStore } from '@/store/appStore'
+import { ReceiptActionSheet } from '@/components/receipt/ReceiptActionSheet'
+import type { ReceiptSnapshot } from '@/components/receipt/receiptUtils'
+import { getStoreProfile } from '@/lib/storeProfile'
 import ExportButtons, { ExportButton } from './ExportButtons'
 import { exportTransactionItems } from './reportApi'
 
@@ -44,6 +47,7 @@ export default function SalesTab() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [loadingItems, setLoadingItems] = useState<string | null>(null)
   const [exporting, setExporting] = useState(false)
+  const [receiptSnapshot, setReceiptSnapshot] = useState<ReceiptSnapshot | null>(null)
 
   useEffect(() => {
     void loadTransactions()
@@ -84,6 +88,31 @@ export default function SalesTab() {
       csvService.exportTransactionItems(items, transactions, 'laporan-detail-item.csv')
     } finally {
       setExporting(false)
+    }
+  }
+
+  const handleOpenReceipt = async (id: string) => {
+    const txn = transactions.find((t) => t.id === id)
+    if (!txn) return
+
+    setLoadingItems(id)
+    try {
+      const items = transactionItems[id] ?? (await loadTransactionItems(id))
+      setReceiptSnapshot({
+        transaction: txn,
+        items: items.map((item) => ({
+          productName: item.productName,
+          sku: item.sku,
+          qty: item.qty,
+          price: item.price,
+          discount: item.discount,
+          subtotal: item.subtotal,
+        })),
+        storeProfile: getStoreProfile(),
+        cashierName: 'Kasir',
+      })
+    } finally {
+      setLoadingItems(null)
     }
   }
 
@@ -158,6 +187,33 @@ export default function SalesTab() {
                     ) : (
                       <p className="py-2 text-center text-xs text-neutral-400">Tidak ada item.</p>
                     )}
+
+                    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                      <button
+                        type="button"
+                        onClick={() => void handleOpenReceipt(txn.id)}
+                        disabled={loadingItems === txn.id}
+                        className="rounded-md bg-primary px-3 py-2 text-xs font-bold text-white hover:bg-primary-800 disabled:opacity-60"
+                      >
+                        Lihat Struk
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleOpenReceipt(txn.id)}
+                        disabled={loadingItems === txn.id}
+                        className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-50 disabled:opacity-60"
+                      >
+                        Print/JPG/PDF
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleOpenReceipt(txn.id)}
+                        disabled={loadingItems === txn.id}
+                        className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-50 disabled:opacity-60"
+                      >
+                        WhatsApp/Share
+                      </button>
+                    </div>
                   </div>
                 )}
               </li>
@@ -178,6 +234,13 @@ export default function SalesTab() {
             Export detail item CSV
           </button>
         </p>
+      )}
+
+      {receiptSnapshot && (
+        <ReceiptActionSheet
+          snapshot={receiptSnapshot}
+          onClose={() => setReceiptSnapshot(null)}
+        />
       )}
     </div>
   )

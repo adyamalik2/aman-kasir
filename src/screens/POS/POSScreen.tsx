@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
-import html2canvas from 'html2canvas'
-import { jsPDF } from 'jspdf'
-import { ReceiptPreview, type ReceiptPreviewItem } from '@/components/receipt/ReceiptPreview'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ReceiptActionSheet } from '@/components/receipt/ReceiptActionSheet'
+import type { ReceiptPreviewItem } from '@/components/receipt/ReceiptPreview'
+import type { ReceiptSnapshot } from '@/components/receipt/receiptUtils'
 import { useProductStore } from '@/store/productStore'
 import { useTransactionStore } from '@/store/transactionStore'
-import type { Product, PaymentMethod, Transaction } from '@/domain'
+import type { PaymentMethod, Product } from '@/domain'
 import { formatCurrency } from '@/lib/currency'
-import { downloadBlob } from '@/services/export/download'
-import { getStoreProfile, type StoreProfile } from '@/lib/storeProfile'
+import { getStoreProfile } from '@/lib/storeProfile'
 
 interface CartItem {
   productId: string
@@ -19,28 +18,11 @@ interface CartItem {
   qtyInput: string
 }
 
-interface ReceiptSnapshot {
-  transaction: Transaction
-  items: ReceiptPreviewItem[]
-  storeProfile: StoreProfile
-  cashierName: string
-}
-
-const RECEIPT_ELEMENT_ID = 'aman-kasir-receipt-preview'
-
 const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
   { value: 'cash', label: 'Tunai' },
   { value: 'qris', label: 'QRIS' },
   { value: 'transfer', label: 'Transfer' },
 ]
-
-const PAYMENT_LABELS: Record<PaymentMethod, string> = {
-  cash: 'Tunai',
-  qris: 'QRIS',
-  transfer: 'Transfer',
-  piutang: 'Piutang',
-  mixed: 'Campuran',
-}
 
 function normalizeQtyInput(value: string, fallback = 1): number {
   const parsed = Math.floor(Number(value))
@@ -53,150 +35,17 @@ function normalizeCartItem(item: CartItem): CartItem {
   return { ...item, qty, qtyInput: String(qty) }
 }
 
-function makeReceiptFilename(invoiceNo: string, extension: string): string {
-  const safeInvoice = invoiceNo.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-  return `struk-${safeInvoice}.${extension}`
+function toDateTimeLocalValue(date = new Date()): string {
+  const pad = (value: number) => value.toString().padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
+    date.getHours(),
+  )}:${pad(date.getMinutes())}`
 }
 
-function buildReceiptText(snapshot: ReceiptSnapshot): string {
-  const { transaction, items, storeProfile, cashierName } = snapshot
-  const date = new Intl.DateTimeFormat('id-ID', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(transaction.date))
-
-  const lines = [
-    storeProfile.namaToko,
-    storeProfile.alamat,
-    storeProfile.nomorTelepon,
-    '',
-    `No: ${transaction.invoiceNo}`,
-    `Tanggal: ${date}`,
-    `Kasir: ${cashierName}`,
-    '',
-    ...items.flatMap((item) => [
-      item.productName,
-      `${item.qty} x ${formatCurrency(item.price)} = ${formatCurrency(item.subtotal)}`,
-    ]),
-    '',
-    `Subtotal: ${formatCurrency(transaction.subtotal)}`,
-    transaction.discount > 0 ? `Diskon: ${formatCurrency(transaction.discount)}` : '',
-    transaction.tax > 0 ? `Pajak: ${formatCurrency(transaction.tax)}` : '',
-    `Total: ${formatCurrency(transaction.total)}`,
-    `Metode: ${PAYMENT_LABELS[transaction.paymentMethod]}`,
-    `Bayar: ${formatCurrency(transaction.paidAmount)}`,
-    transaction.changeAmount > 0 ? `Kembali: ${formatCurrency(transaction.changeAmount)}` : '',
-    '',
-    'Terima kasih telah berbelanja',
-    'AMAN Kasir - Kasir yang Jalan Terus, Walau Sinyal Pergi',
-  ]
-
-  return lines.filter((line) => line !== '').join('\n')
-}
-
-function formatWhatsAppDate(value: string): string {
+function dateTimeLocalToIso(value: string): string {
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '-'
-
-  const dateText = new Intl.DateTimeFormat('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(date)
-  const timeText = new Intl.DateTimeFormat('id-ID', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(date)
-
-  return `${dateText}, ${timeText}`
-}
-
-function buildWhatsAppReceiptText(snapshot: ReceiptSnapshot): string {
-  const { transaction, items, storeProfile, cashierName } = snapshot
-  const lines: string[] = [`🧾 *${storeProfile.namaToko}*`]
-  const address = storeProfile.alamat.trim()
-  const phone = storeProfile.nomorTelepon.trim()
-
-  if (address) lines.push(address)
-  if (phone) lines.push(`Telp: ${phone}`)
-
-  lines.push(
-    '',
-    `*No. Invoice:* ${transaction.invoiceNo}`,
-    `*Tanggal:* ${formatWhatsAppDate(transaction.date)}`,
-    `*Kasir:* ${cashierName || 'Kasir'}`,
-    '',
-    '*Detail Belanja*',
-    '',
-  )
-
-  items.forEach((item, index) => {
-    lines.push(
-      `${index + 1}. ${item.productName}`,
-      `   Qty: ${item.qty} x ${formatCurrency(item.price)}`,
-      `   Subtotal: ${formatCurrency(item.subtotal)}`,
-      '',
-    )
-  })
-
-  lines.push('---', `Subtotal: ${formatCurrency(transaction.subtotal)}`)
-
-  if (transaction.discount > 0) {
-    lines.push(`Diskon: ${formatCurrency(transaction.discount)}`)
-  }
-  if (transaction.tax > 0) {
-    lines.push(`Pajak: ${formatCurrency(transaction.tax)}`)
-  }
-
-  lines.push(
-    `*TOTAL: ${formatCurrency(transaction.total)}*`,
-    '',
-    `Metode Bayar: ${PAYMENT_LABELS[transaction.paymentMethod]}`,
-  )
-
-  if (transaction.paidAmount > 0) {
-    lines.push(`Bayar: ${formatCurrency(transaction.paidAmount)}`)
-  }
-  if (transaction.changeAmount > 0) {
-    lines.push(`Kembalian: ${formatCurrency(transaction.changeAmount)}`)
-  }
-
-  lines.push(
-    '',
-    'Terima kasih telah berbelanja 🙏',
-    '',
-    'AMAN Kasir',
-    'Kasir yang Jalan Terus,',
-    'Walau Sinyal Pergi',
-  )
-
-  return lines.join('\n').replace(/\n{3,}/g, '\n\n')
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (char) => {
-    const entities: Record<string, string> = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#039;',
-    }
-    return entities[char] ?? char
-  })
-}
-
-async function getReceiptCanvas(): Promise<HTMLCanvasElement> {
-  const element = document.getElementById(RECEIPT_ELEMENT_ID)
-  if (!element) {
-    throw new Error('Preview struk tidak ditemukan.')
-  }
-
-  return html2canvas(element, {
-    backgroundColor: '#ffffff',
-    scale: 2,
-  })
+  if (Number.isNaN(date.getTime())) return new Date().toISOString()
+  return date.toISOString()
 }
 
 interface ProductSearchBarProps {
@@ -205,8 +54,10 @@ interface ProductSearchBarProps {
 }
 
 function ProductSearchBar({ products, onSelect }: ProductSearchBarProps) {
+  const inputRef = useRef<HTMLInputElement | null>(null)
   const [query, setQuery] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
+  const [scanMessage, setScanMessage] = useState<string | null>(null)
 
   const results = useMemo(() => {
     if (!query.trim()) return []
@@ -229,44 +80,87 @@ function ProductSearchBar({ products, onSelect }: ProductSearchBarProps) {
     onSelect(product)
     setQuery('')
     setShowDropdown(false)
+    setScanMessage(`${product.name} ditambahkan.`)
+  }
+
+  const handleBarcodeSubmit = () => {
+    const value = query.trim()
+    if (!value) {
+      inputRef.current?.focus()
+      setScanMessage('Scan atau ketik barcode lalu tekan Enter.')
+      return
+    }
+
+    const product = products.find((p) => p.barcode?.trim() === value)
+    if (product) {
+      handleSelect(product)
+      return
+    }
+
+    setScanMessage('Barcode tidak ditemukan.')
   }
 
   return (
-    <div className="relative">
-      <input
-        type="search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-        placeholder="Cari produk atau scan barcode..."
-        className="w-full rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm focus:border-primary focus:outline-none"
-      />
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <input
+          ref={inputRef}
+          type="search"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            setScanMessage(null)
+          }}
+          onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              handleBarcodeSubmit()
+            }
+          }}
+          placeholder="Cari produk atau scan barcode..."
+          className="min-w-0 flex-1 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm focus:border-primary focus:outline-none"
+        />
+        <button
+          type="button"
+          onClick={() => {
+            inputRef.current?.focus()
+            setScanMessage('Scanner USB/Bluetooth siap. Scan barcode ke kolom ini.')
+          }}
+          className="rounded-lg border border-neutral-200 bg-white px-3 py-3 text-xs font-bold text-neutral-700 hover:bg-neutral-50"
+        >
+          Scan Barcode
+        </button>
+      </div>
+
+      {scanMessage && <p className="text-xs font-semibold text-neutral-500">{scanMessage}</p>}
 
       {showDropdown && (
-        <div className="absolute left-0 right-0 top-full z-30 mt-1 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg">
-          {results.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              onMouseDown={() => handleSelect(p)}
-              className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-neutral-50"
-            >
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-neutral-900">{p.name}</p>
-                <p className="text-xs text-neutral-500">
-                  {p.sku}
-                  {p.stock <= p.minStock && p.minStock > 0 ? (
-                    <span className="ml-1 text-warning-700">- Stok menipis</span>
-                  ) : (
-                    ` - Stok: ${p.stock} ${p.unit}`
-                  )}
+        <div className="relative">
+          <div className="absolute left-0 right-0 z-30 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg">
+            {results.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onMouseDown={() => handleSelect(p)}
+                className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-neutral-50"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-neutral-900">{p.name}</p>
+                  <p className="text-xs text-neutral-500">
+                    {p.sku}
+                    {p.barcode ? ` - ${p.barcode}` : ''}
+                    {p.stock <= p.minStock && p.minStock > 0
+                      ? ' - Stok menipis'
+                      : ` - Stok: ${p.stock} ${p.unit}`}
+                  </p>
+                </div>
+                <p className="ml-3 flex-shrink-0 font-mono text-sm font-bold text-primary">
+                  {formatCurrency(p.sellPrice)}
                 </p>
-              </div>
-              <p className="ml-3 flex-shrink-0 font-mono text-sm font-bold text-primary">
-                {formatCurrency(p.sellPrice)}
-              </p>
-            </button>
-          ))}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -277,12 +171,17 @@ interface CheckoutModalProps {
   cartTotal: number
   isSaving: boolean
   onClose: () => void
-  onConfirm: (paymentMethod: PaymentMethod, paidAmount: number) => Promise<void>
+  onConfirm: (
+    paymentMethod: PaymentMethod,
+    paidAmount: number,
+    transactionDate: string,
+  ) => Promise<void>
 }
 
 function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModalProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash')
   const [paidAmountStr, setPaidAmountStr] = useState('')
+  const [transactionDateLocal, setTransactionDateLocal] = useState(() => toDateTimeLocalValue())
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
 
   const paidAmount = Number(paidAmountStr) || 0
@@ -294,7 +193,7 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
     setCheckoutError(null)
     try {
       const finalPaid = isCash ? paidAmount : cartTotal
-      await onConfirm(paymentMethod, finalPaid)
+      await onConfirm(paymentMethod, finalPaid, dateTimeLocalToIso(transactionDateLocal))
     } catch (err) {
       setCheckoutError(err instanceof Error ? err.message : 'Gagal menyimpan transaksi.')
     }
@@ -329,6 +228,16 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
             <p className="mt-1 font-mono text-3xl font-bold text-primary">
               {formatCurrency(cartTotal)}
             </p>
+          </div>
+
+          <div>
+            <p className="mb-1 text-xs font-semibold text-neutral-600">Tanggal Transaksi</p>
+            <input
+              type="datetime-local"
+              value={transactionDateLocal}
+              onChange={(e) => setTransactionDateLocal(e.target.value)}
+              className="w-full rounded-md border border-neutral-300 px-3 py-3 text-sm font-semibold focus:border-primary focus:outline-none"
+            />
           </div>
 
           <div>
@@ -403,113 +312,6 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
   )
 }
 
-interface ReceiptSuccessSheetProps {
-  snapshot: ReceiptSnapshot
-  isBusy: boolean
-  error: string | null
-  onView: () => void
-  onPrint: () => void
-  onDownloadImage: () => void
-  onDownloadPdf: () => void
-  onWhatsApp: () => void
-  onNewTransaction: () => void
-}
-
-function ReceiptSuccessSheet({
-  snapshot,
-  isBusy,
-  error,
-  onView,
-  onPrint,
-  onDownloadImage,
-  onDownloadPdf,
-  onWhatsApp,
-  onNewTransaction,
-}: ReceiptSuccessSheetProps) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center">
-      <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-2xl bg-neutral-50 sm:rounded-2xl">
-        <div className="sticky top-0 z-10 border-b border-neutral-200 bg-white px-5 py-4">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase text-success-700">
-                Transaksi berhasil
-              </p>
-              <h3 className="mt-1 text-lg font-bold text-neutral-900">
-                {snapshot.transaction.invoiceNo}
-              </h3>
-            </div>
-            <button
-              type="button"
-              onClick={onNewTransaction}
-              className="rounded-md border border-neutral-200 px-3 py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-50"
-            >
-              Transaksi Baru
-            </button>
-          </div>
-        </div>
-
-        <div className="space-y-4 p-5">
-          {error && (
-            <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">
-              {error}
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-            <button
-              type="button"
-              onClick={onView}
-              className="rounded-md border border-neutral-200 bg-white px-3 py-3 text-sm font-bold text-neutral-700 hover:bg-neutral-50"
-            >
-              Struk
-            </button>
-            <button
-              type="button"
-              onClick={onWhatsApp}
-              className="rounded-md border border-neutral-200 bg-white px-3 py-3 text-sm font-bold text-neutral-700 hover:bg-neutral-50"
-            >
-              WhatsApp
-            </button>
-            <button
-              type="button"
-              onClick={onPrint}
-              className="rounded-md border border-neutral-200 bg-white px-3 py-3 text-sm font-bold text-neutral-700 hover:bg-neutral-50"
-            >
-              Print
-            </button>
-            <button
-              type="button"
-              onClick={onDownloadImage}
-              disabled={isBusy}
-              className="rounded-md border border-neutral-200 bg-white px-3 py-3 text-sm font-bold text-neutral-700 hover:bg-neutral-50 disabled:opacity-60"
-            >
-              JPG
-            </button>
-            <button
-              type="button"
-              onClick={onDownloadPdf}
-              disabled={isBusy}
-              className="rounded-md bg-primary px-3 py-3 text-sm font-bold text-white hover:bg-primary-800 disabled:opacity-60"
-            >
-              PDF
-            </button>
-          </div>
-
-          <div id={RECEIPT_ELEMENT_ID} className="bg-white py-4">
-            <ReceiptPreview
-              transaction={snapshot.transaction}
-              items={snapshot.items}
-              storeProfile={snapshot.storeProfile}
-              cashierName={snapshot.cashierName}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function POSScreen() {
   const { products, loadProducts } = useProductStore()
   const { createTransaction } = useTransactionStore()
@@ -519,8 +321,6 @@ export default function POSScreen() {
   const [isSaving, setIsSaving] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [receiptSnapshot, setReceiptSnapshot] = useState<ReceiptSnapshot | null>(null)
-  const [receiptError, setReceiptError] = useState<string | null>(null)
-  const [isReceiptBusy, setIsReceiptBusy] = useState(false)
 
   useEffect(() => {
     void loadProducts()
@@ -608,7 +408,11 @@ export default function POSScreen() {
     setIsCheckoutOpen(true)
   }
 
-  const handleCheckout = async (paymentMethod: PaymentMethod, paidAmount: number) => {
+  const handleCheckout = async (
+    paymentMethod: PaymentMethod,
+    paidAmount: number,
+    transactionDate: string,
+  ) => {
     setIsSaving(true)
     try {
       const normalizedCart = cart.map(normalizeCartItem)
@@ -628,6 +432,8 @@ export default function POSScreen() {
         finalTotal,
         paidAmount,
         paymentMethod,
+        undefined,
+        transactionDate,
       )
 
       const receiptItems: ReceiptPreviewItem[] = normalizedCart.map((item) => ({
@@ -645,7 +451,6 @@ export default function POSScreen() {
         storeProfile: getStoreProfile(),
         cashierName: 'Kasir',
       })
-      setReceiptError(null)
 
       void loadProducts()
 
@@ -661,94 +466,6 @@ export default function POSScreen() {
     } finally {
       setIsSaving(false)
     }
-  }
-
-  const handleViewReceipt = () => {
-    document.getElementById(RECEIPT_ELEMENT_ID)?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  const handleDownloadReceiptImage = async () => {
-    if (!receiptSnapshot) return
-    setReceiptError(null)
-    setIsReceiptBusy(true)
-    try {
-      const canvas = await getReceiptCanvas()
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob(
-          (result) => {
-            if (!result) {
-              reject(new Error('Gagal membuat gambar struk.'))
-              return
-            }
-            resolve(result)
-          },
-          'image/jpeg',
-          0.92,
-        )
-      })
-      downloadBlob(blob, makeReceiptFilename(receiptSnapshot.transaction.invoiceNo, 'jpg'))
-    } catch (err) {
-      setReceiptError(err instanceof Error ? err.message : 'Gagal download JPG struk.')
-    } finally {
-      setIsReceiptBusy(false)
-    }
-  }
-
-  const handleDownloadReceiptPdf = async () => {
-    if (!receiptSnapshot) return
-    setReceiptError(null)
-    setIsReceiptBusy(true)
-    try {
-      const canvas = await getReceiptCanvas()
-      const image = canvas.toDataURL('image/jpeg', 0.92)
-      const pdfWidth = 80
-      const pdfHeight = Math.max(120, (canvas.height * pdfWidth) / canvas.width)
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: [pdfWidth, pdfHeight],
-      })
-      pdf.addImage(image, 'JPEG', 0, 0, pdfWidth, pdfHeight)
-      pdf.save(makeReceiptFilename(receiptSnapshot.transaction.invoiceNo, 'pdf'))
-    } catch (err) {
-      setReceiptError(err instanceof Error ? err.message : 'Gagal download PDF struk.')
-    } finally {
-      setIsReceiptBusy(false)
-    }
-  }
-
-  const handlePrintReceipt = () => {
-    if (!receiptSnapshot) return
-    const popup = window.open('', '_blank', 'width=380,height=640')
-    if (!popup) {
-      setReceiptError('Popup print diblokir browser.')
-      return
-    }
-
-    popup.document.write(`
-      <html>
-        <head>
-          <title>${escapeHtml(receiptSnapshot.transaction.invoiceNo)}</title>
-          <style>
-            body { margin: 0; padding: 16px; font-family: "Roboto Mono", monospace; }
-            pre { width: 80mm; max-width: 100%; white-space: pre-wrap; font-size: 12px; line-height: 1.55; }
-            @media print { body { padding: 0; } pre { width: 80mm; } }
-          </style>
-        </head>
-        <body>
-          <pre>${escapeHtml(buildReceiptText(receiptSnapshot))}</pre>
-        </body>
-      </html>
-    `)
-    popup.document.close()
-    popup.focus()
-    popup.print()
-  }
-
-  const handleWhatsAppReceipt = () => {
-    if (!receiptSnapshot) return
-    const text = encodeURIComponent(buildWhatsAppReceiptText(receiptSnapshot))
-    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -886,19 +603,10 @@ export default function POSScreen() {
       )}
 
       {receiptSnapshot && (
-        <ReceiptSuccessSheet
+        <ReceiptActionSheet
           snapshot={receiptSnapshot}
-          isBusy={isReceiptBusy}
-          error={receiptError}
-          onView={handleViewReceipt}
-          onPrint={handlePrintReceipt}
-          onDownloadImage={() => void handleDownloadReceiptImage()}
-          onDownloadPdf={() => void handleDownloadReceiptPdf()}
-          onWhatsApp={handleWhatsAppReceipt}
-          onNewTransaction={() => {
-            setReceiptSnapshot(null)
-            setReceiptError(null)
-          }}
+          closeLabel="Transaksi Baru"
+          onClose={() => setReceiptSnapshot(null)}
         />
       )}
     </section>

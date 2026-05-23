@@ -19,13 +19,17 @@ export interface CreateTransactionInput {
   paidAmount: number
   paymentMethod: PaymentMethod
   notes?: string
+  transactionDate?: string
 }
 
 export class CreateTransactionUseCase {
   constructor(private readonly repo: ITransactionRepository) {}
 
   async execute(input: CreateTransactionInput): Promise<Transaction> {
-    const now = new Date().toISOString()
+    const selectedDate = input.transactionDate ? new Date(input.transactionDate) : new Date()
+    const now = Number.isNaN(selectedDate.getTime())
+      ? new Date().toISOString()
+      : selectedDate.toISOString()
     const transactionId = generateId('txn')
 
     const result = await db.transaction(
@@ -110,7 +114,7 @@ export class CreateTransactionUseCase {
       (date.getMonth() + 1).toString().padStart(2, '0') +
       date.getDate().toString().padStart(2, '0')
 
-    const todayStr = new Date().toDateString()
+    const todayStr = date.toDateString()
     const count = await db.transactions
       .filter((t) => new Date(t.date).toDateString() === todayStr)
       .count()
