@@ -20,6 +20,9 @@ node_modules/.tmp/
 .env
 .env.local
 .env.*.local
+*.pem
+*serviceAccount*.json
+firebase-admin*.json
 
 # Editor & OS
 .vscode/
