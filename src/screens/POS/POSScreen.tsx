@@ -88,54 +88,7 @@ function buildReceiptText(snapshot: ReceiptSnapshot): string {
     transaction.changeAmount > 0 ? `Kembali: ${formatCurrency(transaction.changeAmount)}` : '',
     '',
     'Terima kasih telah berbelanja',
-    'AMAN Kasir',
-    'Kasir yang Jalan Terus,',
-    'Walau Sinyal Pergi',
-  ]
-
-  return lines.filter((line) => line !== '').join('\n')
-}
-
-function buildWhatsAppReceiptText(snapshot: ReceiptSnapshot): string {
-  const { transaction, items, storeProfile } = snapshot
-  const date = new Intl.DateTimeFormat('id-ID', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(transaction.date))
-  const maxItems = 8
-  const shownItems = items.slice(0, maxItems)
-  const hiddenItemCount = Math.max(0, items.length - shownItems.length)
-  const storeInfo = [storeProfile.alamat, storeProfile.nomorTelepon]
-    .filter((value) => value.trim() !== '')
-    .join('\n')
-
-  const lines = [
-    `🧾 *${storeProfile.namaToko}*`,
-    storeInfo,
-    '',
-    `Invoice: ${transaction.invoiceNo}`,
-    `Tanggal: ${date}`,
-    '',
-    '*Item*',
-    ...shownItems.map(
-      (item) =>
-        `- ${item.productName} (${item.qty} x ${formatCurrency(item.price)}) = ${formatCurrency(
-          item.subtotal,
-        )}`,
-    ),
-    hiddenItemCount > 0 ? `- dan ${hiddenItemCount} item lainnya` : '',
-    '',
-    `Subtotal: ${formatCurrency(transaction.subtotal)}`,
-    transaction.discount > 0 ? `Diskon: ${formatCurrency(transaction.discount)}` : '',
-    transaction.tax > 0 ? `Pajak: ${formatCurrency(transaction.tax)}` : '',
-    `*Total: ${formatCurrency(transaction.total)}*`,
-    '',
-    `Pembayaran: ${PAYMENT_LABELS[transaction.paymentMethod]}`,
-    `Bayar: ${formatCurrency(transaction.paidAmount)}`,
-    transaction.changeAmount > 0 ? `Kembali: ${formatCurrency(transaction.changeAmount)}` : '',
-    '',
-    'Terima kasih telah berbelanja.',
-    'AMAN Kasir',
+    'AMAN Kasir - Kasir yang Jalan Terus, Walau Sinyal Pergi',
   ]
 
   return lines.filter((line) => line !== '').join('\n')
@@ -162,9 +115,7 @@ async function getReceiptCanvas(): Promise<HTMLCanvasElement> {
 
   return html2canvas(element, {
     backgroundColor: '#ffffff',
-    scale: 3,
-    windowWidth: element.scrollWidth,
-    windowHeight: element.scrollHeight,
+    scale: 2,
   })
 }
 
@@ -465,9 +416,8 @@ function ReceiptSuccessSheet({
             </button>
           </div>
 
-          <div className="bg-neutral-100 py-3">
+          <div id={RECEIPT_ELEMENT_ID} className="bg-white py-4">
             <ReceiptPreview
-              id={RECEIPT_ELEMENT_ID}
               transaction={snapshot.transaction}
               items={snapshot.items}
               storeProfile={snapshot.storeProfile}
@@ -672,7 +622,7 @@ export default function POSScreen() {
       const canvas = await getReceiptCanvas()
       const image = canvas.toDataURL('image/jpeg', 0.92)
       const pdfWidth = 80
-      const pdfHeight = Math.max(45, (canvas.height * pdfWidth) / canvas.width)
+      const pdfHeight = Math.max(120, (canvas.height * pdfWidth) / canvas.width)
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -717,7 +667,7 @@ export default function POSScreen() {
 
   const handleWhatsAppReceipt = () => {
     if (!receiptSnapshot) return
-    const text = encodeURIComponent(buildWhatsAppReceiptText(receiptSnapshot))
+    const text = encodeURIComponent(buildReceiptText(receiptSnapshot))
     window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer')
   }
 

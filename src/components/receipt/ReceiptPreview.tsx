@@ -12,7 +12,6 @@ interface ReceiptPreviewProps {
   items: ReceiptPreviewItem[]
   storeProfile: StoreProfile
   cashierName?: string
-  id?: string
   className?: string
 }
 
@@ -43,13 +42,11 @@ export function ReceiptPreview({
   items,
   storeProfile,
   cashierName = 'Kasir',
-  id,
   className = '',
 }: ReceiptPreviewProps) {
   return (
     <article
-      id={id}
-      className={`mx-auto w-full max-w-[320px] bg-white px-4 py-4 font-mono text-[12px] leading-relaxed text-black shadow-sm ${className}`}
+      className={`mx-auto w-full max-w-[320px] bg-white px-5 py-5 font-mono text-[12px] leading-relaxed text-black shadow-sm ${className}`}
     >
       <header className="border-b border-dashed border-black pb-3 text-center">
         <h3 className="text-base font-bold">{storeProfile.namaToko}</h3>
@@ -133,11 +130,9 @@ export function ReceiptPreview({
 
       <footer className="pt-3 text-center">
         <p>Terima kasih telah berbelanja</p>
-        <div className="mt-2 text-[11px] font-bold leading-snug">
-          <p>AMAN Kasir</p>
-          <p>Kasir yang Jalan Terus,</p>
-          <p>Walau Sinyal Pergi</p>
-        </div>
+        <p className="mt-2 text-[11px]">
+          AMAN Kasir - Kasir yang Jalan Terus, Walau Sinyal Pergi
+        </p>
       </footer>
     </article>
   )
