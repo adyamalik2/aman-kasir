@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useProductStore } from '@/store/productStore'
+import { DexieProductRepository } from '@/repositories/implementations/DexieProductRepository'
+import { DeleteProductUseCase } from '@/usecases/product/DeleteProductUseCase'
 import type { Product } from '@/domain'
 import { formatCurrency } from '@/lib/currency'
 import type { CreateProductInput } from '@/usecases/product/CreateProductUseCase'
 import type { UpdateProductInput } from '@/usecases/product/UpdateProductUseCase'
+
+const deleteUseCase = new DeleteProductUseCase(new DexieProductRepository())
 
 // ---------------------------------------------------------------------------
 // Types
@@ -75,6 +79,8 @@ function StockBadge({ stock, minStock }: { stock: number; minStock: number }) {
 // ProductFormModal
 // ---------------------------------------------------------------------------
 
+type DeleteStep = 'idle' | 'checking' | 'confirm-safe' | 'confirm-warned' | 'deleting'
+
 interface ProductFormModalProps {
   isOpen: boolean
   initialValues: ProductFormValues
@@ -83,6 +89,8 @@ interface ProductFormModalProps {
   onClose: () => void
   onSubmit: (values: ProductFormValues) => Promise<void>
   onDeactivate?: () => Promise<void>
+  onHardDelete?: () => Promise<void>
+  onCheckHistory?: () => Promise<boolean>
 }
 
 function ProductFormModal({
@@ -93,15 +101,19 @@ function ProductFormModal({
   onClose,
   onSubmit,
   onDeactivate,
+  onHardDelete,
+  onCheckHistory,
 }: ProductFormModalProps) {
   const [values, setValues] = useState<ProductFormValues>(initialValues)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [deleteStep, setDeleteStep] = useState<DeleteStep>('idle')
 
   useEffect(() => {
     if (isOpen) {
       setValues(initialValues)
       setError(null)
+      setDeleteStep('idle')
     }
   }, [isOpen, initialValues])
 
@@ -148,13 +160,40 @@ function ProductFormModal({
     }
   }
 
+  const handleDeleteClick = async () => {
+    if (!onCheckHistory || !onHardDelete) return
+    if (deleteStep === 'idle') {
+      setDeleteStep('checking')
+      try {
+        const hasHistory = await onCheckHistory()
+        setDeleteStep(hasHistory ? 'confirm-warned' : 'confirm-safe')
+      } catch {
+        setDeleteStep('idle')
+        setError('Gagal memeriksa riwayat produk.')
+      }
+      return
+    }
+    if (deleteStep === 'confirm-safe' || deleteStep === 'confirm-warned') {
+      setDeleteStep('deleting')
+      try {
+        await onHardDelete()
+        onClose()
+      } catch (err) {
+        setDeleteStep('idle')
+        setError(err instanceof Error ? err.message : 'Gagal menghapus produk.')
+      }
+    }
+  }
+
+  const isBusy = isSaving || deleteStep === 'checking' || deleteStep === 'deleting'
+
   const inputClass =
     'w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none'
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/40" onClick={isSaving ? undefined : onClose} />
+      <div className="absolute inset-0 bg-black/40" onClick={isBusy ? undefined : onClose} />
 
       {/* Panel */}
       <div className="relative w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white sm:max-h-[90vh] sm:rounded-2xl">
@@ -163,7 +202,7 @@ function ProductFormModal({
           <h3 className="text-base font-bold text-neutral-900">
             {editingId ? 'Edit Produk' : 'Tambah Produk'}
           </h3>
-          {!isSaving && (
+          {!isBusy && (
             <button
               type="button"
               onClick={onClose}
@@ -307,7 +346,7 @@ function ProductFormModal({
           <div className="space-y-2 pt-2">
             <button
               type="submit"
-              disabled={isSaving}
+              disabled={isBusy}
               className="w-full rounded-md bg-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-primary-800 disabled:opacity-50"
             >
               {isSaving ? 'Menyimpan...' : editingId ? 'Simpan Perubahan' : 'Tambah Produk'}
@@ -317,11 +356,55 @@ function ProductFormModal({
               <button
                 type="button"
                 onClick={handleDeactivate}
-                disabled={isSaving}
+                disabled={isBusy}
                 className="w-full rounded-md border border-danger px-4 py-3 text-sm font-semibold text-danger transition-colors hover:bg-danger-50 disabled:opacity-50"
               >
                 Nonaktifkan Produk
               </button>
+            )}
+
+            {/* Hapus Produk — hanya saat edit, hanya jika prop tersedia */}
+            {editingId && onHardDelete && onCheckHistory && (
+              <div className="space-y-2 border-t border-neutral-100 pt-2">
+                {/* Pesan konfirmasi */}
+                {deleteStep === 'confirm-safe' && (
+                  <p className="rounded-md bg-neutral-50 px-3 py-2 text-xs text-neutral-700">
+                    Produk belum pernah dijual. Hapus produk ini secara permanen?
+                  </p>
+                )}
+                {deleteStep === 'confirm-warned' && (
+                  <p className="rounded-md bg-warning-50 px-3 py-2 text-xs text-warning-700">
+                    Produk ini sudah pernah dijual. Riwayat transaksi akan tetap aman
+                    (nama tersimpan di struk). Hapus produk ini dari daftar? Aksi ini
+                    tidak bisa dibatalkan.
+                  </p>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => void handleDeleteClick()}
+                  disabled={isBusy}
+                  className="w-full rounded-md border-2 border-danger-400 px-4 py-2.5 text-sm font-bold text-danger-700 transition-colors hover:bg-danger-50 disabled:opacity-50"
+                >
+                  {deleteStep === 'checking'
+                    ? 'Memeriksa...'
+                    : deleteStep === 'deleting'
+                      ? 'Menghapus...'
+                      : deleteStep === 'confirm-safe' || deleteStep === 'confirm-warned'
+                        ? 'Ya, Hapus Produk Sekarang'
+                        : 'Hapus Produk'}
+                </button>
+
+                {(deleteStep === 'confirm-safe' || deleteStep === 'confirm-warned') && (
+                  <button
+                    type="button"
+                    onClick={() => setDeleteStep('idle')}
+                    className="w-full text-xs text-neutral-400 underline"
+                  >
+                    Batal hapus
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </form>
@@ -335,7 +418,7 @@ function ProductFormModal({
 // ---------------------------------------------------------------------------
 
 export default function ProductsScreen() {
-  const { products, categories, isLoading, error, loadProducts, loadCategories, addProduct, updateProduct, toggleActive } =
+  const { products, categories, isLoading, error, loadProducts, loadCategories, addProduct, updateProduct, toggleActive, deleteProduct } =
     useProductStore()
   const [searchParams, setSearchParams] = useSearchParams()
 
@@ -421,6 +504,16 @@ export default function ProductsScreen() {
     if (editingProduct) {
       await toggleActive(editingProduct.id)
     }
+  }
+
+  const handleCheckHistory = async (): Promise<boolean> => {
+    if (!editingProduct) return false
+    return deleteUseCase.checkHistory(editingProduct.id)
+  }
+
+  const handleHardDelete = async (): Promise<void> => {
+    if (!editingProduct) return
+    await deleteProduct(editingProduct.id)
   }
 
   const getCategoryName = (categoryId?: string): string => {
@@ -557,6 +650,8 @@ export default function ProductsScreen() {
         onClose={closeForm}
         onSubmit={handleSubmit}
         onDeactivate={editingProduct ? handleDeactivate : undefined}
+        onCheckHistory={editingProduct ? handleCheckHistory : undefined}
+        onHardDelete={editingProduct ? handleHardDelete : undefined}
       />
     </section>
   )

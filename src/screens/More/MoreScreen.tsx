@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 
 const menuItems = [
-  { label: 'Pengaturan', description: 'Profil toko dan preferensi aplikasi.', to: null },
+  { label: 'Pengaturan', description: 'Profil toko dan preferensi aplikasi.', to: '/lainnya/pengaturan' },
   {
     label: 'Backup',
     description: 'Backup dan restore data lokal JSON.',

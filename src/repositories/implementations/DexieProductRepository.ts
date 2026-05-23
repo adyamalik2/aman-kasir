@@ -37,4 +37,18 @@ export class DexieProductRepository implements IProductRepository {
       .filter((p) => p.isActive && p.minStock > 0 && p.stock <= p.minStock)
       .toArray()
   }
+
+  async hardDelete(id: string): Promise<void> {
+    // Atomik: hapus produk + semua stock movements-nya sekaligus
+    await db.transaction('rw', [db.products, db.stockMovements], async () => {
+      await db.products.delete(id)
+      await db.stockMovements.where('productId').equals(id).delete()
+    })
+  }
+
+  async hasTransactionHistory(id: string): Promise<boolean> {
+    // productId sudah diindeks di transactionItems (schema V1)
+    const item = await db.transactionItems.where('productId').equals(id).first()
+    return item !== undefined
+  }
 }

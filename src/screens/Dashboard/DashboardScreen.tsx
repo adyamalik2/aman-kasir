@@ -10,6 +10,7 @@ import { formatDate } from '@/lib/date'
 export default function DashboardScreen() {
   const isOnline = useAppStore((state) => state.isOnline)
   const lastBackupAt = useAppStore((state) => state.lastBackupAt)
+  const storeName = useAppStore((state) => state.storeName)
   const { todaySummary, loadTodaySummary } = useTransactionStore()
   const { user, isLoggedIn } = useAuthStore()
 
@@ -31,7 +32,7 @@ export default function DashboardScreen() {
       {/* Hero card */}
       <div className="rounded-lg border border-neutral-200 bg-surface p-5 shadow-sm">
         <p className="text-sm font-semibold text-primary">Beranda</p>
-        <h2 className="mt-2 text-2xl font-bold text-neutral-900">Selamat Datang di AMAN Kasir</h2>
+        <h2 className="mt-2 text-2xl font-bold text-neutral-900">Selamat Datang di {storeName}</h2>
         <p className="mt-2 text-sm leading-6 text-neutral-500">
           Kasir yang Jalan Terus, Walau Sinyal Pergi.
         </p>

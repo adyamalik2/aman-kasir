@@ -7,6 +7,7 @@ import type { CreateProductInput } from '@/usecases/product/CreateProductUseCase
 import { UpdateProductUseCase } from '@/usecases/product/UpdateProductUseCase'
 import type { UpdateProductInput } from '@/usecases/product/UpdateProductUseCase'
 import { ToggleProductActiveUseCase } from '@/usecases/product/ToggleProductActiveUseCase'
+import { DeleteProductUseCase } from '@/usecases/product/DeleteProductUseCase'
 import { db } from '@/infra/db/dexie'
 
 const repo = new DexieProductRepository()
@@ -22,6 +23,8 @@ interface ProductState {
   addProduct(input: CreateProductInput): Promise<Product>
   updateProduct(id: string, input: UpdateProductInput): Promise<Product>
   toggleActive(id: string): Promise<void>
+  /** Hard delete produk dari database. Produk dihapus dari list tanpa reload. */
+  deleteProduct(id: string): Promise<void>
 }
 
 export const useProductStore = create<ProductState>((set) => ({
@@ -82,5 +85,11 @@ export const useProductStore = create<ProductState>((set) => ({
           : [updated, ...state.products],
       }))
     }
+  },
+
+  async deleteProduct(id) {
+    const useCase = new DeleteProductUseCase(repo)
+    await useCase.execute(id)
+    set((state) => ({ products: state.products.filter((p) => p.id !== id) }))
   },
 }))

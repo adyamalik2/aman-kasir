@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { getStoreName } from '@/lib/storeProfile'
 
 interface AppState {
   storeName: string
@@ -18,7 +19,7 @@ function getInitialOnlineStatus(): boolean {
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  storeName: 'AMAN Kasir',
+  storeName: getStoreName(),
   isOnline: getInitialOnlineStatus(),
   lastBackupAt: null,
   setOnlineStatus: (isOnline) => set({ isOnline }),
