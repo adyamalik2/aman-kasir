@@ -44,3 +44,6 @@ coverage/
 # Playwright
 test-results/
 playwright-report/
+
+# Firebase Android local config
+android/app/google-services.json
