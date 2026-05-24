@@ -256,34 +256,174 @@ export async function copyReceiptText(snapshot: ReceiptSnapshot): Promise<void> 
   await navigator.clipboard.writeText(buildWhatsAppReceiptText(snapshot))
 }
 
+/**
+ * Buat HTML struk untuk print — digunakan oleh printReceipt().
+ * Menggunakan inline styles agar bisa dirender di iframe / popup tanpa CSS eksternal.
+ */
+function buildPrintHtml(snapshot: ReceiptSnapshot): string {
+  const { transaction, items, storeProfile, cashierName } = snapshot
+
+  const date = new Intl.DateTimeFormat('id-ID', {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  }).format(new Date(transaction.date))
+
+  // Baca settings printer (lebar kertas, dll.)
+  let paperWidth = '80mm'
+  let footerText = 'Terima kasih telah berbelanja'
+  let showNamaToko = true
+  let showNomorTransaksi = true
+  let headerTeks = ''
+  let marginBawah = 0
+
+  try {
+    const raw = localStorage.getItem('receipt_settings')
+    if (raw) {
+      const cfg = JSON.parse(raw) as Record<string, unknown>
+      if (cfg.lebarKertas === '58mm') paperWidth = '58mm'
+      if (typeof cfg.footerTeks === 'string' && cfg.footerTeks.trim()) footerText = cfg.footerTeks
+      if (cfg.tampilkanNamaToko === false) showNamaToko = false
+      if (cfg.tampilkanNomorTransaksi === false) showNomorTransaksi = false
+      if (typeof cfg.headerTeks === 'string') headerTeks = cfg.headerTeks
+      if (typeof cfg.marginBawah === 'number') marginBawah = Math.min(5, Math.max(0, cfg.marginBawah))
+    }
+  } catch { /* pakai default */ }
+
+  const marginLines = '\n'.repeat(marginBawah)
+
+  const itemsHtml = items.map((item) => `
+    <div style="margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between">
+        <strong>${escapeHtml(item.productName)}</strong>
+        <span>${escapeHtml(formatCurrency(item.subtotal))}</span>
+      </div>
+      <div style="font-size:11px;color:#555">
+        <span>${item.qty} x ${escapeHtml(formatCurrency(item.price))}</span>
+        ${item.sku ? `<span style="float:right">${escapeHtml(item.sku)}</span>` : ''}
+      </div>
+    </div>
+  `).join('')
+
+  const discountRow = transaction.discount > 0
+    ? `<div style="display:flex;justify-content:space-between"><span>Diskon</span><span>${escapeHtml(formatCurrency(transaction.discount))}</span></div>` : ''
+  const taxRow = transaction.tax > 0
+    ? `<div style="display:flex;justify-content:space-between"><span>Pajak</span><span>${escapeHtml(formatCurrency(transaction.tax))}</span></div>` : ''
+  const changeRow = transaction.changeAmount > 0
+    ? `<div style="display:flex;justify-content:space-between"><span>Kembali</span><span>${escapeHtml(formatCurrency(transaction.changeAmount))}</span></div>` : ''
+
+  const paymentLabels: Record<string, string> = {
+    cash: 'Tunai', qris: 'QRIS', transfer: 'Transfer', piutang: 'Piutang', mixed: 'Campuran',
+  }
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(transaction.invoiceNo)}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      width: ${paperWidth};
+      max-width: 100%;
+      padding: 8px;
+      color: #000;
+    }
+    .divider { border-top: 1px dashed #000; margin: 6px 0; }
+    .center { text-align: center; }
+    .row { display: flex; justify-content: space-between; gap: 8px; }
+    .bold { font-weight: bold; }
+    .small { font-size: 11px; color: #444; }
+    @page {
+      size: ${paperWidth} auto;
+      margin: 2mm;
+    }
+    @media print {
+      body { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="center">
+    ${showNamaToko ? `<div class="bold" style="font-size:14px">${escapeHtml(storeProfile.namaToko)}</div>` : ''}
+    ${headerTeks ? `<div>${escapeHtml(headerTeks)}</div>` : ''}
+    ${storeProfile.alamat ? `<div class="small">${escapeHtml(storeProfile.alamat)}</div>` : ''}
+    ${storeProfile.nomorTelepon ? `<div class="small">${escapeHtml(storeProfile.nomorTelepon)}</div>` : ''}
+  </div>
+
+  <div class="divider"></div>
+
+  ${showNomorTransaksi ? `<div class="row"><span>No</span><strong>${escapeHtml(transaction.invoiceNo)}</strong></div>` : ''}
+  <div class="row"><span>Tanggal</span><span>${escapeHtml(date)}</span></div>
+  <div class="row"><span>Kasir</span><span>${escapeHtml(cashierName)}</span></div>
+
+  <div class="divider"></div>
+
+  ${itemsHtml}
+
+  <div class="divider"></div>
+
+  <div class="row"><span>Subtotal</span><span>${escapeHtml(formatCurrency(transaction.subtotal))}</span></div>
+  ${discountRow}
+  ${taxRow}
+  <div class="row bold" style="font-size:13px;margin-top:4px">
+    <span>Total</span><span>${escapeHtml(formatCurrency(transaction.total))}</span>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="row"><span>Metode</span><span>${escapeHtml(paymentLabels[transaction.paymentMethod] ?? transaction.paymentMethod)}</span></div>
+  <div class="row"><span>Bayar</span><span>${escapeHtml(formatCurrency(transaction.paidAmount))}</span></div>
+  ${changeRow}
+
+  <div class="divider"></div>
+
+  <div class="center small" style="margin-top:4px">
+    <div>${escapeHtml(footerText)}</div>
+    <div style="margin-top:4px">AMAN Kasir - Kasir yang Jalan Terus, Walau Sinyal Pergi</div>
+    ${marginLines}
+  </div>
+</body>
+</html>`
+}
+
 export function printReceipt(snapshot: ReceiptSnapshot): void {
-  if (isAndroidNative()) {
-    throw new Error(
-      'Print langsung belum didukung di APK. Gunakan Share PDF/JPG lalu pilih aplikasi print atau WhatsApp.',
-    )
+  const html = buildPrintHtml(snapshot)
+
+  // Gunakan iframe tersembunyi — bekerja di browser DAN Android WebView
+  // (window.open diblokir WebView secara default, iframe tidak)
+  const iframe = document.createElement('iframe')
+  Object.assign(iframe.style, {
+    position: 'fixed', right: '0', bottom: '0',
+    width: '1px', height: '1px', border: '0', opacity: '0',
+  })
+  document.body.appendChild(iframe)
+
+  const doc = iframe.contentDocument ?? iframe.contentWindow?.document
+  if (!doc) {
+    document.body.removeChild(iframe)
+    throw new Error('Tidak bisa membuka print. Coba Share PDF sebagai alternatif.')
   }
 
-  const popup = window.open('', '_blank', 'width=380,height=640')
-  if (!popup) {
-    throw new Error('Popup print diblokir browser.')
-  }
+  doc.open()
+  doc.write(html)
+  doc.close()
 
-  popup.document.write(`
-    <html>
-      <head>
-        <title>${escapeHtml(snapshot.transaction.invoiceNo)}</title>
-        <style>
-          body { margin: 0; padding: 16px; font-family: "Roboto Mono", monospace; }
-          pre { width: 80mm; max-width: 100%; white-space: pre-wrap; font-size: 12px; line-height: 1.55; }
-          @media print { body { padding: 0; } pre { width: 80mm; } }
-        </style>
-      </head>
-      <body>
-        <pre>${escapeHtml(buildReceiptText(snapshot))}</pre>
-      </body>
-    </html>
-  `)
-  popup.document.close()
-  popup.focus()
-  popup.print()
+  // Jeda kecil agar konten selesai render, lalu buka dialog print
+  setTimeout(() => {
+    try {
+      iframe.contentWindow?.focus()
+      iframe.contentWindow?.print()
+    } catch {
+      // fallback: buka di window baru
+      const w = window.open('', '_blank', 'width=400,height=600')
+      if (w) { w.document.write(html); w.document.close(); w.print() }
+    }
+    // Bersihkan iframe setelah print dialog ditutup
+    setTimeout(() => {
+      if (document.body.contains(iframe)) document.body.removeChild(iframe)
+    }, 3000)
+  }, 400)
 }

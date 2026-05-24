@@ -83,18 +83,25 @@ export default function DashboardScreen() {
 
       {/* ── Kartu ringkasan ── */}
       <div className="grid grid-cols-2 gap-3">
-        {/* Omzet */}
-        <div className="rounded-xl border border-neutral-200 bg-surface p-4">
+        {/* Omzet — klik ke Ringkasan Laporan Hari Ini */}
+        <Link
+          to="/laporan/ringkasan"
+          className="rounded-xl border border-neutral-200 bg-surface p-4 transition-colors hover:bg-neutral-50 active:scale-[0.98] active:bg-neutral-100"
+        >
           <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
             Omzet Hari Ini
           </p>
           <p className="mt-2 font-mono text-lg font-bold text-neutral-900">
             {formatCurrency(todaySummary.omzet)}
           </p>
-        </div>
+          <p className="mt-1 text-xs font-semibold text-primary">Lihat ringkasan →</p>
+        </Link>
 
-        {/* Transaksi */}
-        <div className="rounded-xl border border-neutral-200 bg-surface p-4">
+        {/* Transaksi — klik ke Laporan Transaksi Hari Ini */}
+        <Link
+          to="/laporan/transaksi?view=today"
+          className="rounded-xl border border-neutral-200 bg-surface p-4 transition-colors hover:bg-neutral-50 active:scale-[0.98] active:bg-neutral-100"
+        >
           <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
             Transaksi
           </p>
@@ -102,7 +109,8 @@ export default function DashboardScreen() {
             {todaySummary.transactionCount}
             <span className="ml-1 text-xs font-normal text-neutral-400">hari ini</span>
           </p>
-        </div>
+          <p className="mt-1 text-xs font-semibold text-primary">Lihat transaksi →</p>
+        </Link>
       </div>
 
       {/* ── Peringatan stok menipis (tampil jika ada) ── */}

@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import type { Transaction } from '@/domain'
 import { formatCurrency } from '@/lib/currency'
 import { db } from '@/infra/db/dexie'
@@ -62,6 +62,9 @@ type View =
 // ---------------------------------------------------------------------------
 
 export default function TransaksiScreen() {
+  const [searchParams] = useSearchParams()
+  const didAutoNav = useRef(false)
+
   const [viewStack, setViewStack] = useState<View[]>([{ type: 'menu' }])
   const currentView = viewStack[viewStack.length - 1]
 
@@ -91,6 +94,41 @@ export default function TransaksiScreen() {
   // Navigasi
   const push = (v: View) => setViewStack((s) => [...s, v])
   const pop = useCallback(() => setViewStack((s) => (s.length > 1 ? s.slice(0, -1) : s)), [])
+
+  // Auto-navigate ke Hari Ini jika URL punya ?view=today
+  useEffect(() => {
+    if (didAutoNav.current) return
+    if (searchParams.get('view') !== 'today') return
+    didAutoNav.current = true
+
+    const now = new Date()
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+
+    setLoading(true)
+    db.transactions
+      .filter((t) => {
+        const d = new Date(t.date)
+        const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+        return k === todayKey
+      })
+      .toArray()
+      .then(async (txns) => {
+        if (txns.length > 0) {
+          const ids = txns.map((t) => t.id)
+          const its = await db.transactionItems.where('transactionId').anyOf(ids).toArray()
+          const pm = new Map<string, number>()
+          for (const it of its) {
+            pm.set(it.transactionId, (pm.get(it.transactionId) ?? 0) + (it.price - it.costPrice) * it.qty)
+          }
+          setAllTxns(txns)
+          setProfitMap(pm)
+        }
+        push({ type: 'txns', label: 'Transaksi Hari Ini', txnIds: txns.map((t) => t.id) })
+      })
+      .catch(() => push({ type: 'txns', label: 'Transaksi Hari Ini', txnIds: [] }))
+      .finally(() => setLoading(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   // Load semua data saat pertama kali bukan 'menu'
   useEffect(() => {
