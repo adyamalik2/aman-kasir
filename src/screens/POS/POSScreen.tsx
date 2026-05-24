@@ -9,6 +9,7 @@ import { formatCurrency } from '@/lib/currency'
 import { getStoreProfile } from '@/lib/storeProfile'
 import { getReceiptSettings } from '@/lib/receiptSettings'
 import { isNativeApp } from '@/native/platform'
+import { hapticSuccess } from '@/native/haptics'
 import BarcodeScannerModal from '@/components/scanner/BarcodeScannerModal'
 
 interface CartItem {
@@ -210,6 +211,7 @@ interface CheckoutModalProps {
     paymentMethod: PaymentMethod,
     paidAmount: number,
     transactionDate: string,
+    notes?: string,
   ) => Promise<void>
 }
 
@@ -218,17 +220,19 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
   const [paidAmountStr, setPaidAmountStr] = useState('')
   const [transactionDateLocal, setTransactionDateLocal] = useState(() => toDateTimeLocalValue())
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [notes, setNotes] = useState('')
 
   const paidAmount = Number(paidAmountStr) || 0
   const change = paidAmount - cartTotal
   const isCash = paymentMethod === 'cash'
+  const isPiutang = paymentMethod === 'piutang'
   const canConfirm = !isSaving && (!isCash || paidAmount >= cartTotal)
 
   const handleConfirm = async () => {
     setCheckoutError(null)
     try {
       const finalPaid = isCash ? paidAmount : cartTotal
-      await onConfirm(paymentMethod, finalPaid, dateTimeLocalToIso(transactionDateLocal))
+      await onConfirm(paymentMethod, finalPaid, dateTimeLocalToIso(transactionDateLocal), notes.trim() || undefined)
     } catch (err) {
       setCheckoutError(err instanceof Error ? err.message : 'Gagal menyimpan transaksi.')
     }
@@ -330,10 +334,30 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
             </div>
           )}
 
-          {!isCash && (
+          {!isCash && !isPiutang && (
             <div className="rounded-md bg-neutral-100 px-3 py-2 text-center text-sm text-neutral-600">
               Pembayaran tepat sejumlah{' '}
               <span className="font-mono font-bold">{formatCurrency(cartTotal)}</span>
+            </div>
+          )}
+
+          {isPiutang && (
+            <div className="space-y-1">
+              <div className="rounded-md bg-warning-50 px-3 py-2 text-center text-sm text-warning-700">
+                💳 Piutang — pembayaran dicatat sebagai hutang
+              </div>
+              <div>
+                <p className="mb-1 text-xs font-semibold text-neutral-600">
+                  Catatan (nama pelanggan / keterangan)
+                </p>
+                <input
+                  type="text"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Contoh: Pak Budi - ambil nanti sore"
+                  className="w-full rounded-md border border-neutral-300 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                />
+              </div>
             </div>
           )}
 
@@ -451,6 +475,7 @@ export default function POSScreen() {
     paymentMethod: PaymentMethod,
     paidAmount: number,
     transactionDate: string,
+    notes?: string,
   ) => {
     setIsSaving(true)
     try {
@@ -471,7 +496,7 @@ export default function POSScreen() {
         finalTotal,
         paidAmount,
         paymentMethod,
-        undefined,
+        notes,
         transactionDate,
       )
 
@@ -491,6 +516,9 @@ export default function POSScreen() {
         cashierName: 'Kasir',
       }
       setReceiptSnapshot(snapshot)
+
+      // Haptic feedback — getaran sukses di Android
+      void hapticSuccess()
 
       // Auto print jika setting aktif
       const receiptCfg = getReceiptSettings()

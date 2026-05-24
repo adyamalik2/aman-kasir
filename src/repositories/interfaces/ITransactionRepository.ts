@@ -13,4 +13,8 @@ export interface ITransactionRepository {
   deleteItemsByTransactionId(transactionId: string): Promise<void>
   /** Hapus banyak transaksi sekaligus secara atomik (beserta semua item-nya) */
   bulkDelete(ids: string[]): Promise<void>
+  /** Ambil semua transaksi dengan paymentMethod piutang */
+  getPiutang(): Promise<Transaction[]>
+  /** Update data transaksi (untuk tandai lunas, dll.) */
+  updateTransaction(id: string, patch: Partial<Transaction>): Promise<void>
 }

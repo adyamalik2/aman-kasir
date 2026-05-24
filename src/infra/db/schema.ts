@@ -28,3 +28,10 @@ export const DEXIE_SCHEMA_V2: Record<string, string> = {
   categories: 'id, name, isActive, syncStatus',
   stockMovements: 'id, productId, type, referenceId, createdAt',
 }
+
+/**
+ * V3 — Tambah tabel customers
+ */
+export const DEXIE_SCHEMA_V3: Record<string, string> = {
+  customers: 'id, nama, telepon, syncStatus, updatedAt',
+}

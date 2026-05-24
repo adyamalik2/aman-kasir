@@ -53,4 +53,16 @@ export class DexieTransactionRepository implements ITransactionRepository {
       await db.transactions.bulkDelete(ids)
     })
   }
+
+  async getPiutang(): Promise<Transaction[]> {
+    return db.transactions
+      .where('paymentMethod')
+      .equals('piutang')
+      .reverse()
+      .sortBy('date')
+  }
+
+  async updateTransaction(id: string, patch: Partial<Transaction>): Promise<void> {
+    await db.transactions.update(id, { ...patch, updatedAt: new Date().toISOString() })
+  }
 }

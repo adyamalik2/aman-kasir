@@ -22,6 +22,12 @@ const menuItems: MenuItem[] = [
     to: '/lainnya/printer-struk',
   },
   {
+    icon: '👤',
+    label: 'Pelanggan',
+    description: 'Kelola daftar pelanggan toko — nama, telepon, catatan.',
+    to: '/lainnya/pelanggan',
+  },
+  {
     icon: '💾',
     label: 'Backup & Restore',
     description: 'Backup lokal dan cloud, restore data.',

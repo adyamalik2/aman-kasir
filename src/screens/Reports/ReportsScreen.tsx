@@ -32,6 +32,12 @@ const MENU_ITEMS: MenuItem[] = [
     title: 'Stok Menipis',
     description: 'Produk dengan stok di bawah batas minimum',
   },
+  {
+    to: '/laporan/piutang',
+    icon: '💳',
+    title: 'Piutang',
+    description: 'Transaksi piutang yang belum & sudah dilunasi',
+  },
 ]
 
 export default function ReportsScreen() {

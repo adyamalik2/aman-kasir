@@ -18,9 +18,10 @@ export default function DashboardScreen() {
   const { todaySummary, loadTodaySummary } = useTransactionStore()
   const { user, isLoggedIn } = useAuthStore()
   const [lowStockCount, setLowStockCount] = useState(0)
+  const [summaryLoaded, setSummaryLoaded] = useState(false)
 
   useEffect(() => {
-    void loadTodaySummary()
+    void loadTodaySummary().finally(() => setSummaryLoaded(true))
   }, [loadTodaySummary])
 
   useEffect(() => {
@@ -91,9 +92,13 @@ export default function DashboardScreen() {
           <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
             Omzet Hari Ini
           </p>
-          <p className="mt-2 font-mono text-lg font-bold text-neutral-900">
-            {formatCurrency(todaySummary.omzet)}
-          </p>
+          {summaryLoaded ? (
+            <p className="mt-2 font-mono text-lg font-bold text-neutral-900">
+              {formatCurrency(todaySummary.omzet)}
+            </p>
+          ) : (
+            <div className="mt-2 h-7 w-28 animate-pulse rounded-md bg-neutral-200" />
+          )}
           <p className="mt-1 text-xs font-semibold text-primary">Lihat ringkasan →</p>
         </Link>
 
@@ -105,10 +110,14 @@ export default function DashboardScreen() {
           <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
             Transaksi
           </p>
-          <p className="mt-2 font-mono text-lg font-bold text-neutral-900">
-            {todaySummary.transactionCount}
-            <span className="ml-1 text-xs font-normal text-neutral-400">hari ini</span>
-          </p>
+          {summaryLoaded ? (
+            <p className="mt-2 font-mono text-lg font-bold text-neutral-900">
+              {todaySummary.transactionCount}
+              <span className="ml-1 text-xs font-normal text-neutral-400">hari ini</span>
+            </p>
+          ) : (
+            <div className="mt-2 h-7 w-16 animate-pulse rounded-md bg-neutral-200" />
+          )}
           <p className="mt-1 text-xs font-semibold text-primary">Lihat transaksi →</p>
         </Link>
       </div>
