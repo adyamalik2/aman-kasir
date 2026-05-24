@@ -10,6 +10,7 @@ import {
   shareReceiptFile,
   type ReceiptSnapshot,
 } from './receiptUtils'
+import { getReceiptSettings } from '@/lib/receiptSettings'
 
 interface ReceiptActionSheetProps {
   snapshot: ReceiptSnapshot
@@ -28,6 +29,9 @@ export function ReceiptActionSheet({
   const [busyAction, setBusyAction] = useState<BusyAction>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  // Baca settings saat ActionSheet dibuka (satu kali, tidak perlu reaktif)
+  const settings = getReceiptSettings()
 
   const getReceiptElement = (): HTMLElement => {
     if (!receiptRef.current) {
@@ -213,6 +217,7 @@ export function ReceiptActionSheet({
                 items={snapshot.items}
                 storeProfile={snapshot.storeProfile}
                 cashierName={snapshot.cashierName}
+                settings={settings}
               />
             </div>
           </div>

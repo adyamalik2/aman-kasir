@@ -1,6 +1,7 @@
 import type { Transaction, TransactionItem } from '@/domain'
 import { formatCurrency } from '@/lib/currency'
 import type { StoreProfile } from '@/lib/storeProfile'
+import { DEFAULT_RECEIPT_SETTINGS, type PrinterSettings } from '@/lib/receiptSettings'
 
 export type ReceiptPreviewItem = Pick<
   TransactionItem,
@@ -13,6 +14,8 @@ interface ReceiptPreviewProps {
   storeProfile: StoreProfile
   cashierName?: string
   className?: string
+  /** Pengaturan printer dan struk — opsional, fallback ke default jika tidak diberikan */
+  settings?: Partial<PrinterSettings>
 }
 
 const receiptDateFormatter = new Intl.DateTimeFormat('id-ID', {
@@ -43,22 +46,36 @@ export function ReceiptPreview({
   storeProfile,
   cashierName = 'Kasir',
   className = '',
+  settings,
 }: ReceiptPreviewProps) {
+  // Gabung settings dengan default — prop opsional, tidak wajib
+  const cfg = { ...DEFAULT_RECEIPT_SETTINGS, ...settings }
+
+  const footerText = cfg.footerTeks.trim() || DEFAULT_RECEIPT_SETTINGS.footerTeks
+  const marginLines = Array.from({ length: cfg.marginBawah }, (_, i) => i)
+
   return (
     <article
       className={`mx-auto w-full max-w-[320px] bg-white px-5 py-5 font-mono text-[12px] leading-relaxed text-black shadow-sm ${className}`}
     >
       <header className="border-b border-dashed border-black pb-3 text-center">
-        <h3 className="text-base font-bold">{storeProfile.namaToko}</h3>
+        {cfg.tampilkanNamaToko && (
+          <h3 className="text-base font-bold">{storeProfile.namaToko}</h3>
+        )}
+        {cfg.headerTeks && (
+          <p className="mt-1 whitespace-pre-line">{cfg.headerTeks}</p>
+        )}
         {storeProfile.alamat && <p className="mt-1 whitespace-pre-line">{storeProfile.alamat}</p>}
         {storeProfile.nomorTelepon && <p>{storeProfile.nomorTelepon}</p>}
       </header>
 
       <section className="border-b border-dashed border-black py-3">
-        <div className="flex justify-between gap-3">
-          <span>No</span>
-          <span className="text-right font-bold">{transaction.invoiceNo}</span>
-        </div>
+        {cfg.tampilkanNomorTransaksi && (
+          <div className="flex justify-between gap-3">
+            <span>No</span>
+            <span className="text-right font-bold">{transaction.invoiceNo}</span>
+          </div>
+        )}
         <div className="flex justify-between gap-3">
           <span>Tanggal</span>
           <span className="text-right">{formatReceiptDate(transaction.date)}</span>
@@ -129,10 +146,13 @@ export function ReceiptPreview({
       </section>
 
       <footer className="pt-3 text-center">
-        <p>Terima kasih telah berbelanja</p>
+        <p>{footerText}</p>
         <p className="mt-2 text-[11px]">
           AMAN Kasir - Kasir yang Jalan Terus, Walau Sinyal Pergi
         </p>
+        {marginLines.map((i) => (
+          <p key={i}>&nbsp;</p>
+        ))}
       </footer>
     </article>
   )

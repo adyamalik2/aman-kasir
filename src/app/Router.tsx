@@ -4,6 +4,7 @@ import DashboardScreen from '@/screens/Dashboard/DashboardScreen'
 import MoreScreen from '@/screens/More/MoreScreen'
 import BackupScreen from '@/screens/Backup/BackupScreen'
 import SettingsScreen from '@/screens/Settings/SettingsScreen'
+import PrinterStrikScreen from '@/screens/Settings/PrinterStrikScreen'
 import POSScreen from '@/screens/POS/POSScreen'
 import ProductsScreen from '@/screens/Products/ProductsScreen'
 import ReportsScreen from '@/screens/Reports/ReportsScreen'
@@ -31,6 +32,7 @@ export default function AppRouter() {
         <Route path="/lainnya" element={<MoreScreen />} />
         <Route path="/lainnya/backup" element={<BackupScreen />} />
         <Route path="/lainnya/pengaturan" element={<SettingsScreen />} />
+        <Route path="/lainnya/printer-struk" element={<PrinterStrikScreen />} />
         <Route path="*" element={<Navigate to="/beranda" replace />} />
       </Route>
     </Routes>

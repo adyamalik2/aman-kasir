@@ -16,6 +16,12 @@ const menuItems: MenuItem[] = [
     to: '/lainnya/pengaturan',
   },
   {
+    icon: '🖨️',
+    label: 'Printer dan Struk',
+    description: 'Kustomisasi tampilan struk, header, footer, dan auto print.',
+    to: '/lainnya/printer-struk',
+  },
+  {
     icon: '💾',
     label: 'Backup & Restore',
     description: 'Backup lokal dan cloud, restore data.',

@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ReceiptActionSheet } from '@/components/receipt/ReceiptActionSheet'
 import type { ReceiptPreviewItem } from '@/components/receipt/ReceiptPreview'
-import type { ReceiptSnapshot } from '@/components/receipt/receiptUtils'
+import { printReceipt, type ReceiptSnapshot } from '@/components/receipt/receiptUtils'
 import { useProductStore } from '@/store/productStore'
 import { useTransactionStore } from '@/store/transactionStore'
 import type { PaymentMethod, Product } from '@/domain'
 import { formatCurrency } from '@/lib/currency'
 import { getStoreProfile } from '@/lib/storeProfile'
+import { getReceiptSettings } from '@/lib/receiptSettings'
 import { isNativeApp } from '@/native/platform'
 import BarcodeScannerModal from '@/components/scanner/BarcodeScannerModal'
 
@@ -483,12 +484,20 @@ export default function POSScreen() {
         subtotal: item.price * item.qty,
       }))
 
-      setReceiptSnapshot({
+      const snapshot: ReceiptSnapshot = {
         transaction: txn,
         items: receiptItems,
         storeProfile: getStoreProfile(),
         cashierName: 'Kasir',
-      })
+      }
+      setReceiptSnapshot(snapshot)
+
+      // Auto print jika setting aktif
+      const receiptCfg = getReceiptSettings()
+      if (receiptCfg.autoPrint) {
+        // Beri sedikit jeda agar ActionSheet sempat render dulu
+        setTimeout(() => printReceipt(snapshot), 300)
+      }
 
       void loadProducts()
 
