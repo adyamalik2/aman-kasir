@@ -13,8 +13,13 @@ export function isWeb(): boolean {
 }
 
 export function applyPlatformClasses(): void {
-  const classList = document.documentElement.classList
+  const rootClassList = document.documentElement.classList
+  const bodyClassList = document.body.classList
+  const native = isNativeApp()
+  const android = isAndroidNative()
 
-  classList.toggle('is-native', isNativeApp())
-  classList.toggle('is-android', isAndroidNative())
+  rootClassList.toggle('is-native', native)
+  rootClassList.toggle('is-android', android)
+  bodyClassList.toggle('is-native', native)
+  bodyClassList.toggle('is-android', android)
 }

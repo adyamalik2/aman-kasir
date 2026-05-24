@@ -907,6 +907,7 @@ export default function ProductsScreen() {
         type="button"
         onClick={openAddForm}
         aria-label="Tambah Produk"
+        data-fixed-bottom-action="true"
         data-floating-action="true"
         className="fixed bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-colors hover:bg-primary-800 sm:bottom-8 sm:right-8"
       >

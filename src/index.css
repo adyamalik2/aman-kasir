@@ -21,6 +21,7 @@
     --color-text: #0f172a;
     --color-text-muted: #64748b;
     --color-border: #e2e8f0;
+    --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
 
@@ -64,6 +65,10 @@
     font-variant-numeric: tabular-nums;
   }
 
+  .safe-top {
+    padding-top: calc(var(--safe-top) + 8px);
+  }
+
   .safe-bottom {
     padding-bottom: calc(var(--safe-bottom) + 16px);
   }
@@ -72,25 +77,36 @@
     padding-bottom: calc(var(--safe-bottom) + 32px);
   }
 
-  .is-android .safe-bottom {
-    padding-bottom: 28px;
+  .is-android .safe-top,
+  .is-android [data-app-header='true'] {
+    padding-top: 30px;
+  }
+
+  .is-android .safe-bottom,
+  .is-android [data-bottom-nav='true'] {
+    padding-bottom: 34px;
   }
 
   .is-android .safe-bottom-lg {
-    padding-bottom: 44px;
+    padding-bottom: 52px;
   }
 
-  .is-android .bottom-nav,
-  .is-android [data-bottom-nav='true'] {
-    padding-bottom: 28px;
+  .is-android [data-main-content='true'] {
+    padding-bottom: 9.5rem;
   }
 
   .is-android [data-bottom-sheet='true'],
   .is-android [data-receipt-sheet='true'] {
-    padding-bottom: 44px;
+    padding-bottom: 52px;
   }
 
+  .is-android [data-bottom-nav='true'] > div {
+    min-height: 4.75rem;
+    align-content: start;
+  }
+
+  .is-android [data-fixed-bottom-action='true'],
   .is-android [data-floating-action='true'] {
-    bottom: calc(var(--safe-bottom) + 6rem);
+    bottom: calc(var(--safe-bottom) + 6.75rem);
   }
 }

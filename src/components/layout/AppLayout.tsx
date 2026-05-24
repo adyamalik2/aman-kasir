@@ -8,7 +8,7 @@ export default function AppLayout() {
       <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col bg-background">
         <Header />
 
-        <main className="flex-1 px-4 pb-24 pt-4 sm:px-6 sm:pt-6">
+        <main data-main-content="true" className="flex-1 px-4 pb-24 pt-4 sm:px-6 sm:pt-6">
           <Outlet />
         </main>
 
