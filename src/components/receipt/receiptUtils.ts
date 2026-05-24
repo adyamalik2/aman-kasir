@@ -3,6 +3,8 @@ import { jsPDF } from 'jspdf'
 import type { PaymentMethod, Transaction } from '@/domain'
 import { formatCurrency } from '@/lib/currency'
 import type { StoreProfile } from '@/lib/storeProfile'
+import { isAndroidNative } from '@/native/platform'
+import { shareBlobNative } from '@/native/shareFile'
 import { downloadBlob } from '@/services/export/download'
 import type { ReceiptPreviewItem } from './ReceiptPreview'
 
@@ -217,6 +219,17 @@ export function downloadFile(file: File): void {
 }
 
 export async function shareReceiptFile(file: File, snapshot: ReceiptSnapshot): Promise<boolean> {
+  if (isAndroidNative()) {
+    await shareBlobNative(
+      file,
+      file.name,
+      file.type,
+      snapshot.transaction.invoiceNo,
+      buildWhatsAppReceiptText(snapshot),
+    )
+    return true
+  }
+
   const nav = navigator as Navigator & {
     canShare?: (data: ShareData) => boolean
   }
@@ -244,6 +257,12 @@ export async function copyReceiptText(snapshot: ReceiptSnapshot): Promise<void> 
 }
 
 export function printReceipt(snapshot: ReceiptSnapshot): void {
+  if (isAndroidNative()) {
+    throw new Error(
+      'Print langsung belum didukung di APK. Gunakan Share PDF/JPG lalu pilih aplikasi print atau WhatsApp.',
+    )
+  }
+
   const popup = window.open('', '_blank', 'width=380,height=640')
   if (!popup) {
     throw new Error('Popup print diblokir browser.')

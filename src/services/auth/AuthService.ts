@@ -10,6 +10,8 @@ import {
   type User,
 } from 'firebase/auth'
 import { auth } from '@/infra/cloud/firebase'
+import { isAndroidNative } from '@/native/platform'
+import { signInWithNativeGoogle, signOutNativeGoogle } from '@/native/googleSignIn'
 
 export interface AuthUser {
   uid: string
@@ -36,6 +38,19 @@ export class AuthService {
     if (!auth) {
       throw new Error('Firebase belum dikonfigurasi. Tambahkan VITE_FIREBASE_* ke .env.local')
     }
+
+    if (isAndroidNative()) {
+      try {
+        const result = await signInWithNativeGoogle()
+        return mapUser(result.user)
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Google Login APK gagal.'
+        throw new Error(
+          `${message} Jika konfigurasi native belum lengkap, cek VITE_GOOGLE_WEB_CLIENT_ID, SHA-1/SHA-256, dan OAuth client Android di Firebase Console.`,
+        )
+      }
+    }
+
     const provider = new GoogleAuthProvider()
     const result = await signInWithPopup(auth, provider)
     return mapUser(result.user)
@@ -43,6 +58,9 @@ export class AuthService {
 
   async signOut(): Promise<void> {
     if (!auth) return
+    if (isAndroidNative()) {
+      await signOutNativeGoogle().catch(() => undefined)
+    }
     await firebaseSignOut(auth)
   }
 

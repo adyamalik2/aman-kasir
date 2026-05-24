@@ -298,7 +298,10 @@ function ProductFormModal({
       <div className="absolute inset-0 bg-black/40" onClick={isBusy ? undefined : onClose} />
 
       {/* Panel */}
-      <div className="relative w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white sm:max-h-[90vh] sm:rounded-2xl">
+      <div
+        data-bottom-sheet="true"
+        className="relative w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white sm:max-h-[90vh] sm:rounded-2xl"
+      >
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 bg-white px-5 py-4">
           <h3 className="text-base font-bold text-neutral-900">
@@ -904,6 +907,7 @@ export default function ProductsScreen() {
         type="button"
         onClick={openAddForm}
         aria-label="Tambah Produk"
+        data-floating-action="true"
         className="fixed bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-colors hover:bg-primary-800 sm:bottom-8 sm:right-8"
       >
         <span className="text-2xl leading-none">+</span>

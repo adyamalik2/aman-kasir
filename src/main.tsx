@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './app/App'
 import { registerAndroidBackButton } from './native/androidBackButton'
+import { applyPlatformClasses } from './native/platform'
 import { registerServiceWorker } from './pwa/registerServiceWorker'
 
 /**
@@ -17,6 +18,8 @@ if (!rootElement) {
       'Pastikan <div id="root"></div> ada di body.',
   )
 }
+
+applyPlatformClasses()
 
 createRoot(rootElement).render(
   <StrictMode>

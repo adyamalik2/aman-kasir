@@ -108,7 +108,10 @@ export function ReceiptActionSheet({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center">
-      <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-2xl bg-neutral-50 sm:rounded-2xl">
+      <div
+        data-receipt-sheet="true"
+        className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-2xl bg-neutral-50 sm:rounded-2xl"
+      >
         <div className="sticky top-0 z-10 border-b border-neutral-200 bg-white px-5 py-4">
           <div className="flex items-start justify-between gap-4">
             <div>

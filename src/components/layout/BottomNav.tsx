@@ -10,7 +10,10 @@ const navItems = [
 
 export default function BottomNav() {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-neutral-200 bg-surface">
+    <nav
+      data-bottom-nav="true"
+      className="bottom-nav fixed inset-x-0 bottom-0 z-20 border-t border-neutral-200 bg-surface"
+    >
       <div className="mx-auto grid h-16 max-w-2xl grid-cols-5 px-2">
         {navItems.map((item) => (
           <NavLink

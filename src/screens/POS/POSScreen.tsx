@@ -202,7 +202,10 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       <div className="absolute inset-0 bg-black/40" onClick={isSaving ? undefined : onClose} />
-      <div className="relative w-full max-w-lg rounded-t-2xl bg-white sm:rounded-2xl">
+      <div
+        data-bottom-sheet="true"
+        className="relative w-full max-w-lg rounded-t-2xl bg-white sm:rounded-2xl"
+      >
         <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
           <h3 className="font-bold text-neutral-900">Pembayaran</h3>
           {!isSaving && (

@@ -21,6 +21,7 @@
     --color-text: #0f172a;
     --color-text-muted: #64748b;
     --color-border: #e2e8f0;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   html {
@@ -61,5 +62,35 @@
   .font-numeric {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
+  }
+
+  .safe-bottom {
+    padding-bottom: calc(var(--safe-bottom) + 16px);
+  }
+
+  .safe-bottom-lg {
+    padding-bottom: calc(var(--safe-bottom) + 32px);
+  }
+
+  .is-android .safe-bottom {
+    padding-bottom: 28px;
+  }
+
+  .is-android .safe-bottom-lg {
+    padding-bottom: 44px;
+  }
+
+  .is-android .bottom-nav,
+  .is-android [data-bottom-nav='true'] {
+    padding-bottom: 28px;
+  }
+
+  .is-android [data-bottom-sheet='true'],
+  .is-android [data-receipt-sheet='true'] {
+    padding-bottom: 44px;
+  }
+
+  .is-android [data-floating-action='true'] {
+    bottom: calc(var(--safe-bottom) + 6rem);
   }
 }

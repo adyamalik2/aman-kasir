@@ -57,6 +57,7 @@ export default function BackupScreen() {
   const [cloudRestoreConfirm, setCloudRestoreConfirm] = useState(0)
   const [cloudRestoreStatus, setCloudRestoreStatus] = useState<'idle' | 'loading' | 'done'>('idle')
   const [cloudRestoreMessage, setCloudRestoreMessage] = useState<string | null>(null)
+  const [loginMessage, setLoginMessage] = useState<string | null>(null)
 
   const loadProducts = useProductStore((s) => s.loadProducts)
   const loadTransactions = useTransactionStore((s) => s.loadTransactions)
@@ -211,10 +212,11 @@ export default function BackupScreen() {
   }
 
   const handleLogin = async () => {
+    setLoginMessage(null)
     try {
       await authService.signInWithGoogle()
     } catch (err) {
-      console.error('[Auth] Login gagal:', err)
+      setLoginMessage(err instanceof Error ? err.message : 'Login Google gagal.')
     }
   }
 
@@ -308,6 +310,11 @@ export default function BackupScreen() {
               >
                 Masuk dengan Google
               </button>
+              {loginMessage && (
+                <p className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">
+                  {loginMessage}
+                </p>
+              )}
             </div>
           )}
         </div>
