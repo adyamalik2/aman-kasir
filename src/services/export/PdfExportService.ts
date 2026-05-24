@@ -2,6 +2,8 @@ import { jsPDF } from 'jspdf'
 import type { Transaction } from '@/domain'
 import { formatCurrency } from '@/lib/currency'
 import { formatDate } from '@/lib/date'
+import { isNativeApp } from '@/native/platform'
+import { shareFileNative } from './download'
 
 const PAYMENT_LABEL: Record<Transaction['paymentMethod'], string> = {
   cash: 'Tunai',
@@ -17,10 +19,10 @@ export interface PdfExportOptions {
 }
 
 export class PdfExportService {
-  exportTransactions(
+  async exportTransactions(
     transactions: Transaction[],
     options: PdfExportOptions = {},
-  ): void {
+  ): Promise<void> {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
     const storeName = options.storeName ?? 'AMAN Kasir'
     const periodLabel = options.periodLabel ?? 'Semua periode'
@@ -78,6 +80,15 @@ export class PdfExportService {
       doc.text(`AMAN Kasir — Halaman ${i}/${pageCount}`, margin, 287)
     }
 
-    doc.save(`laporan-transaksi-${new Date().toISOString().slice(0, 10)}.pdf`)
+    const filename = `laporan-transaksi-${new Date().toISOString().slice(0, 10)}.pdf`
+
+    if (isNativeApp()) {
+      // Android/iOS: gunakan Capacitor Share
+      const blob = doc.output('blob')
+      await shareFileNative(blob, filename)
+    } else {
+      // Web: trigger browser download
+      doc.save(filename)
+    }
   }
 }

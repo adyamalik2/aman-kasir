@@ -7,6 +7,8 @@ import { useTransactionStore } from '@/store/transactionStore'
 import type { PaymentMethod, Product } from '@/domain'
 import { formatCurrency } from '@/lib/currency'
 import { getStoreProfile } from '@/lib/storeProfile'
+import { isNativeApp } from '@/native/platform'
+import BarcodeScannerModal from '@/components/scanner/BarcodeScannerModal'
 
 interface CartItem {
   productId: string
@@ -58,6 +60,7 @@ function ProductSearchBar({ products, onSelect }: ProductSearchBarProps) {
   const [query, setQuery] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const [scanMessage, setScanMessage] = useState<string | null>(null)
+  const [showCameraScanner, setShowCameraScanner] = useState(false)
 
   const results = useMemo(() => {
     if (!query.trim()) return []
@@ -80,11 +83,11 @@ function ProductSearchBar({ products, onSelect }: ProductSearchBarProps) {
     onSelect(product)
     setQuery('')
     setShowDropdown(false)
-    setScanMessage(`${product.name} ditambahkan.`)
+    setScanMessage(`✓ ${product.name} ditambahkan.`)
   }
 
-  const handleBarcodeSubmit = () => {
-    const value = query.trim()
+  const handleBarcodeSubmit = (overrideValue?: string) => {
+    const value = (overrideValue ?? query).trim()
     if (!value) {
       inputRef.current?.focus()
       setScanMessage('Scan atau ketik barcode lalu tekan Enter.')
@@ -97,73 +100,104 @@ function ProductSearchBar({ products, onSelect }: ProductSearchBarProps) {
       return
     }
 
-    setScanMessage('Barcode tidak ditemukan.')
+    setScanMessage(`Barcode "${value}" tidak ditemukan.`)
+  }
+
+  const handleScanButtonPress = () => {
+    if (isNativeApp()) {
+      // Android/iOS: buka kamera scanner
+      setShowCameraScanner(true)
+      setScanMessage(null)
+    } else {
+      // Web: fokus input untuk scanner USB/Bluetooth
+      inputRef.current?.focus()
+      setScanMessage('Scanner USB/Bluetooth siap. Scan barcode ke kolom ini.')
+    }
+  }
+
+  const handleCameraScan = (value: string) => {
+    setShowCameraScanner(false)
+    // Cari produk langsung dari hasil scan kamera
+    const product = products.find((p) => p.barcode?.trim() === value)
+    if (product) {
+      handleSelect(product)
+    } else {
+      setQuery(value)
+      setScanMessage(`Barcode "${value}" tidak ditemukan di daftar produk.`)
+    }
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex gap-2">
-        <input
-          ref={inputRef}
-          type="search"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value)
-            setScanMessage(null)
-          }}
-          onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              handleBarcodeSubmit()
-            }
-          }}
-          placeholder="Cari produk atau scan barcode..."
-          className="min-w-0 flex-1 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm focus:border-primary focus:outline-none"
+    <>
+      {/* Modal kamera barcode — hanya muncul saat showCameraScanner = true */}
+      {showCameraScanner && (
+        <BarcodeScannerModal
+          onScan={handleCameraScan}
+          onClose={() => setShowCameraScanner(false)}
         />
-        <button
-          type="button"
-          onClick={() => {
-            inputRef.current?.focus()
-            setScanMessage('Scanner USB/Bluetooth siap. Scan barcode ke kolom ini.')
-          }}
-          className="rounded-lg border border-neutral-200 bg-white px-3 py-3 text-xs font-bold text-neutral-700 hover:bg-neutral-50"
-        >
-          Scan Barcode
-        </button>
-      </div>
-
-      {scanMessage && <p className="text-xs font-semibold text-neutral-500">{scanMessage}</p>}
-
-      {showDropdown && (
-        <div className="relative">
-          <div className="absolute left-0 right-0 z-30 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg">
-            {results.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onMouseDown={() => handleSelect(p)}
-                className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-neutral-50"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-neutral-900">{p.name}</p>
-                  <p className="text-xs text-neutral-500">
-                    {p.sku}
-                    {p.barcode ? ` - ${p.barcode}` : ''}
-                    {p.stock <= p.minStock && p.minStock > 0
-                      ? ' - Stok menipis'
-                      : ` - Stok: ${p.stock} ${p.unit}`}
-                  </p>
-                </div>
-                <p className="ml-3 flex-shrink-0 font-mono text-sm font-bold text-primary">
-                  {formatCurrency(p.sellPrice)}
-                </p>
-              </button>
-            ))}
-          </div>
-        </div>
       )}
-    </div>
+
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <input
+            ref={inputRef}
+            type="search"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              setScanMessage(null)
+            }}
+            onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                handleBarcodeSubmit()
+              }
+            }}
+            placeholder="Cari produk atau scan barcode..."
+            className="min-w-0 flex-1 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm focus:border-primary focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={handleScanButtonPress}
+            className="rounded-lg border border-neutral-200 bg-white px-3 py-3 text-xs font-bold text-neutral-700 hover:bg-neutral-50"
+          >
+            {isNativeApp() ? '📷 Scan' : 'Scan'}
+          </button>
+        </div>
+
+        {scanMessage && <p className="text-xs font-semibold text-neutral-500">{scanMessage}</p>}
+
+        {showDropdown && (
+          <div className="relative">
+            <div className="absolute left-0 right-0 z-30 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg">
+              {results.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onMouseDown={() => handleSelect(p)}
+                  className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-neutral-50"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-neutral-900">{p.name}</p>
+                    <p className="text-xs text-neutral-500">
+                      {p.sku}
+                      {p.barcode ? ` - ${p.barcode}` : ''}
+                      {p.stock <= p.minStock && p.minStock > 0
+                        ? ' - Stok menipis'
+                        : ` - Stok: ${p.stock} ${p.unit}`}
+                    </p>
+                  </div>
+                  <p className="ml-3 flex-shrink-0 font-mono text-sm font-bold text-primary">
+                    {formatCurrency(p.sellPrice)}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   )
 }
 

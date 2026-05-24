@@ -1,10 +1,12 @@
 import { useEffect, type ReactNode } from 'react'
 import { BrowserRouter } from 'react-router-dom'
+import { Network } from '@capacitor/network'
 import { useAppStore } from '@/store/appStore'
 import { useAuthStore } from '@/store/authStore'
 import { authService } from '@/services/auth/AuthService'
 import { seedDemoData } from '@/infra/db/seed'
 import { getBackupStatusMetadata } from '@/lib/storage'
+import { isNativeApp } from '@/native/platform'
 
 interface ProvidersProps {
   children: ReactNode
@@ -18,6 +20,28 @@ function OnlineStatusProvider({ children }: ProvidersProps) {
       return undefined
     }
 
+    if (isNativeApp()) {
+      // Capacitor Android/iOS: gunakan @capacitor/network
+      // (navigator.onLine tidak reliable di Android WebView)
+      let listenerHandle: { remove: () => Promise<void> } | null = null
+
+      void (async () => {
+        // Baca status awal
+        const status = await Network.getStatus()
+        setOnlineStatus(status.connected)
+
+        // Listen perubahan
+        listenerHandle = await Network.addListener('networkStatusChange', (s) => {
+          setOnlineStatus(s.connected)
+        })
+      })()
+
+      return () => {
+        void listenerHandle?.remove()
+      }
+    }
+
+    // Web path: gunakan event browser standard
     const updateOnlineStatus = () => {
       setOnlineStatus(window.navigator.onLine)
     }

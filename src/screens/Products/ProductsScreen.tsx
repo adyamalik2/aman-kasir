@@ -182,6 +182,7 @@ function ProductFormModal({
   const [deleteStep, setDeleteStep] = useState<DeleteStep>('idle')
   const [barcodeHint, setBarcodeHint] = useState<string | null>(null)
   const barcodeInputRef = useRef<HTMLInputElement | null>(null)
+  const errorRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (isOpen) {
@@ -191,6 +192,13 @@ function ProductFormModal({
       setDeleteStep('idle')
     }
   }, [isOpen, initialValues])
+
+  // Scroll ke pesan error supaya user selalu melihatnya
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
+  }, [error])
 
   if (!isOpen) return null
 
@@ -206,8 +214,10 @@ function ProductFormModal({
       setError('Nama produk tidak boleh kosong.')
       return
     }
-    if (!values.sellPrice || Number(values.sellPrice) < 0) {
-      setError('Harga jual harus diisi dan tidak boleh negatif.')
+    // Harga jual — harus angka valid dan tidak negatif
+    const sellPriceNum = Number(values.sellPrice.replace(/[^0-9]/g, '')) || 0
+    if (sellPriceNum <= 0 && !values.sellPrice.trim()) {
+      setError('Harga jual harus diisi.')
       return
     }
     const barcode = values.barcode.trim()
@@ -300,7 +310,7 @@ function ProductFormModal({
       {/* Panel */}
       <div
         data-bottom-sheet="true"
-        className="relative w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white sm:max-h-[90vh] sm:rounded-2xl"
+        className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white sm:max-h-[90vh] sm:rounded-2xl"
       >
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 bg-white px-5 py-4">
@@ -321,7 +331,7 @@ function ProductFormModal({
 
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
           {error && (
-            <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</div>
+            <div ref={errorRef} className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</div>
           )}
 
           {/* Name */}
@@ -420,10 +430,11 @@ function ProductFormModal({
                 Harga Jual *
               </label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={values.sellPrice}
                 onChange={handleChange('sellPrice')}
-                min="0"
                 placeholder="0"
                 className={`${inputClass} font-mono`}
               />
@@ -433,10 +444,11 @@ function ProductFormModal({
                 Harga Modal
               </label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={values.costPrice}
                 onChange={handleChange('costPrice')}
-                min="0"
                 placeholder="0"
                 className={`${inputClass} font-mono`}
               />
@@ -448,20 +460,24 @@ function ProductFormModal({
             <div>
               <label className="mb-1 block text-xs font-semibold text-neutral-600">Stok</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={values.stock}
                 onChange={handleChange('stock')}
-                min="0"
+                placeholder="0"
                 className={`${inputClass} font-mono`}
               />
             </div>
             <div>
               <label className="mb-1 block text-xs font-semibold text-neutral-600">Stok Min</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={values.minStock}
                 onChange={handleChange('minStock')}
-                min="0"
+                placeholder="0"
                 className={`${inputClass} font-mono`}
               />
             </div>
@@ -565,6 +581,7 @@ export default function ProductsScreen() {
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
   const [isImporting, setIsImporting] = useState(false)
+  const [showImportPanel, setShowImportPanel] = useState(false)
   const csvInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -629,15 +646,21 @@ export default function ProductsScreen() {
       throw new Error('Barcode sudah dipakai produk lain.')
     }
 
+    // Helper: parse angka dari string (strip karakter non-numerik kecuali titik)
+    const parseNum = (str: string, fallback = 0): number => {
+      const n = Number(str.replace(/[^0-9]/g, ''))
+      return Number.isFinite(n) && n >= 0 ? n : fallback
+    }
+
     if (editingProduct) {
       const input: UpdateProductInput = {
         name: values.name.trim(),
         barcode: barcode || undefined,
         categoryId: values.categoryId || undefined,
-        sellPrice: Number(values.sellPrice) || 0,
-        costPrice: Number(values.costPrice) || 0,
-        stock: Number(values.stock) || 0,
-        minStock: Number(values.minStock) || 0,
+        sellPrice: parseNum(values.sellPrice),
+        costPrice: parseNum(values.costPrice),
+        stock: parseNum(values.stock),
+        minStock: parseNum(values.minStock),
         unit: values.unit.trim() || 'pcs',
       }
       if (sku) {
@@ -650,10 +673,10 @@ export default function ProductsScreen() {
         sku: sku || undefined,
         barcode: barcode || undefined,
         categoryId: values.categoryId || undefined,
-        sellPrice: Number(values.sellPrice) || 0,
-        costPrice: Number(values.costPrice) || 0,
-        stock: Number(values.stock) || 0,
-        minStock: Number(values.minStock) || 0,
+        sellPrice: parseNum(values.sellPrice),
+        costPrice: parseNum(values.costPrice),
+        stock: parseNum(values.stock),
+        minStock: parseNum(values.minStock),
         unit: values.unit.trim() || 'pcs',
       }
       await addProduct(input)
@@ -770,38 +793,56 @@ export default function ProductsScreen() {
         <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</div>
       )}
 
-      <div className="rounded-lg border border-neutral-200 bg-surface p-4">
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <button
-            type="button"
-            onClick={downloadProductCsvTemplate}
-            className="rounded-md border border-neutral-200 px-4 py-2.5 text-sm font-bold text-neutral-700 hover:bg-neutral-50"
-          >
-            Download Template CSV
-          </button>
-          <button
-            type="button"
-            onClick={() => csvInputRef.current?.click()}
-            disabled={isImporting}
-            className="rounded-md bg-primary px-4 py-2.5 text-sm font-bold text-white hover:bg-primary-800 disabled:opacity-60"
-          >
-            {isImporting ? 'Mengimport...' : 'Import CSV Produk'}
-          </button>
-          <input
-            ref={csvInputRef}
-            type="file"
-            accept=".csv,text/csv"
-            onChange={(e) => void handleCsvImport(e)}
-            className="hidden"
-          />
-        </div>
-        {importSummary && (
-          <p className="mt-3 text-sm text-neutral-600">
-            Import selesai: {importSummary.success} berhasil, {importSummary.duplicate} duplikat,{' '}
-            {importSummary.failed} gagal.
-          </p>
+      {/* Impor / Ekspor CSV — collapsible, default tertutup */}
+      <div className="rounded-lg border border-neutral-200 bg-surface">
+        <button
+          type="button"
+          onClick={() => setShowImportPanel((v) => !v)}
+          className="flex w-full items-center justify-between px-4 py-3 text-left"
+        >
+          <span className="text-sm font-semibold text-neutral-700">📥 Impor / Ekspor CSV</span>
+          <span className={`text-xs text-neutral-400 transition-transform ${showImportPanel ? 'rotate-180' : ''}`}>
+            ▼
+          </span>
+        </button>
+
+        {showImportPanel && (
+          <div className="border-t border-neutral-100 px-4 pb-4 pt-3">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={downloadProductCsvTemplate}
+                className="rounded-md border border-neutral-200 px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+              >
+                Download Template CSV
+              </button>
+              <button
+                type="button"
+                onClick={() => csvInputRef.current?.click()}
+                disabled={isImporting}
+                className="rounded-md bg-primary px-4 py-2.5 text-sm font-bold text-white hover:bg-primary-800 disabled:opacity-60"
+              >
+                {isImporting ? 'Mengimport...' : 'Import CSV Produk'}
+              </button>
+            </div>
+            {importSummary && (
+              <p className="mt-3 text-sm text-neutral-600">
+                Import selesai: {importSummary.success} berhasil, {importSummary.duplicate} duplikat,{' '}
+                {importSummary.failed} gagal.
+              </p>
+            )}
+            {importError && <p className="mt-3 text-sm text-danger-700">{importError}</p>}
+          </div>
         )}
-        {importError && <p className="mt-3 text-sm text-danger-700">{importError}</p>}
+
+        {/* Input file tetap tersembunyi, tidak terpengaruh oleh toggle */}
+        <input
+          ref={csvInputRef}
+          type="file"
+          accept=".csv,text/csv"
+          onChange={(e) => void handleCsvImport(e)}
+          className="hidden"
+        />
       </div>
 
       {/* Search */}

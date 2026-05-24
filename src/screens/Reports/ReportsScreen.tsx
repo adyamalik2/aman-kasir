@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import SalesTab from './SalesTab'
 import SummaryTab from './SummaryTab'
 import TopProductsTab from './TopProductsTab'
@@ -13,8 +14,16 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]['id']
 
+const VALID_TAB_IDS = new Set<string>(TABS.map((t) => t.id))
+
+function parseTabParam(param: string | null): TabId {
+  if (param && VALID_TAB_IDS.has(param)) return param as TabId
+  return 'sales'
+}
+
 export default function ReportsScreen() {
-  const [activeTab, setActiveTab] = useState<TabId>('sales')
+  const [searchParams] = useSearchParams()
+  const [activeTab, setActiveTab] = useState<TabId>(() => parseTabParam(searchParams.get('tab')))
 
   return (
     <section className="space-y-4">

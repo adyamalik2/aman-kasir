@@ -73,8 +73,8 @@ export default function SalesTab() {
     csvService.exportTransactions(transactions)
   }
 
-  const handleExportPdf = () => {
-    pdfService.exportTransactions(transactions, {
+  const handleExportPdf = async () => {
+    await pdfService.exportTransactions(transactions, {
       storeName,
       periodLabel: 'Riwayat semua transaksi',
     })
@@ -120,7 +120,7 @@ export default function SalesTab() {
     <div className="space-y-4">
       <ExportButtons>
         <ExportButton label="Export CSV" onClick={handleExportCsv} disabled={transactions.length === 0} />
-        <ExportButton label="Export PDF" onClick={handleExportPdf} disabled={transactions.length === 0} />
+        <ExportButton label="Export PDF" onClick={() => void handleExportPdf()} disabled={transactions.length === 0} />
       </ExportButtons>
 
       {error && (
