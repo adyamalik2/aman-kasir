@@ -6,6 +6,7 @@ import { db } from '@/infra/db/dexie'
 import { DexieTransactionRepository } from '@/repositories/implementations/DexieTransactionRepository'
 import { DexieProductRepository } from '@/repositories/implementations/DexieProductRepository'
 import { DeleteTransactionUseCase } from '@/usecases/transaction/DeleteTransactionUseCase'
+import { BulkDeleteTransactionsUseCase } from '@/usecases/transaction/BulkDeleteTransactionsUseCase'
 import { ReceiptActionSheet } from '@/components/receipt/ReceiptActionSheet'
 import type { ReceiptSnapshot } from '@/components/receipt/receiptUtils'
 import { getStoreProfile } from '@/lib/storeProfile'
@@ -18,6 +19,7 @@ import { VerticalBarChart } from './components/VerticalBarChart'
 const txnRepo = new DexieTransactionRepository()
 const prodRepo = new DexieProductRepository()
 const deleteUseCase = new DeleteTransactionUseCase(txnRepo, prodRepo)
+const bulkDeleteUseCase = new BulkDeleteTransactionsUseCase(txnRepo, prodRepo)
 
 const BULAN_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 const BULAN_FULL = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
@@ -72,10 +74,15 @@ export default function TransaksiScreen() {
   // Chart metric
   const [metric, setMetric] = useState<Metric>('count')
 
-  // Hapus transaksi
+  // Hapus satu transaksi
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null)
   const [restoreStock, setRestoreStock] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  // Hapus bulk (per hari/bulan/tahun)
+  const [bulkTarget, setBulkTarget] = useState<{ label: string; txnIds: string[] } | null>(null)
+  const [bulkRestoreStock, setBulkRestoreStock] = useState(false)
+  const [bulkDeleting, setBulkDeleting] = useState(false)
 
   // Receipt
   const [receiptSnapshot, setReceiptSnapshot] = useState<ReceiptSnapshot | null>(null)
@@ -220,6 +227,31 @@ export default function TransaksiScreen() {
   }
 
   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // Hapus bulk
+  // ---------------------------------------------------------------------------
+
+  const handleBulkDelete = async () => {
+    if (!bulkTarget) return
+    setBulkDeleting(true)
+    try {
+      await bulkDeleteUseCase.execute(bulkTarget.txnIds, bulkRestoreStock)
+      const deletedSet = new Set(bulkTarget.txnIds)
+      setAllTxns((prev) => prev.filter((t) => !deletedSet.has(t.id)))
+      setProfitMap((prev) => {
+        const next = new Map(prev)
+        for (const id of bulkTarget.txnIds) next.delete(id)
+        return next
+      })
+      setBulkTarget(null)
+      setBulkRestoreStock(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal menghapus transaksi.')
+    } finally {
+      setBulkDeleting(false)
+    }
+  }
+
   // Buka struk
   // ---------------------------------------------------------------------------
 
@@ -327,7 +359,11 @@ export default function TransaksiScreen() {
     )
   }
 
-  function renderAggView(rows: AggRow[], title: string, onRowClick: (row: AggRow) => void) {
+  function renderAggView(
+    rows: AggRow[],
+    onRowClick: (row: AggRow) => void,
+    getDeleteLabel: (row: AggRow) => string,
+  ) {
     const chartData = [...rows]
       .reverse()
       .slice(-12)
@@ -352,23 +388,43 @@ export default function TransaksiScreen() {
         ) : (
           <ul className="space-y-2">
             {rows.map((row) => (
-              <li key={row.key}>
+              <li
+                key={row.key}
+                className="flex overflow-hidden rounded-xl border border-neutral-200 bg-surface"
+              >
+                {/* Area klik → drill down */}
                 <button
                   type="button"
                   onClick={() => onRowClick(row)}
-                  className="flex w-full items-center justify-between rounded-xl border border-neutral-200 bg-surface px-4 py-3 text-left transition-colors hover:bg-neutral-50 active:bg-neutral-100"
+                  className="flex flex-1 items-center justify-between px-4 py-3 text-left transition-colors hover:bg-neutral-50 active:bg-neutral-100"
                 >
                   <div>
-                    <p className="text-base font-bold text-neutral-900">{title} {row.label}</p>
+                    <p className="text-base font-bold text-neutral-900">{row.label}</p>
                     <p className="mt-0.5 text-xs text-neutral-500">{row.count} transaksi</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-right">
-                      <p className="font-mono text-sm font-semibold text-neutral-900">{formatCurrency(row.pendapatan)}</p>
-                      <p className="font-mono text-xs text-success-700">+{formatCurrency(row.keuntungan)}</p>
+                      <p className="font-mono text-sm font-semibold text-neutral-900">
+                        {formatCurrency(row.pendapatan)}
+                      </p>
+                      <p className="font-mono text-xs text-success-700">
+                        +{formatCurrency(row.keuntungan)}
+                      </p>
                     </div>
                     <span className="text-xl text-neutral-300">›</span>
                   </div>
+                </button>
+
+                {/* Tombol hapus bulk */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setBulkTarget({ label: getDeleteLabel(row), txnIds: row.txnIds })
+                  }
+                  className="flex shrink-0 items-center border-l border-neutral-100 px-4 text-xl text-danger-300 transition-colors hover:bg-danger-50 hover:text-danger-600 active:bg-danger-100"
+                  title={`Hapus ${row.count} transaksi`}
+                >
+                  🗑
                 </button>
               </li>
             ))}
@@ -451,9 +507,11 @@ export default function TransaksiScreen() {
     const rows = aggregateByYear(allTxns)
     content = loading ? (
       <div className="py-12 text-center text-sm text-neutral-400">Memuat data...</div>
-    ) : renderAggView(rows, '', (row) => {
-      push({ type: 'months', year: Number(row.key) })
-    })
+    ) : renderAggView(
+        rows,
+        (row) => { push({ type: 'months', year: Number(row.key) }) },
+        (row) => `Tahun ${row.label}`,
+      )
 
   } else if (currentView.type === 'months') {
     const { year } = currentView
@@ -462,9 +520,11 @@ export default function TransaksiScreen() {
     const rows = aggregateByMonth(filtered)
     content = loading ? (
       <div className="py-12 text-center text-sm text-neutral-400">Memuat data...</div>
-    ) : renderAggView(rows, '', (row) => {
-      push({ type: 'days', year, month: Number(row.key) })
-    })
+    ) : renderAggView(
+        rows,
+        (row) => { push({ type: 'days', year, month: Number(row.key) }) },
+        (row) => `${BULAN_FULL[Number(row.key)] ?? row.label} ${year}`,
+      )
 
   } else if (currentView.type === 'days') {
     const { year, month } = currentView
@@ -476,9 +536,11 @@ export default function TransaksiScreen() {
     const rows = aggregateByDay(filtered)
     content = loading ? (
       <div className="py-12 text-center text-sm text-neutral-400">Memuat data...</div>
-    ) : renderAggView(rows, '', (row) => {
-      push({ type: 'txns', label: `${row.label} ${BULAN_SHORT[month]} ${year}`, txnIds: row.txnIds })
-    })
+    ) : renderAggView(
+        rows,
+        (row) => { push({ type: 'txns', label: `${row.label} ${BULAN_SHORT[month]} ${year}`, txnIds: row.txnIds }) },
+        (row) => `${row.label} ${BULAN_FULL[month]} ${year}`,
+      )
 
   } else if (currentView.type === 'txns') {
     title = currentView.label
@@ -528,7 +590,7 @@ export default function TransaksiScreen() {
       {/* Dialog hapus transaksi */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center">
-          <div className="w-full max-w-md rounded-t-2xl bg-white p-6 sm:rounded-2xl">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white p-6 sm:rounded-2xl">
             <h3 className="text-base font-bold text-neutral-900">Hapus Transaksi?</h3>
             <p className="mt-1 text-sm text-neutral-600">
               {deleteTarget.invoiceNo} · {formatCurrency(deleteTarget.total)}
@@ -553,22 +615,75 @@ export default function TransaksiScreen() {
               </span>
             </label>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => { setDeleteTarget(null); setRestoreStock(false) }}
-                disabled={deleting}
-                className="rounded-lg border border-neutral-200 bg-white py-2.5 text-sm font-semibold text-neutral-700 disabled:opacity-50"
-              >
-                Batal
-              </button>
+            <div className="mt-6 space-y-2">
               <button
                 type="button"
                 onClick={() => void handleDelete()}
                 disabled={deleting}
-                className="rounded-lg bg-danger-600 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+                className="w-full rounded-lg bg-danger-600 py-3 text-sm font-bold text-white active:bg-danger-700 disabled:opacity-50"
               >
-                {deleting ? 'Menghapus...' : 'Ya, Hapus'}
+                {deleting ? 'Menghapus...' : '🗑 Ya, Hapus Transaksi Ini'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setDeleteTarget(null); setRestoreStock(false) }}
+                disabled={deleting}
+                className="w-full rounded-lg border border-neutral-200 bg-white py-3 text-sm font-semibold text-neutral-600 disabled:opacity-50"
+              >
+                Batal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dialog hapus bulk */}
+      {bulkTarget && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white p-6 sm:rounded-2xl">
+            <h3 className="text-base font-bold text-neutral-900">Hapus {bulkTarget.label}?</h3>
+            <p className="mt-1 text-sm text-neutral-600">
+              <span className="font-bold text-danger-700">{bulkTarget.txnIds.length} transaksi</span>{' '}
+              akan dihapus permanen.
+            </p>
+            <p className="mt-2 text-xs text-danger-700">
+              ⚠️ Tindakan ini tidak dapat dibatalkan.
+            </p>
+
+            {/* Checkbox restore stok */}
+            <label className="mt-4 flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={bulkRestoreStock}
+                onChange={(e) => setBulkRestoreStock(e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-primary"
+              />
+              <span className="text-sm text-neutral-700">
+                Kembalikan stok semua barang ke gudang
+                <span className="mt-0.5 block text-xs text-neutral-400">
+                  Stok tiap produk dari {bulkTarget.txnIds.length} transaksi akan ditambah kembali
+                </span>
+              </span>
+            </label>
+
+            <div className="mt-6 space-y-2">
+              <button
+                type="button"
+                onClick={() => void handleBulkDelete()}
+                disabled={bulkDeleting}
+                className="w-full rounded-lg bg-danger-600 py-3 text-sm font-bold text-white active:bg-danger-700 disabled:opacity-50"
+              >
+                {bulkDeleting
+                  ? 'Menghapus...'
+                  : `🗑 Ya, Hapus ${bulkTarget.txnIds.length} Transaksi`}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setBulkTarget(null); setBulkRestoreStock(false) }}
+                disabled={bulkDeleting}
+                className="w-full rounded-lg border border-neutral-200 bg-white py-3 text-sm font-semibold text-neutral-600 disabled:opacity-50"
+              >
+                Batal
               </button>
             </div>
           </div>

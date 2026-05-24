@@ -44,4 +44,13 @@ export class DexieTransactionRepository implements ITransactionRepository {
   async deleteItemsByTransactionId(transactionId: string): Promise<void> {
     await db.transactionItems.where('transactionId').equals(transactionId).delete()
   }
+
+  async bulkDelete(ids: string[]): Promise<void> {
+    if (ids.length === 0) return
+    // Gunakan Dexie transaction untuk atomicity: all-or-nothing
+    await db.transaction('rw', [db.transactions, db.transactionItems], async () => {
+      await db.transactionItems.where('transactionId').anyOf(ids).delete()
+      await db.transactions.bulkDelete(ids)
+    })
+  }
 }
