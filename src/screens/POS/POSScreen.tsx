@@ -209,6 +209,7 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
             <button
               type="button"
               onClick={onClose}
+              data-android-back-close="true"
               className="text-sm font-medium text-neutral-500 hover:text-neutral-800"
             >
               Batal

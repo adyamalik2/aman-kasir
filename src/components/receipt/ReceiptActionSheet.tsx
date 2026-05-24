@@ -120,6 +120,7 @@ export function ReceiptActionSheet({
             <button
               type="button"
               onClick={onClose}
+              data-android-back-close="true"
               className="rounded-md border border-neutral-200 px-3 py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-50"
             >
               {closeLabel}

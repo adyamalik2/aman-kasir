@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AMAN Kasir</string>
+    <string name="title_activity_main">AMAN Kasir</string>
+    <string name="package_name">id.web.amandigital.amankasir</string>
+    <string name="custom_url_scheme">id.web.amandigital.amankasir</string>
+</resources>

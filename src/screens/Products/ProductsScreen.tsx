@@ -308,6 +308,7 @@ function ProductFormModal({
             <button
               type="button"
               onClick={onClose}
+              data-android-back-close="true"
               className="text-sm font-medium text-neutral-500 hover:text-neutral-800"
             >
               Batal

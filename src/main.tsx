@@ -2,6 +2,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './app/App'
+import { registerAndroidBackButton } from './native/androidBackButton'
+import { registerServiceWorker } from './pwa/registerServiceWorker'
 
 /**
  * Entry point AMAN Kasir
@@ -21,3 +23,6 @@ createRoot(rootElement).render(
     <App />
   </StrictMode>,
 )
+
+registerServiceWorker()
+registerAndroidBackButton()

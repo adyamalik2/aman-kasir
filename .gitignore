@@ -8,8 +8,15 @@ dist/
 dist-ssr/
 *.local
 
-# Capacitor native projects (generated, jangan di-commit kecuali ada custom native code)
-android/
+# Capacitor native build output and signing files
+android/app/build/
+android/app/release/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+*.apk
+*.aab
+*.keystore
+*.jks
 ios/
 
 # TypeScript incremental build
