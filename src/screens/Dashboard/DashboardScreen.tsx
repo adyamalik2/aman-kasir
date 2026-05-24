@@ -108,7 +108,7 @@ export default function DashboardScreen() {
       {/* ── Peringatan stok menipis (tampil jika ada) ── */}
       {lowStockCount > 0 && (
         <Link
-          to="/laporan?tab=stock"
+          to="/laporan/stok-menipis"
           className="flex items-center gap-4 rounded-xl border border-warning-200 bg-warning-50 p-4 transition-colors hover:bg-warning-100 active:scale-[0.99]"
         >
           {/* Ikon peringatan */}

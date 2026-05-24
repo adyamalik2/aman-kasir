@@ -1,58 +1,71 @@
-import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import SalesTab from './SalesTab'
-import SummaryTab from './SummaryTab'
-import TopProductsTab from './TopProductsTab'
-import LowStockTab from './LowStockTab'
+import { Link } from 'react-router-dom'
 
-const TABS = [
-  { id: 'sales', label: 'Penjualan' },
-  { id: 'summary', label: 'Ringkasan' },
-  { id: 'top', label: 'Terlaris' },
-  { id: 'stock', label: 'Stok Menipis' },
-] as const
-
-type TabId = (typeof TABS)[number]['id']
-
-const VALID_TAB_IDS = new Set<string>(TABS.map((t) => t.id))
-
-function parseTabParam(param: string | null): TabId {
-  if (param && VALID_TAB_IDS.has(param)) return param as TabId
-  return 'sales'
+interface MenuItem {
+  to: string
+  icon: string
+  title: string
+  description: string
 }
 
-export default function ReportsScreen() {
-  const [searchParams] = useSearchParams()
-  const [activeTab, setActiveTab] = useState<TabId>(() => parseTabParam(searchParams.get('tab')))
+const MENU_ITEMS: MenuItem[] = [
+  {
+    to: '/laporan/ringkasan',
+    icon: '📊',
+    title: 'Ringkasan Laporan Penjualan',
+    description: 'Statistik transaksi, pendapatan & keuntungan dengan grafik',
+  },
+  {
+    to: '/laporan/transaksi',
+    icon: '📋',
+    title: 'Laporan Transaksi',
+    description: 'Riwayat transaksi per hari, bulan, tahun — sampai struk',
+  },
+  {
+    to: '/laporan/terlaris',
+    icon: '⭐',
+    title: 'Produk Terlaris',
+    description: 'Produk dengan penjualan qty & omzet tertinggi',
+  },
+  {
+    to: '/laporan/stok-menipis',
+    icon: '📦',
+    title: 'Stok Menipis',
+    description: 'Produk dengan stok di bawah batas minimum',
+  },
+]
 
+export default function ReportsScreen() {
   return (
     <section className="space-y-4">
       <div>
-        <p className="text-sm font-medium text-neutral-500">Laporan</p>
-        <h2 className="mt-1 text-2xl font-bold text-neutral-900">Laporan & Analisis</h2>
+        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Menu</p>
+        <h2 className="mt-1 text-2xl font-bold text-neutral-900">Laporan</h2>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto rounded-lg bg-neutral-100 p-1">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-            className={`shrink-0 rounded-md px-3 py-2 text-xs font-semibold transition-colors ${
-              activeTab === tab.id
-                ? 'bg-surface text-primary shadow-sm'
-                : 'text-neutral-600 hover:text-neutral-900'
-            }`}
-          >
-            {tab.label}
-          </button>
+      <ul className="space-y-2">
+        {MENU_ITEMS.map((item) => (
+          <li key={item.to}>
+            <Link
+              to={item.to}
+              className="flex items-center gap-4 rounded-xl border border-neutral-200 bg-surface px-4 py-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100"
+            >
+              {/* Ikon */}
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-50 text-xl">
+                {item.icon}
+              </div>
+
+              {/* Teks */}
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-neutral-900">{item.title}</p>
+                <p className="mt-0.5 text-xs text-neutral-400">{item.description}</p>
+              </div>
+
+              {/* Chevron */}
+              <span className="shrink-0 text-xl font-light text-neutral-300">›</span>
+            </Link>
+          </li>
         ))}
-      </div>
-
-      {activeTab === 'sales' && <SalesTab />}
-      {activeTab === 'summary' && <SummaryTab />}
-      {activeTab === 'top' && <TopProductsTab />}
-      {activeTab === 'stock' && <LowStockTab />}
+      </ul>
     </section>
   )
 }

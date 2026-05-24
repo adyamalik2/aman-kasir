@@ -7,4 +7,8 @@ export interface ITransactionRepository {
   getItemsByTransactionId(transactionId: string): Promise<TransactionItem[]>
   getCompletedInRange(start: Date, end: Date): Promise<Transaction[]>
   getItemsByTransactionIds(transactionIds: string[]): Promise<TransactionItem[]>
+  /** Hapus satu transaksi berdasarkan id */
+  delete(id: string): Promise<void>
+  /** Hapus semua item milik satu transaksi */
+  deleteItemsByTransactionId(transactionId: string): Promise<void>
 }

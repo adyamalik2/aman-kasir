@@ -36,4 +36,12 @@ export class DexieTransactionRepository implements ITransactionRepository {
     }
     return db.transactionItems.where('transactionId').anyOf(transactionIds).toArray()
   }
+
+  async delete(id: string): Promise<void> {
+    await db.transactions.delete(id)
+  }
+
+  async deleteItemsByTransactionId(transactionId: string): Promise<void> {
+    await db.transactionItems.where('transactionId').equals(transactionId).delete()
+  }
 }

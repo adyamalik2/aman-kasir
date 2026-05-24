@@ -1,4 +1,4 @@
-export type PeriodPreset = 'today' | 'yesterday' | '7days' | '30days' | 'custom'
+export type PeriodPreset = 'today' | 'yesterday' | '7days' | '30days' | 'thisMonth' | 'custom'
 
 export interface PeriodInput {
   preset: PeriodPreset
@@ -48,6 +48,10 @@ export function resolvePeriod(input: PeriodInput): DateRange {
       start.setDate(start.getDate() - 29)
       return { start: startOfDay(start), end: endOfDay(now) }
     }
+    case 'thisMonth': {
+      const start = new Date(now.getFullYear(), now.getMonth(), 1)
+      return { start: startOfDay(start), end: endOfDay(now) }
+    }
     case 'custom': {
       const startStr = input.customStart ?? input.customEnd
       const endStr = input.customEnd ?? input.customStart
@@ -75,6 +79,7 @@ export const PERIOD_PRESET_LABELS: Record<PeriodPreset, string> = {
   yesterday: 'Kemarin',
   '7days': '7 Hari',
   '30days': '30 Hari',
+  thisMonth: 'Bulan Ini',
   custom: 'Custom',
 }
 
