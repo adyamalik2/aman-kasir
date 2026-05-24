@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'aman-kasir-v1'
+const CACHE_VERSION = 'aman-kasir-v2'
 const APP_SHELL_CACHE = `${CACHE_VERSION}-shell`
 const STATIC_CACHE = `${CACHE_VERSION}-static`
 
@@ -9,7 +9,7 @@ self.addEventListener('install', (event) => {
     caches
       .open(APP_SHELL_CACHE)
       .then((cache) => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting()),
+      // Tidak langsung skipWaiting — tunggu perintah dari halaman
   )
 })
 
@@ -47,6 +47,13 @@ self.addEventListener('fetch', (event) => {
     url.pathname === '/manifest.webmanifest'
   ) {
     event.respondWith(cacheFirstStatic(request))
+  }
+})
+
+// Terima perintah SKIP_WAITING dari halaman → aktifkan SW baru segera
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting()
   }
 })
 
