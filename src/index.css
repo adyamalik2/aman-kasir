@@ -25,6 +25,15 @@
     --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
 
+  /* ── Dark mode CSS variables ── */
+  .dark {
+    --color-background: #0c0f1a;
+    --color-surface: #131929;
+    --color-text: #f1f5f9;
+    --color-text-muted: #8b9ab8;
+    --color-border: #1e2740;
+  }
+
   html {
     min-width: 320px;
     min-height: 100%;
@@ -32,6 +41,7 @@
     -webkit-text-size-adjust: 100%;
     touch-action: manipulation;
     scroll-behavior: smooth;
+    transition: background-color 0.2s ease;
   }
 
   body {
@@ -92,7 +102,7 @@
   }
 
   .is-android [data-main-content='true'] {
-    padding-bottom: 9.5rem;
+    padding-bottom: 10rem;
   }
 
   .is-android [data-bottom-sheet='true'],
@@ -100,13 +110,8 @@
     padding-bottom: 52px;
   }
 
-  .is-android [data-bottom-nav='true'] > div {
-    min-height: 4.75rem;
-    align-content: start;
-  }
-
   .is-android [data-fixed-bottom-action='true'],
   .is-android [data-floating-action='true'] {
-    bottom: calc(var(--safe-bottom) + 6.75rem);
+    bottom: calc(var(--safe-bottom) + 7rem);
   }
 }

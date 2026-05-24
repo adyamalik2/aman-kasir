@@ -123,19 +123,19 @@ export default function CustomersScreen() {
       <div className="flex items-center gap-3">
         <Link
           to="/lainnya"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 hover:bg-neutral-50"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 dark:border-dark-border text-neutral-500 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated"
           aria-label="Kembali"
         >
           ‹
         </Link>
         <div className="flex-1">
-          <p className="text-sm font-medium text-neutral-500">Lainnya</p>
-          <h2 className="text-2xl font-bold text-neutral-900">Pelanggan</h2>
+          <p className="text-sm font-medium text-neutral-500 dark:text-dark-muted">Lainnya</p>
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Pelanggan</h2>
         </div>
         <button
           type="button"
           onClick={openAdd}
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-800"
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-800 dark:hover:bg-primary-700"
         >
           + Tambah
         </button>
@@ -147,11 +147,11 @@ export default function CustomersScreen() {
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         placeholder="Cari nama atau telepon..."
-        className="w-full rounded-xl border border-neutral-200 px-4 py-3 text-sm focus:border-primary focus:outline-none"
+        className="w-full rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-4 py-3 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-dark-muted focus:border-primary dark:focus:border-primary-400 focus:outline-none"
       />
 
       {error && (
-        <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</div>
+        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-400">{error}</div>
       )}
 
       {/* Daftar pelanggan */}
@@ -176,42 +176,21 @@ export default function CustomersScreen() {
           {customers.map((c) => (
             <li
               key={c.id}
-              className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-surface px-4 py-3"
+              className="flex items-center gap-3 rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-4 py-3"
             >
-              {/* Avatar inisial */}
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-50 text-sm font-bold text-primary">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-50 dark:bg-primary-900/30 text-sm font-bold text-primary dark:text-primary-400">
                 {c.nama.charAt(0).toUpperCase()}
               </div>
-
-              {/* Info */}
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-neutral-900 truncate">{c.nama}</p>
-                {c.telepon && (
-                  <p className="text-xs text-neutral-500">{c.telepon}</p>
-                )}
-                {c.catatan && (
-                  <p className="text-xs text-neutral-400 truncate">{c.catatan}</p>
-                )}
+                <p className="font-semibold text-neutral-900 dark:text-white truncate">{c.nama}</p>
+                {c.telepon && <p className="text-xs text-neutral-500 dark:text-dark-muted">{c.telepon}</p>}
+                {c.catatan && <p className="text-xs text-neutral-400 dark:text-dark-muted truncate">{c.catatan}</p>}
               </div>
-
-              {/* Aksi */}
               <div className="flex shrink-0 gap-1">
-                <button
-                  type="button"
-                  onClick={() => openEdit(c)}
-                  className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100"
-                  title="Edit"
-                >
-                  ✏️
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDeleteTarget(c)}
-                  className="rounded-lg p-2 text-neutral-500 hover:bg-danger-50 hover:text-danger-700"
-                  title="Hapus"
-                >
-                  🗑️
-                </button>
+                <button type="button" onClick={() => openEdit(c)}
+                  className="rounded-lg p-2 text-neutral-500 dark:text-dark-muted hover:bg-neutral-100 dark:hover:bg-dark-elevated" title="Edit">✏️</button>
+                <button type="button" onClick={() => setDeleteTarget(c)}
+                  className="rounded-lg p-2 text-neutral-500 dark:text-dark-muted hover:bg-danger-50 dark:hover:bg-danger-700/20 hover:text-danger-700 dark:hover:text-danger-400" title="Hapus">🗑️</button>
               </div>
             </li>
           ))}
@@ -220,10 +199,10 @@ export default function CustomersScreen() {
 
       {/* ── Bottom sheet: Form tambah / edit ── */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center">
-          <div className="w-full max-w-lg rounded-t-2xl bg-white sm:rounded-2xl">
-            <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
-              <h3 className="font-bold text-neutral-900">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 dark:bg-black/60 sm:items-center">
+          <div className="w-full max-w-lg rounded-t-2xl bg-white dark:bg-dark-elevated sm:rounded-2xl">
+            <div className="flex items-center justify-between border-b border-neutral-200 dark:border-dark-border px-5 py-4">
+              <h3 className="font-bold text-neutral-900 dark:text-white">
                 {editingId ? 'Edit Pelanggan' : 'Tambah Pelanggan'}
               </h3>
               {!saving && (
@@ -287,10 +266,10 @@ export default function CustomersScreen() {
 
       {/* ── Dialog konfirmasi hapus ── */}
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center">
-          <div className="w-full max-w-sm rounded-t-2xl bg-white p-5 sm:rounded-2xl">
-            <h3 className="font-bold text-neutral-900">Hapus Pelanggan?</h3>
-            <p className="mt-2 text-sm text-neutral-600">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 dark:bg-black/60 sm:items-center">
+          <div className="w-full max-w-sm rounded-t-2xl bg-white dark:bg-dark-elevated p-5 sm:rounded-2xl">
+            <h3 className="font-bold text-neutral-900 dark:text-white">Hapus Pelanggan?</h3>
+            <p className="mt-2 text-sm text-neutral-600 dark:text-dark-muted">
               <span className="font-semibold">{deleteTarget.nama}</span> akan dihapus dari daftar.
               Riwayat transaksi tidak terpengaruh.
             </p>
@@ -334,7 +313,7 @@ function FormField({
   multiline?: boolean
   autoFocus?: boolean
 }) {
-  const base = 'block w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+  const base = 'block w-full rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-2.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-dark-muted focus:border-primary dark:focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-400'
   return (
     <div>
       <label className="block text-xs font-semibold text-neutral-600">{label}</label>

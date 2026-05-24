@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useAppStore } from '@/store/appStore'
+import type { AppTheme } from '@/store/appStore'
 import { useProductStore } from '@/store/productStore'
 import { getStoreProfile, setStoreProfile, STORE_PROFILE_KEY } from '@/lib/storeProfile'
 import { markLocalDataChanged } from '@/lib/storage'
@@ -23,6 +24,8 @@ const SEED_CATEGORY_NAMES = [
 export default function SettingsScreen() {
   const setStoreName = useAppStore((s) => s.setStoreName)
   const markLocalChange = useAppStore((s) => s.markLocalChange)
+  const theme = useAppStore((s) => s.theme)
+  const setTheme = useAppStore((s) => s.setTheme)
 
   // ── Profil Toko ───────────────────────────────────────────────────────────
   const [form, setForm] = useState<StoreProfile>(() => getStoreProfile())
@@ -269,26 +272,54 @@ export default function SettingsScreen() {
     }
   }
 
+  const themeOptions: { value: AppTheme; label: string; icon: string }[] = [
+    { value: 'light', label: 'Terang', icon: '☀️' },
+    { value: 'dark',  label: 'Gelap',  icon: '🌙' },
+    { value: 'system',label: 'Sistem', icon: '📱' },
+  ]
+
   return (
     <section className="space-y-6">
       {/* Header + Back */}
       <div className="flex items-center gap-3">
         <Link
           to="/lainnya"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 hover:bg-neutral-50"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 dark:border-dark-border text-neutral-500 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated"
           aria-label="Kembali"
         >
           ‹
         </Link>
         <div>
-          <p className="text-sm font-medium text-neutral-500">Lainnya</p>
-          <h2 className="text-2xl font-bold text-neutral-900">Pengaturan</h2>
+          <p className="text-sm font-medium text-neutral-500 dark:text-dark-muted">Lainnya</p>
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Pengaturan</h2>
+        </div>
+      </div>
+
+      {/* ── Tema Aplikasi ─────────────────────────────────────── */}
+      <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card p-5 space-y-3">
+        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Tema Aplikasi</h3>
+        <div className="grid grid-cols-3 gap-2">
+          {themeOptions.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setTheme(opt.value)}
+              className={`flex flex-col items-center gap-1.5 rounded-xl border-2 py-3 text-sm font-semibold transition-all ${
+                theme === opt.value
+                  ? 'border-primary bg-primary-50 dark:bg-primary-900/30 text-primary dark:text-primary-400'
+                  : 'border-neutral-200 dark:border-dark-border bg-neutral-50 dark:bg-dark-elevated text-neutral-500 dark:text-dark-muted hover:border-neutral-300 dark:hover:border-dark-muted'
+              }`}
+            >
+              <span className="text-xl">{opt.icon}</span>
+              <span className="text-xs">{opt.label}</span>
+            </button>
+          ))}
         </div>
       </div>
 
       {/* ── Profil Toko ────────────────────────────────────────── */}
-      <div className="rounded-lg border border-neutral-200 bg-surface p-5 space-y-4">
-        <h3 className="text-sm font-bold text-neutral-900">Profil Toko</h3>
+      <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card p-5 space-y-4">
+        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Profil Toko</h3>
 
         <div className="space-y-3">
           <Field
@@ -329,22 +360,21 @@ export default function SettingsScreen() {
         <button
           type="button"
           onClick={handleSave}
-          className="w-full rounded-md bg-primary px-4 py-3 text-sm font-bold text-white hover:bg-primary-800"
+          className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white hover:bg-primary-800 dark:hover:bg-primary-700 transition-colors"
         >
           Simpan
         </button>
 
-        {/* Toast sukses */}
         {toast && (
-          <div className="rounded-md bg-success-50 px-3 py-2 text-sm font-semibold text-success-700">
+          <div className="rounded-md bg-success-50 dark:bg-success-700/20 px-3 py-2 text-sm font-semibold text-success-700 dark:text-success-400">
             ✓ {toast}
           </div>
         )}
       </div>
 
       {/* ── Kelola Kategori ──────────────────────────────────── */}
-      <div className="rounded-lg border border-neutral-200 bg-surface p-5 space-y-3">
-        <h3 className="text-sm font-bold text-neutral-900">Kelola Kategori</h3>
+      <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card p-5 space-y-3">
+        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Kelola Kategori</h3>
 
         {catError && (
           <div className="rounded-md bg-danger-50 px-3 py-2 text-xs text-danger-700">{catError}</div>
@@ -465,8 +495,8 @@ export default function SettingsScreen() {
       </div>
 
       {/* ── Data & Reset ──────────────────────────────────────── */}
-      <div className="rounded-lg border border-neutral-200 bg-surface p-5 space-y-4">
-        <h3 className="text-sm font-bold text-neutral-900">Data & Reset</h3>
+      <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card p-5 space-y-4">
+        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Data & Reset</h3>
 
         {/* Hapus Data Demo */}
         <div className="space-y-2">
@@ -547,11 +577,11 @@ interface FieldProps {
 
 function Field({ label, value, onChange, placeholder, required, type, multiline }: FieldProps) {
   const baseClass =
-    'mt-1 block w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary'
+    'mt-1 block w-full rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated px-3 py-2 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-dark-muted focus:border-primary dark:focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-400'
 
   return (
     <div>
-      <label className="block text-xs font-semibold text-neutral-600">
+      <label className="block text-xs font-semibold text-neutral-600 dark:text-dark-muted">
         {label}
         {required && <span className="ml-1 text-danger-500">*</span>}
       </label>

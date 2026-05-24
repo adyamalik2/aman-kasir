@@ -44,8 +44,8 @@ export default function ReportsScreen() {
   return (
     <section className="space-y-4">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Menu</p>
-        <h2 className="mt-1 text-2xl font-bold text-neutral-900">Laporan</h2>
+        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">Menu</p>
+        <h2 className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">Laporan</h2>
       </div>
 
       <ul className="space-y-2">
@@ -53,21 +53,16 @@ export default function ReportsScreen() {
           <li key={item.to}>
             <Link
               to={item.to}
-              className="flex items-center gap-4 rounded-xl border border-neutral-200 bg-surface px-4 py-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100"
+              className="flex items-center gap-4 rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-4 py-4 transition-colors hover:bg-neutral-50 dark:hover:bg-dark-elevated active:scale-[0.99]"
             >
-              {/* Ikon */}
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-50 text-xl">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-900/30 text-xl">
                 {item.icon}
               </div>
-
-              {/* Teks */}
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-neutral-900">{item.title}</p>
-                <p className="mt-0.5 text-xs text-neutral-400">{item.description}</p>
+                <p className="font-semibold text-neutral-900 dark:text-white">{item.title}</p>
+                <p className="mt-0.5 text-xs text-neutral-400 dark:text-dark-muted">{item.description}</p>
               </div>
-
-              {/* Chevron */}
-              <span className="shrink-0 text-xl font-light text-neutral-300">›</span>
+              <span className="shrink-0 text-xl font-light text-neutral-300 dark:text-dark-border">›</span>
             </Link>
           </li>
         ))}

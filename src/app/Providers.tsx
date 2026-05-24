@@ -12,6 +12,29 @@ interface ProvidersProps {
   children: ReactNode
 }
 
+/** Menerapkan class 'dark' ke <html> sesuai preferensi tema yang disimpan. */
+function ThemeProvider({ children }: ProvidersProps) {
+  const theme = useAppStore((s) => s.theme)
+
+  useEffect(() => {
+    const apply = (dark: boolean) => {
+      document.documentElement.classList.toggle('dark', dark)
+    }
+
+    if (theme === 'system') {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)')
+      apply(mq.matches)
+      const handler = (e: MediaQueryListEvent) => apply(e.matches)
+      mq.addEventListener('change', handler)
+      return () => mq.removeEventListener('change', handler)
+    }
+
+    apply(theme === 'dark')
+  }, [theme])
+
+  return children
+}
+
 function OnlineStatusProvider({ children }: ProvidersProps) {
   const setOnlineStatus = useAppStore((state) => state.setOnlineStatus)
 
@@ -21,16 +44,12 @@ function OnlineStatusProvider({ children }: ProvidersProps) {
     }
 
     if (isNativeApp()) {
-      // Capacitor Android/iOS: gunakan @capacitor/network
-      // (navigator.onLine tidak reliable di Android WebView)
       let listenerHandle: { remove: () => Promise<void> } | null = null
 
       void (async () => {
-        // Baca status awal
         const status = await Network.getStatus()
         setOnlineStatus(status.connected)
 
-        // Listen perubahan
         listenerHandle = await Network.addListener('networkStatusChange', (s) => {
           setOnlineStatus(s.connected)
         })
@@ -41,7 +60,6 @@ function OnlineStatusProvider({ children }: ProvidersProps) {
       }
     }
 
-    // Web path: gunakan event browser standard
     const updateOnlineStatus = () => {
       setOnlineStatus(window.navigator.onLine)
     }
@@ -83,9 +101,6 @@ function AuthProvider({ children }: ProvidersProps) {
   const setUser = useAuthStore((s) => s.setUser)
 
   useEffect(() => {
-    // Subscribe ke perubahan status Firebase Auth.
-    // Bila Firebase tidak dikonfigurasi, authService.onAuthStateChanged
-    // langsung memanggil callback(null) dan mengembalikan no-op.
     const unsubscribe = authService.onAuthStateChanged((user) => {
       setUser(user)
     })
@@ -98,13 +113,15 @@ function AuthProvider({ children }: ProvidersProps) {
 export default function Providers({ children }: ProvidersProps) {
   return (
     <BrowserRouter>
-      <DbInitProvider>
-        <BackupHydrationProvider>
-          <OnlineStatusProvider>
-            <AuthProvider>{children}</AuthProvider>
-          </OnlineStatusProvider>
-        </BackupHydrationProvider>
-      </DbInitProvider>
+      <ThemeProvider>
+        <DbInitProvider>
+          <BackupHydrationProvider>
+            <OnlineStatusProvider>
+              <AuthProvider>{children}</AuthProvider>
+            </OnlineStatusProvider>
+          </BackupHydrationProvider>
+        </DbInitProvider>
+      </ThemeProvider>
     </BrowserRouter>
   )
 }

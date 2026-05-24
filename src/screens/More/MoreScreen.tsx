@@ -12,7 +12,7 @@ const menuItems: MenuItem[] = [
   {
     icon: '⚙️',
     label: 'Pengaturan',
-    description: 'Profil toko, kategori, dan preferensi aplikasi.',
+    description: 'Profil toko, tema, kategori, dan preferensi aplikasi.',
     to: '/lainnya/pengaturan',
   },
   {
@@ -46,8 +46,8 @@ export default function MoreScreen() {
   return (
     <section className="space-y-4">
       <div>
-        <p className="text-sm font-medium text-neutral-500">Lainnya</p>
-        <h2 className="mt-1 text-2xl font-bold text-neutral-900">Menu Lainnya</h2>
+        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">Menu</p>
+        <h2 className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">Lainnya</h2>
       </div>
 
       <div className="space-y-2">
@@ -56,43 +56,35 @@ export default function MoreScreen() {
             <Link
               key={item.label}
               to={item.to}
-              className="flex items-center gap-4 rounded-xl border border-neutral-200 bg-surface p-4 transition-colors hover:border-primary/30 hover:bg-neutral-50 active:bg-neutral-100"
+              className="flex items-center gap-4 rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card p-4 transition-colors hover:bg-neutral-50 dark:hover:bg-dark-elevated active:scale-[0.99]"
             >
-              {/* Ikon */}
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xl">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-900/30 text-xl">
                 {item.icon}
               </div>
-
-              {/* Teks */}
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-neutral-900">{item.label}</p>
-                <p className="mt-0.5 text-xs leading-5 text-neutral-500">{item.description}</p>
+                <p className="text-sm font-bold text-neutral-900 dark:text-white">{item.label}</p>
+                <p className="mt-0.5 text-xs leading-5 text-neutral-500 dark:text-dark-muted">{item.description}</p>
               </div>
-
-              {/* Chevron */}
-              <span className="shrink-0 text-lg font-light text-neutral-300">›</span>
+              <span className="shrink-0 text-lg font-light text-neutral-300 dark:text-dark-border">›</span>
             </Link>
           ) : (
             <div
               key={item.label}
-              className="flex items-center gap-4 rounded-xl border border-neutral-100 bg-neutral-50 p-4 opacity-60"
+              className="flex items-center gap-4 rounded-xl border border-neutral-100 dark:border-dark-border bg-neutral-50 dark:bg-dark-elevated p-4 opacity-60"
             >
-              {/* Ikon */}
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-xl">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-neutral-200 dark:bg-dark-border text-xl">
                 {item.icon}
               </div>
-
-              {/* Teks */}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-neutral-700">{item.label}</p>
+                  <p className="text-sm font-bold text-neutral-700 dark:text-neutral-300">{item.label}</p>
                   {item.badge && (
-                    <span className="rounded-full bg-neutral-200 px-2 py-0.5 text-xs font-semibold text-neutral-500">
+                    <span className="rounded-full bg-neutral-200 dark:bg-dark-border px-2 py-0.5 text-xs font-semibold text-neutral-500 dark:text-dark-muted">
                       {item.badge}
                     </span>
                   )}
                 </div>
-                <p className="mt-0.5 text-xs leading-5 text-neutral-400">{item.description}</p>
+                <p className="mt-0.5 text-xs leading-5 text-neutral-400 dark:text-dark-muted">{item.description}</p>
               </div>
             </div>
           ),

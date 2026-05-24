@@ -2,9 +2,10 @@
 
 /**
  * Tailwind CSS v3 config untuk AMAN Kasir
- * Design tokens awal untuk fondasi visual Fase 0.
+ * Design tokens — mendukung light & dark mode.
  */
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
@@ -12,6 +13,7 @@ export default {
         primary: {
           50: '#eff6ff',
           100: '#dbeafe',
+          400: '#60a5fa',  // untuk teks/icon di dark mode
           500: '#2563eb',
           700: '#1d4ed8',
           800: '#1e40af',
@@ -29,6 +31,8 @@ export default {
         success: {
           50: '#f0fdf4',
           100: '#dcfce7',
+          300: '#86efac',
+          400: '#4ade80',
           500: '#22c55e',
           700: '#15803d',
           DEFAULT: '#15803d',
@@ -36,7 +40,10 @@ export default {
         warning: {
           50: '#fffbeb',
           100: '#fef3c7',
+          200: '#fde68a',
+          300: '#fcd34d',
           500: '#f59e0b',
+          600: '#d97706',
           700: '#b45309',
           DEFAULT: '#b45309',
         },
@@ -44,6 +51,7 @@ export default {
           50: '#fef2f2',
           100: '#fee2e2',
           500: '#ef4444',
+          600: '#dc2626',
           700: '#b91c1c',
           DEFAULT: '#b91c1c',
         },
@@ -64,6 +72,14 @@ export default {
           500: '#64748b',
           700: '#334155',
           900: '#0f172a',
+        },
+        // ── Dark mode tokens ──────────────────────────────────────
+        dark: {
+          bg:       '#0c0f1a',   // background utama
+          card:     '#131929',   // card / surface
+          elevated: '#1a2236',   // modal, dropdown, elevated surface
+          border:   '#1e2740',   // border halus
+          muted:    '#8b9ab8',   // teks muted / placeholder
         },
       },
       fontFamily: {

@@ -3,6 +3,7 @@ import { useAppStore } from '@/store/appStore'
 import { useAuthStore } from '@/store/authStore'
 import { authService } from '@/services/auth/AuthService'
 import { isFirebaseConfigured } from '@/infra/cloud/firebase'
+import { formatDate } from '@/lib/date'
 
 export default function Header() {
   const storeName = useAppStore((state) => state.storeName)
@@ -12,7 +13,6 @@ export default function Header() {
   const [loginError, setLoginError] = useState<string | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Tutup dropdown saat klik di luar
   useEffect(() => {
     if (!dropdownOpen) return
     const handler = (e: MouseEvent) => {
@@ -48,28 +48,34 @@ export default function Header() {
         .toUpperCase()
     : '?'
 
+  const today = formatDate(new Date().toISOString())
+
   return (
     <header
       data-app-header="true"
-      className="sticky top-0 z-10 border-b border-neutral-200 bg-surface px-4 py-3"
+      className="sticky top-0 z-10 border-b border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-4 py-3"
     >
       <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-3">
+
+        {/* Kiri: Nama toko + tanggal */}
         <div className="min-w-0">
-          <p className="text-xs font-medium uppercase text-neutral-500">Toko</p>
-          <h1 className="truncate text-lg font-bold text-neutral-900">{storeName}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="truncate text-lg font-bold text-neutral-900 dark:text-white leading-tight">
+              {storeName}
+            </h1>
+            {/* Status dot */}
+            <span
+              title={isOnline ? 'Online' : 'Offline'}
+              className={`h-2 w-2 shrink-0 rounded-full ${
+                isOnline ? 'bg-success' : 'bg-warning'
+              }`}
+            />
+          </div>
+          <p className="text-xs text-neutral-500 dark:text-dark-muted leading-tight">{today}</p>
         </div>
 
+        {/* Kanan: Auth */}
         <div className="flex shrink-0 items-center gap-2">
-          {/* Status online */}
-          <div
-            className={`rounded-full px-3 py-1 text-xs font-semibold ${
-              isOnline ? 'bg-success-50 text-success' : 'bg-warning-50 text-warning'
-            }`}
-          >
-            {isOnline ? 'Online' : 'Offline'}
-          </div>
-
-          {/* Auth area — tampil hanya bila Firebase dikonfigurasi */}
           {isFirebaseConfigured && !isLoading && (
             <div className="relative" ref={dropdownRef}>
               {isLoggedIn && user ? (
@@ -77,7 +83,7 @@ export default function Header() {
                   <button
                     type="button"
                     onClick={() => setDropdownOpen((v) => !v)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-white hover:bg-primary-800"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-primary dark:bg-primary-800 text-xs font-bold text-white hover:bg-primary-800 dark:hover:bg-primary-700 transition-colors"
                     title={user.displayName ?? user.email ?? 'Akun'}
                   >
                     {user.photoURL ? (
@@ -92,17 +98,17 @@ export default function Header() {
                   </button>
 
                   {dropdownOpen && (
-                    <div className="absolute right-0 top-10 z-20 w-56 rounded-lg border border-neutral-200 bg-surface shadow-lg">
-                      <div className="border-b border-neutral-100 px-4 py-3">
-                        <p className="truncate text-sm font-semibold text-neutral-900">
+                    <div className="absolute right-0 top-10 z-20 w-56 rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated shadow-lg dark:shadow-black/40">
+                      <div className="border-b border-neutral-100 dark:border-dark-border px-4 py-3">
+                        <p className="truncate text-sm font-semibold text-neutral-900 dark:text-white">
                           {user.displayName ?? '—'}
                         </p>
-                        <p className="truncate text-xs text-neutral-500">{user.email}</p>
+                        <p className="truncate text-xs text-neutral-500 dark:text-dark-muted">{user.email}</p>
                       </div>
                       <button
                         type="button"
                         onClick={() => void handleLogout()}
-                        className="w-full px-4 py-3 text-left text-sm text-danger-700 hover:bg-neutral-50"
+                        className="w-full px-4 py-3 text-left text-sm text-danger-700 dark:text-danger-500 hover:bg-neutral-50 dark:hover:bg-dark-border transition-colors"
                       >
                         Keluar
                       </button>
@@ -113,7 +119,7 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={() => void handleLogin()}
-                  className="rounded-md border border-neutral-200 px-3 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+                  className="rounded-lg border border-neutral-200 dark:border-dark-border px-3 py-1.5 text-xs font-semibold text-neutral-700 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated transition-colors"
                 >
                   Masuk
                 </button>
@@ -124,7 +130,7 @@ export default function Header() {
       </div>
 
       {loginError && (
-        <div className="mx-auto mt-2 max-w-2xl rounded-md bg-danger-50 px-3 py-1.5 text-xs text-danger-700">
+        <div className="mx-auto mt-2 max-w-2xl rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-1.5 text-xs text-danger-700 dark:text-danger-400">
           {loginError}
         </div>
       )}

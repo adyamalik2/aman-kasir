@@ -7,6 +7,18 @@ import {
   type BackupStatusMetadata,
 } from '@/lib/storage'
 
+export type AppTheme = 'light' | 'dark' | 'system'
+
+const THEME_KEY = 'aman_kasir_theme'
+
+function getInitialTheme(): AppTheme {
+  try {
+    const stored = localStorage.getItem(THEME_KEY)
+    if (stored === 'light' || stored === 'dark' || stored === 'system') return stored
+  } catch { /* localStorage tidak tersedia */ }
+  return 'system'
+}
+
 interface AppState {
   storeName: string
   isOnline: boolean
@@ -15,12 +27,14 @@ interface AppState {
   hasLocalChanges: boolean
   lastChangeAt: string | null
   lastChangeReason: string | null
+  theme: AppTheme
   setOnlineStatus: (isOnline: boolean) => void
   setStoreName: (storeName: string) => void
   setLastBackupAt: (value: string | null) => void
   setBackupStatus: (metadata: BackupStatusMetadata) => void
   markLocalChange: (reason: string) => void
   markBackupClean: (options?: { lastBackupAt?: string; lastCloudBackupAt?: string }) => void
+  setTheme: (theme: AppTheme) => void
 }
 
 function getInitialOnlineStatus(): boolean {
@@ -41,10 +55,15 @@ export const useAppStore = create<AppState>((set) => ({
   hasLocalChanges: initialBackupStatus.hasLocalChanges,
   lastChangeAt: initialBackupStatus.lastChangeAt,
   lastChangeReason: initialBackupStatus.lastChangeReason,
+  theme: getInitialTheme(),
   setOnlineStatus: (isOnline) => set({ isOnline }),
   setStoreName: (storeName) => set({ storeName }),
   setLastBackupAt: (lastBackupAt) => set({ lastBackupAt }),
   setBackupStatus: (metadata) => set(metadata),
   markLocalChange: (reason) => set(markLocalDataChanged(reason)),
   markBackupClean: (options) => set(persistBackupClean(options)),
+  setTheme: (theme) => {
+    try { localStorage.setItem(THEME_KEY, theme) } catch { /* no-op */ }
+    set({ theme })
+  },
 }))
