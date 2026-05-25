@@ -65,7 +65,7 @@ export default function LaboranLabaScreen() {
       <PeriodFilter period={period} onChange={setPeriod} />
 
       {error && (
-        <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</div>
+        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">{error}</div>
       )}
 
       {!loading && report && report.perProduk.length > 0 && (
@@ -88,8 +88,8 @@ export default function LaboranLabaScreen() {
               <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">Omzet</p>
               <p className="mt-1 font-mono text-sm font-bold text-neutral-900 dark:text-white">{formatCurrency(totalRevenue)}</p>
             </div>
-            <div className="rounded-xl border border-success-200 dark:border-success-700/40 bg-success-50 dark:bg-success-700/10 px-3 py-3 text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-success-600 dark:text-success-400">Laba Kotor</p>
+            <div className="rounded-xl border border-success-100 dark:border-success-700/40 bg-success-50 dark:bg-success-700/10 px-3 py-3 text-center">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-success-700 dark:text-success-400">Laba Kotor</p>
               <p className="mt-1 font-mono text-sm font-bold text-success-700 dark:text-success-400">{formatCurrency(totalProfit)}</p>
             </div>
             <div className="rounded-xl border border-primary-100 dark:border-primary-900/50 bg-primary-50 dark:bg-primary-900/20 px-3 py-3 text-center">
@@ -164,7 +164,7 @@ function ProdukList({ entries }: { entries: ProfitReport['perProduk'] }) {
             </p>
           </div>
           <div className="shrink-0 text-right">
-            <p className={`font-mono text-sm font-bold ${entry.grossProfit >= 0 ? 'text-success-700 dark:text-success-400' : 'text-danger-700 dark:text-danger-400'}`}>
+            <p className={`font-mono text-sm font-bold ${entry.grossProfit >= 0 ? 'text-success-700 dark:text-success-400' : 'text-danger-700 dark:text-danger-500'}`}>
               {formatCurrency(entry.grossProfit)}
             </p>
             <p className="text-xs text-neutral-400 dark:text-dark-muted">
@@ -209,7 +209,7 @@ function KategoriList({ entries }: { entries: ProfitReport['perKategori'] }) {
             </p>
           </div>
           <div className="shrink-0 text-right">
-            <p className={`font-mono text-sm font-bold ${entry.grossProfit >= 0 ? 'text-success-700 dark:text-success-400' : 'text-danger-700 dark:text-danger-400'}`}>
+            <p className={`font-mono text-sm font-bold ${entry.grossProfit >= 0 ? 'text-success-700 dark:text-success-400' : 'text-danger-700 dark:text-danger-500'}`}>
               {formatCurrency(entry.grossProfit)}
             </p>
             <p className="text-xs text-neutral-400 dark:text-dark-muted">

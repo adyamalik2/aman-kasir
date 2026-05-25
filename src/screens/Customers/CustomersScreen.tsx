@@ -170,7 +170,7 @@ export default function CustomersScreen() {
       />
 
       {error && (
-        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-400">{error}</div>
+        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">{error}</div>
       )}
 
       {/* Daftar pelanggan */}
@@ -204,7 +204,7 @@ export default function CustomersScreen() {
                 <p className="font-semibold text-neutral-900 dark:text-white truncate">{c.nama}</p>
                 {c.telepon && <p className="text-xs text-neutral-500 dark:text-dark-muted">{c.telepon}</p>}
                 {piutangMap.has(c.id) && (
-                  <p className="mt-0.5 text-xs font-semibold text-warning-700 dark:text-warning-400">
+                  <p className="mt-0.5 text-xs font-semibold text-warning-700 dark:text-warning-500">
                     💳 {piutangMap.get(c.id)!.count} piutang · {formatCurrency(piutangMap.get(c.id)!.total)}
                   </p>
                 )}
@@ -223,7 +223,7 @@ export default function CustomersScreen() {
                 <button type="button" onClick={() => openEdit(c)}
                   className="rounded-lg p-2 text-neutral-500 dark:text-dark-muted hover:bg-neutral-100 dark:hover:bg-dark-elevated" title="Edit">✏️</button>
                 <button type="button" onClick={() => setDeleteTarget(c)}
-                  className="rounded-lg p-2 text-neutral-500 dark:text-dark-muted hover:bg-danger-50 dark:hover:bg-danger-700/20 hover:text-danger-700 dark:hover:text-danger-400" title="Hapus">🗑️</button>
+                  className="rounded-lg p-2 text-neutral-500 dark:text-dark-muted hover:bg-danger-50 dark:hover:bg-danger-700/20 hover:text-danger-700 dark:hover:text-danger-500" title="Hapus">🗑️</button>
               </div>
             </li>
           ))}
@@ -251,7 +251,7 @@ export default function CustomersScreen() {
 
             <div className="space-y-3 p-5">
               {formError && (
-                <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">
+                <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">
                   {formError}
                 </div>
               )}

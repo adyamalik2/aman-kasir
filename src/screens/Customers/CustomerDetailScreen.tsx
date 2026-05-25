@@ -109,7 +109,7 @@ export default function CustomerDetailScreen() {
       </div>
 
       {error && (
-        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-400">{error}</div>
+        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">{error}</div>
       )}
 
       {loading ? (
@@ -169,7 +169,7 @@ export default function CustomerDetailScreen() {
                 : 'border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card'
             }`}>
               <p className={`font-mono text-sm font-bold truncate ${
-                totalBelumLunas > 0 ? 'text-warning-700 dark:text-warning-400' : 'text-neutral-900 dark:text-white'
+                totalBelumLunas > 0 ? 'text-warning-700 dark:text-warning-500' : 'text-neutral-900 dark:text-white'
               }`}>
                 {formatCurrency(totalBelumLunas)}
               </p>
@@ -180,14 +180,14 @@ export default function CustomerDetailScreen() {
           {/* Piutang belum lunas */}
           {belumLunas.length > 0 && (
             <div className="rounded-xl border border-warning-200 dark:border-warning-700/40 bg-warning-50 dark:bg-warning-700/10 p-4">
-              <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-warning-700 dark:text-warning-400">
+              <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-warning-700 dark:text-warning-500">
                 ⚠️ Piutang Belum Lunas ({belumLunas.length})
               </h3>
               <ul className="space-y-1.5">
                 {belumLunas.map((t) => (
                   <li key={t.id} className="flex items-center justify-between gap-2 text-sm">
                     <span className="text-neutral-700 dark:text-white font-medium">{t.invoiceNo}</span>
-                    <span className="font-mono font-bold text-warning-700 dark:text-warning-400">
+                    <span className="font-mono font-bold text-warning-700 dark:text-warning-500">
                       {formatCurrency(t.total)}
                     </span>
                   </li>
@@ -195,7 +195,7 @@ export default function CustomerDetailScreen() {
               </ul>
               <Link
                 to="/laporan/piutang"
-                className="mt-3 block text-center text-xs font-semibold text-warning-700 dark:text-warning-400 underline"
+                className="mt-3 block text-center text-xs font-semibold text-warning-700 dark:text-warning-500 underline"
               >
                 Kelola piutang →
               </Link>
@@ -234,7 +234,7 @@ export default function CustomerDetailScreen() {
                                 ✓ Lunas
                               </span>
                             ) : (
-                              <span className="rounded-full bg-warning-50 dark:bg-warning-700/20 px-2 py-0.5 text-[10px] font-semibold text-warning-700 dark:text-warning-400">
+                              <span className="rounded-full bg-warning-50 dark:bg-warning-700/20 px-2 py-0.5 text-[10px] font-semibold text-warning-700 dark:text-warning-500">
                                 ⏳ Belum Lunas
                               </span>
                             )

@@ -260,7 +260,7 @@ export default function BackupScreen() {
           </div>
           <span
             className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-bold ${
-              hasLocalChanges ? 'bg-warning-100 text-warning-700' : 'bg-success-50 text-success-700'
+              hasLocalChanges ? 'bg-warning-100 dark:bg-warning-700/20 text-warning-700 dark:text-warning-500' : 'bg-success-50 dark:bg-success-700/20 text-success-700 dark:text-success-400'
             }`}
           >
             {hasLocalChanges ? 'Perlu Backup' : 'Aman'}
@@ -297,7 +297,7 @@ export default function BackupScreen() {
               <button
                 type="button"
                 onClick={() => void authService.signOut()}
-                className="shrink-0 rounded-md border border-neutral-200 dark:border-dark-border px-3 py-1.5 text-xs font-semibold text-danger-700 dark:text-danger-400 hover:bg-danger-50 dark:hover:bg-danger-700/20"
+                className="shrink-0 rounded-md border border-neutral-200 dark:border-dark-border px-3 py-1.5 text-xs font-semibold text-danger-700 dark:text-danger-500 hover:bg-danger-50 dark:hover:bg-danger-700/20"
               >
                 Keluar
               </button>
@@ -315,7 +315,7 @@ export default function BackupScreen() {
                 Masuk dengan Google
               </button>
               {loginMessage && (
-                <p className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-400">
+                <p className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">
                   {loginMessage}
                 </p>
               )}
@@ -342,7 +342,7 @@ export default function BackupScreen() {
           {backupStatus === 'loading' ? 'Membuat backup...' : 'Backup Sekarang'}
         </button>
         {backupMessage && (
-          <p className={`text-sm ${backupStatus === 'error' ? 'text-danger-700' : 'text-success-700'}`}>
+          <p className={`text-sm ${backupStatus === 'error' ? 'text-danger-700 dark:text-danger-500' : 'text-success-700 dark:text-success-400'}`}>
             {backupMessage}
           </p>
         )}
@@ -352,9 +352,9 @@ export default function BackupScreen() {
       {isFirebaseConfigured && isLoggedIn && user && (
         <div className="rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-5 space-y-4">
           <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Cloud Backup</h3>
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-neutral-500 dark:text-dark-muted">
             Backup cloud terakhir:{' '}
-            <span className="font-semibold text-neutral-800">
+            <span className="font-semibold text-neutral-800 dark:text-white">
               {lastCloudBackupAt ? formatDate(lastCloudBackupAt) : 'Belum pernah'}
             </span>
           </p>
@@ -371,7 +371,7 @@ export default function BackupScreen() {
           {cloudUploadMessage && (
             <p
               className={`text-sm ${
-                cloudUploadStatus === 'error' ? 'text-danger-700' : 'text-success-700'
+                cloudUploadStatus === 'error' ? 'text-danger-700 dark:text-danger-500' : 'text-success-700 dark:text-success-400'
               }`}
             >
               {cloudUploadMessage}
@@ -382,11 +382,11 @@ export default function BackupScreen() {
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase text-neutral-500 dark:text-dark-muted">Riwayat Cloud</p>
             {cloudListLoading ? (
-              <p className="py-4 text-center text-sm text-neutral-400">Memuat...</p>
+              <p className="py-4 text-center text-sm text-neutral-400 dark:text-dark-muted">Memuat...</p>
             ) : cloudListError ? (
-              <p className="text-sm text-danger-700">{cloudListError}</p>
+              <p className="text-sm text-danger-700 dark:text-danger-500">{cloudListError}</p>
             ) : cloudList.length === 0 ? (
-              <p className="py-4 text-center text-sm text-neutral-400">
+              <p className="py-4 text-center text-sm text-neutral-400 dark:text-dark-muted">
                 Belum ada backup cloud.
               </p>
             ) : (
@@ -421,7 +421,7 @@ export default function BackupScreen() {
                           type="button"
                           onClick={() => void handleDeleteCloud(meta)}
                           disabled={deletingId === meta.id}
-                          className="rounded-md border border-danger-200 px-2 py-1 text-xs font-semibold text-danger-700 hover:bg-danger-50 disabled:opacity-50"
+                          className="rounded-md border border-danger-100 dark:border-danger-700/50 px-2 py-1 text-xs font-semibold text-danger-700 dark:text-danger-500 hover:bg-danger-50 dark:hover:bg-danger-700/20 disabled:opacity-50"
                         >
                           {deletingId === meta.id ? '...' : 'Hapus'}
                         </button>
@@ -468,7 +468,7 @@ export default function BackupScreen() {
           </div>
 
           {cloudRestoreMode === 'replace' && (
-            <p className="text-sm font-semibold text-danger-700">
+            <p className="text-sm font-semibold text-danger-700 dark:text-danger-500">
               Mode Replace akan menghapus semua data lokal saat ini.
             </p>
           )}
@@ -478,7 +478,7 @@ export default function BackupScreen() {
               type="button"
               onClick={() => void handleCloudRestore()}
               disabled={cloudRestoreStatus === 'loading'}
-              className="flex-1 rounded-md border-2 border-danger-500 px-4 py-3 text-sm font-bold text-danger-700 hover:bg-danger-50 disabled:opacity-60"
+              className="flex-1 rounded-md border-2 border-danger-500 dark:border-danger-600 px-4 py-3 text-sm font-bold text-danger-700 dark:text-danger-500 hover:bg-danger-50 dark:hover:bg-danger-700/20 disabled:opacity-60"
             >
               {cloudRestoreStatus === 'loading'
                 ? 'Merestore...'
@@ -555,7 +555,7 @@ export default function BackupScreen() {
               </label>
             </div>
             {restoreMode === 'replace' && (
-              <p className="text-sm font-semibold text-danger-700">
+              <p className="text-sm font-semibold text-danger-700 dark:text-danger-500">
                 Mode Replace akan menghapus data saat ini.
               </p>
             )}
@@ -563,7 +563,7 @@ export default function BackupScreen() {
               type="button"
               onClick={() => void handleLocalRestore()}
               disabled={restoreStatus === 'loading'}
-              className="w-full rounded-md border-2 border-danger-500 px-4 py-3 text-sm font-bold text-danger-700 hover:bg-danger-50 disabled:opacity-60"
+              className="w-full rounded-md border-2 border-danger-500 dark:border-danger-600 px-4 py-3 text-sm font-bold text-danger-700 dark:text-danger-500 hover:bg-danger-50 dark:hover:bg-danger-700/20 disabled:opacity-60"
             >
               {restoreStatus === 'loading'
                 ? 'Merestore...'

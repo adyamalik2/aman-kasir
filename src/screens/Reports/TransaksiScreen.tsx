@@ -548,7 +548,7 @@ export default function TransaksiScreen() {
                   onClick={() =>
                     setBulkTarget({ label: getDeleteLabel(row), txnIds: row.txnIds })
                   }
-                  className="flex shrink-0 items-center border-l border-neutral-100 dark:border-dark-border px-4 text-xl text-danger-300 dark:text-danger-700 transition-colors hover:bg-danger-50 dark:hover:bg-danger-700/20 hover:text-danger-600 dark:hover:text-danger-400 active:bg-danger-100 dark:active:bg-danger-700/30"
+                  className="flex shrink-0 items-center border-l border-neutral-100 dark:border-dark-border px-4 text-xl text-danger-600 dark:text-danger-700 transition-colors hover:bg-danger-50 dark:hover:bg-danger-700/20 hover:text-danger-700 dark:hover:text-danger-500 active:bg-danger-100 dark:active:bg-danger-700/30"
                   title={`Hapus ${row.count} transaksi`}
                 >
                   🗑
@@ -611,7 +611,7 @@ export default function TransaksiScreen() {
                           ✓ Lunas
                         </span>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-warning-50 dark:bg-warning-700/20 px-1.5 py-0.5 text-[10px] font-semibold text-warning-700 dark:text-warning-400">
+                        <span className="inline-flex items-center rounded-full bg-warning-50 dark:bg-warning-700/20 px-1.5 py-0.5 text-[10px] font-semibold text-warning-700 dark:text-warning-500">
                           ⏳ Belum Lunas
                         </span>
                       )
@@ -622,7 +622,7 @@ export default function TransaksiScreen() {
                   <span className="font-mono text-xs text-neutral-700 dark:text-dark-muted">
                     {formatCurrency(txn.total)}
                   </span>
-                  <span className="font-mono text-xs text-success-700">
+                  <span className="font-mono text-xs text-success-700 dark:text-success-400">
                     +{formatCurrency(profit)}
                   </span>
                 </div>
@@ -658,7 +658,7 @@ export default function TransaksiScreen() {
                 <button
                   type="button"
                   onClick={() => { setDeleteTarget(txn); setRestoreStock(false) }}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-danger-50 text-danger-700"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-danger-50 dark:bg-danger-700/20 text-danger-700 dark:text-danger-500"
                   title="Hapus transaksi"
                 >
                   🗑
@@ -793,7 +793,7 @@ export default function TransaksiScreen() {
       </div>
 
       {error && (
-        <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</div>
+        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">{error}</div>
       )}
 
       {searchQuery.trim() ? (
@@ -826,7 +826,7 @@ export default function TransaksiScreen() {
             <p className="mt-1 text-sm text-neutral-600 dark:text-dark-muted">
               {deleteTarget.invoiceNo} · {formatCurrency(deleteTarget.total)}
             </p>
-            <p className="mt-2 text-xs text-danger-700">
+            <p className="mt-2 text-xs text-danger-700 dark:text-danger-500">
               ⚠️ Transaksi yang dihapus tidak dapat dikembalikan.
             </p>
 
@@ -874,10 +874,10 @@ export default function TransaksiScreen() {
           <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white dark:bg-dark-elevated p-6 sm:rounded-2xl">
             <h3 className="text-base font-bold text-neutral-900 dark:text-white">Hapus {bulkTarget.label}?</h3>
             <p className="mt-1 text-sm text-neutral-600 dark:text-dark-muted">
-              <span className="font-bold text-danger-700 dark:text-danger-400">{bulkTarget.txnIds.length} transaksi</span>{' '}
+              <span className="font-bold text-danger-700 dark:text-danger-500">{bulkTarget.txnIds.length} transaksi</span>{' '}
               akan dihapus permanen.
             </p>
-            <p className="mt-2 text-xs text-danger-700">
+            <p className="mt-2 text-xs text-danger-700 dark:text-danger-500">
               ⚠️ Tindakan ini tidak dapat dibatalkan.
             </p>
 

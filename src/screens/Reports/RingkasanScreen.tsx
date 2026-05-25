@@ -285,7 +285,7 @@ export default function RingkasanScreen() {
       )}
 
       {error && (
-        <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</div>
+        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">{error}</div>
       )}
 
       {loading ? (
@@ -380,7 +380,7 @@ function StatCard({
           className={`rounded-full px-2 py-1 text-xs font-bold ${
             positive
               ? 'bg-success-50 dark:bg-success-700/20 text-success-700 dark:text-success-400'
-              : 'bg-danger-50 dark:bg-danger-700/20 text-danger-700 dark:text-danger-400'
+              : 'bg-danger-50 dark:bg-danger-700/20 text-danger-700 dark:text-danger-500'
           }`}
         >
           {change}

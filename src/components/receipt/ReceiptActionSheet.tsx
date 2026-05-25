@@ -119,7 +119,7 @@ export function ReceiptActionSheet({
         <div className="sticky top-0 z-10 border-b border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated px-5 py-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase text-success-700">Struk transaksi</p>
+              <p className="text-xs font-semibold uppercase text-success-700 dark:text-success-400">Struk transaksi</p>
               <h3 className="mt-1 text-lg font-bold text-neutral-900 dark:text-white">
                 {snapshot.transaction.invoiceNo}
               </h3>
@@ -137,12 +137,12 @@ export function ReceiptActionSheet({
 
         <div className="space-y-4 p-5">
           {error && (
-            <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">
+            <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">
               {error}
             </div>
           )}
           {message && (
-            <div className="rounded-md bg-success-50 px-3 py-2 text-sm text-success-700">
+            <div className="rounded-md bg-success-50 dark:bg-success-700/20 px-3 py-2 text-sm text-success-700 dark:text-success-400">
               {message}
             </div>
           )}
@@ -196,7 +196,7 @@ export function ReceiptActionSheet({
               type="button"
               onClick={handleShareJpg}
               disabled={isBusy}
-              className="rounded-md border border-primary-200 dark:border-primary-800 bg-white dark:bg-dark-card px-3 py-3 text-sm font-bold text-primary hover:bg-primary-50 dark:hover:bg-primary-900/20 disabled:opacity-60"
+              className="rounded-md border border-primary-100 dark:border-primary-800 bg-white dark:bg-dark-card px-3 py-3 text-sm font-bold text-primary hover:bg-primary-50 dark:hover:bg-primary-900/20 disabled:opacity-60"
             >
               {busyAction === 'share-jpg' ? 'Share...' : 'Share JPG'}
             </button>

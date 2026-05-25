@@ -155,13 +155,13 @@ export default function PiutangScreen() {
       {/* Ringkasan total piutang belum lunas */}
       {!loading && belum.length > 0 && (
         <div className="rounded-xl border border-warning-200 dark:border-warning-700/50 bg-warning-50 dark:bg-warning-700/10 px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-warning-600 dark:text-warning-400">
+          <p className="text-xs font-semibold uppercase tracking-wide text-warning-600 dark:text-warning-500">
             Total Piutang Belum Lunas
           </p>
           <p className="mt-1 font-mono text-xl font-bold text-warning-700 dark:text-warning-300">
             {formatCurrency(totalBelum)}
           </p>
-          <p className="text-xs text-warning-600 dark:text-warning-400">{belum.length} transaksi belum dilunasi</p>
+          <p className="text-xs text-warning-600 dark:text-warning-500">{belum.length} transaksi belum dilunasi</p>
         </div>
       )}
 
@@ -191,7 +191,7 @@ export default function PiutangScreen() {
       />
 
       {error && (
-        <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</div>
+        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">{error}</div>
       )}
 
       {loading ? (
@@ -247,7 +247,7 @@ export default function PiutangScreen() {
                     {formatCurrency(txn.total)}
                   </p>
                   {isLunas(txn) && txn.lunasAt && (
-                    <p className="mt-0.5 text-xs text-success-600 dark:text-success-400">
+                    <p className="mt-0.5 text-xs text-success-700 dark:text-success-400">
                       ✓ Lunas {formatTanggal(txn.lunasAt)}
                       {txn.lunasMethod && <span> · {txn.lunasMethod}</span>}
                     </p>

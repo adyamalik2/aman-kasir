@@ -1,0 +1,13 @@
+Options -MultiViews
+RewriteEngine On
+
+# Ganti /aman-kasir sesuai subfolder tempat app di-deploy
+# Jika deploy ke root domain, ubah RewriteBase menjadi /
+RewriteBase /aman-kasir/
+
+# Jangan rewrite file/folder yang sudah ada (aset JS, CSS, dll)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Semua request lainnya fallback ke index.html (SPA routing)
+RewriteRule ^ index.html [QSA,L]

@@ -133,7 +133,7 @@ export default function Header() {
       </div>
 
       {loginError && (
-        <div className="mx-auto mt-2 max-w-2xl rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-1.5 text-xs text-danger-700 dark:text-danger-400">
+        <div className="mx-auto mt-2 max-w-2xl rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-1.5 text-xs text-danger-700 dark:text-danger-500">
           {loginError}
         </div>
       )}

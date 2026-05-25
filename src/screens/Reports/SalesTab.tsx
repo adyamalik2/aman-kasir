@@ -27,9 +27,9 @@ const STATUS_LABEL: Record<TransactionStatus, string> = {
 }
 
 const STATUS_COLOR: Record<TransactionStatus, string> = {
-  completed: 'bg-success-50 text-success-700',
-  voided: 'bg-danger-50 text-danger-700',
-  refunded: 'bg-warning-50 text-warning-700',
+  completed: 'bg-success-50 dark:bg-success-700/20 text-success-700 dark:text-success-400',
+  voided: 'bg-danger-50 dark:bg-danger-700/20 text-danger-700 dark:text-danger-500',
+  refunded: 'bg-warning-50 dark:bg-warning-700/20 text-warning-700 dark:text-warning-500',
 }
 
 function formatDateTime(iso: string): string {
@@ -124,7 +124,7 @@ export default function SalesTab() {
       </ExportButtons>
 
       {error && (
-        <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</div>
+        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">{error}</div>
       )}
 
       {isLoading ? (

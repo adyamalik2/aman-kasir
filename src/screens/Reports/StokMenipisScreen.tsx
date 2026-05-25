@@ -113,7 +113,7 @@ export default function StokMenipisScreen() {
       )}
 
       {error && (
-        <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</div>
+        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">{error}</div>
       )}
 
       {loading ? (
@@ -135,7 +135,7 @@ export default function StokMenipisScreen() {
                 <p className="font-medium text-neutral-900 dark:text-white">{p.name}</p>
                 <p className="mt-0.5 text-xs text-neutral-500 dark:text-dark-muted">
                   Stok:{' '}
-                  <span className="font-semibold text-danger-700 dark:text-danger-400">
+                  <span className="font-semibold text-danger-700 dark:text-danger-500">
                     {p.stock} {p.unit}
                   </span>{' '}
                   · Min: {p.minStock} · {formatCurrency(p.sellPrice)}
@@ -199,7 +199,7 @@ export default function StokMenipisScreen() {
 
             <div className="flex items-center justify-between rounded-lg bg-neutral-50 dark:bg-dark-card px-4 py-3">
               <span className="text-sm text-neutral-500 dark:text-dark-muted">Stok saat ini</span>
-              <span className="font-bold text-danger-700 dark:text-danger-400">
+              <span className="font-bold text-danger-700 dark:text-danger-500">
                 {restockProduct.stock} {restockProduct.unit}
                 {restockProduct.minStock > 0 && (
                   <span className="ml-1 font-normal text-neutral-400 dark:text-dark-muted">
@@ -210,7 +210,7 @@ export default function StokMenipisScreen() {
             </div>
 
             {restockMode === 'koreksi' && (
-              <div className="rounded-lg bg-warning-50 dark:bg-warning-700/10 px-3 py-2 text-xs text-warning-700 dark:text-warning-400">
+              <div className="rounded-lg bg-warning-50 dark:bg-warning-700/10 px-3 py-2 text-xs text-warning-700 dark:text-warning-500">
                 ⚠️ Koreksi mengurangi stok dan dicatat sebagai <strong>adjustment</strong> di histori.
               </div>
             )}
@@ -239,7 +239,7 @@ export default function StokMenipisScreen() {
                     const qty = Math.floor(Number(restockQty))
                     if (Number.isFinite(qty) && qty > 0 && qty > restockProduct.stock) {
                       return (
-                        <p className="mt-1 text-xs text-danger-700 dark:text-danger-400">
+                        <p className="mt-1 text-xs text-danger-700 dark:text-danger-500">
                           Tidak bisa melebihi stok saat ini ({restockProduct.stock})
                         </p>
                       )
@@ -268,7 +268,7 @@ export default function StokMenipisScreen() {
                     return (
                       <p className="text-sm text-neutral-500 dark:text-dark-muted">
                         {isTambah ? 'Stok setelah tambah' : 'Stok setelah koreksi'}:{' '}
-                        <strong className={`${isTambah ? 'text-neutral-900 dark:text-white' : 'text-warning-700 dark:text-warning-400'}`}>
+                        <strong className={`${isTambah ? 'text-neutral-900 dark:text-white' : 'text-warning-700 dark:text-warning-500'}`}>
                           {restockProduct.stock} {isTambah ? '+' : '−'} {qty} = {after} {restockProduct.unit}
                         </strong>
                       </p>

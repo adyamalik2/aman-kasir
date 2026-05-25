@@ -377,7 +377,7 @@ export default function SettingsScreen() {
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Kelola Kategori</h3>
 
         {catError && (
-          <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-xs text-danger-700 dark:text-danger-400">{catError}</div>
+          <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-xs text-danger-700 dark:text-danger-500">{catError}</div>
         )}
 
         {catLoading ? (
@@ -403,7 +403,7 @@ export default function SettingsScreen() {
                     <button
                       type="button"
                       onClick={() => void handleSaveEdit()}
-                      className="text-success-700 dark:text-success-400 hover:text-success-800 text-sm font-bold"
+                      className="text-success-700 dark:text-success-400 hover:text-success-500 text-sm font-bold"
                       title="Simpan"
                     >✓</button>
                     <button
@@ -424,7 +424,7 @@ export default function SettingsScreen() {
                     </div>
                     <div className="flex shrink-0 items-center gap-1">
                       {catDeleteConfirm === row.id && (
-                        <span className="mr-1 text-xs text-danger-600 dark:text-danger-400">Hapus?</span>
+                        <span className="mr-1 text-xs text-danger-600 dark:text-danger-500">Hapus?</span>
                       )}
                       <button
                         type="button"
@@ -437,7 +437,7 @@ export default function SettingsScreen() {
                         onClick={() => void handleDeleteCat(row)}
                         className={`rounded p-1 text-sm ${
                           catDeleteConfirm === row.id
-                            ? 'bg-danger-100 dark:bg-danger-700/30 text-danger-700 dark:text-danger-400 font-bold'
+                            ? 'bg-danger-100 dark:bg-danger-700/30 text-danger-700 dark:text-danger-500 font-bold'
                             : 'text-neutral-500 dark:text-dark-muted hover:bg-neutral-100 dark:hover:bg-dark-elevated'
                         }`}
                         title="Hapus"
@@ -508,7 +508,7 @@ export default function SettingsScreen() {
             type="button"
             onClick={() => void handleDeleteDemo()}
             disabled={demoStatus === 'loading'}
-            className="w-full rounded-md border-2 border-warning-400 dark:border-warning-600 px-4 py-3 text-sm font-bold text-warning-700 dark:text-warning-400 hover:bg-warning-50 dark:hover:bg-warning-700/10 disabled:opacity-60"
+            className="w-full rounded-md border-2 border-warning-500 dark:border-warning-600 px-4 py-3 text-sm font-bold text-warning-700 dark:text-warning-500 hover:bg-warning-50 dark:hover:bg-warning-700/10 disabled:opacity-60"
           >
             {demoStatus === 'loading'
               ? 'Menghapus...'
@@ -519,7 +519,7 @@ export default function SettingsScreen() {
           {demoMessage && (
             <p
               className={`text-sm ${
-                demoStatus === 'error' ? 'text-danger-700 dark:text-danger-400' : 'text-neutral-700 dark:text-white'
+                demoStatus === 'error' ? 'text-danger-700 dark:text-danger-500' : 'text-neutral-700 dark:text-white'
               }`}
             >
               {demoMessage}
@@ -540,7 +540,7 @@ export default function SettingsScreen() {
             type="button"
             onClick={() => void handleReset()}
             disabled={resetLoading}
-            className="w-full rounded-md border-2 border-danger-500 dark:border-danger-600 px-4 py-3 text-sm font-bold text-danger-700 dark:text-danger-400 hover:bg-danger-50 dark:hover:bg-danger-700/10 disabled:opacity-60"
+            className="w-full rounded-md border-2 border-danger-500 dark:border-danger-600 px-4 py-3 text-sm font-bold text-danger-700 dark:text-danger-500 hover:bg-danger-50 dark:hover:bg-danger-700/10 disabled:opacity-60"
           >
             {resetLoading
               ? 'Mereset...'

@@ -140,10 +140,10 @@ function StockBadge({ stock, minStock }: { stock: number; minStock: number }) {
   const isLow = !isZero && minStock > 0 && stock <= minStock
 
   const colorClass = isZero
-    ? 'bg-danger-50 text-danger-700'
+    ? 'bg-danger-50 dark:bg-danger-700/20 text-danger-700 dark:text-danger-500'
     : isLow
-      ? 'bg-warning-50 text-warning-700'
-      : 'bg-success-50 text-success-700'
+      ? 'bg-warning-50 dark:bg-warning-700/20 text-warning-700 dark:text-warning-500'
+      : 'bg-success-50 dark:bg-success-700/20 text-success-700 dark:text-success-400'
 
   const label = isZero ? 'Habis' : fmtStock(stock)
 
@@ -368,7 +368,7 @@ function ProductFormModal({
 
         <form onSubmit={handleSubmit} className="space-y-4 p-5">
           {error && (
-            <div ref={errorRef} className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</div>
+            <div ref={errorRef} className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">{error}</div>
           )}
 
           {/* Name */}
@@ -432,7 +432,7 @@ function ProductFormModal({
             <button
               type="button"
               onClick={generateBarcode}
-              className="rounded-md border border-primary-200 dark:border-primary-700 px-3 py-2 text-xs font-bold text-primary dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20"
+              className="rounded-md border border-primary-100 dark:border-primary-700 px-3 py-2 text-xs font-bold text-primary dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20"
             >
               Generate Barcode
             </button>
@@ -505,7 +505,7 @@ function ProductFormModal({
                   </button>
                 </div>
                 {addCatError && (
-                  <p className="text-xs text-danger-700 dark:text-danger-400">{addCatError}</p>
+                  <p className="text-xs text-danger-700 dark:text-danger-500">{addCatError}</p>
                 )}
               </div>
             )}
@@ -596,7 +596,7 @@ function ProductFormModal({
                 type="button"
                 onClick={handleDeactivate}
                 disabled={isBusy}
-                className="w-full rounded-md border border-danger px-4 py-3 text-sm font-semibold text-danger transition-colors hover:bg-danger-50 disabled:opacity-50"
+                className="w-full rounded-md border border-danger dark:border-danger-600 px-4 py-3 text-sm font-semibold text-danger dark:text-danger-500 transition-colors hover:bg-danger-50 dark:hover:bg-danger-700/20 disabled:opacity-50"
               >
                 Nonaktifkan Produk
               </button>
@@ -607,12 +607,12 @@ function ProductFormModal({
               <div className="space-y-2 border-t border-neutral-100 pt-2">
                 {/* Pesan konfirmasi */}
                 {deleteStep === 'confirm-safe' && (
-                  <p className="rounded-md bg-neutral-50 px-3 py-2 text-xs text-neutral-700">
+                  <p className="rounded-md bg-neutral-50 dark:bg-dark-elevated px-3 py-2 text-xs text-neutral-700 dark:text-dark-muted">
                     Produk belum pernah dijual. Hapus produk ini secara permanen?
                   </p>
                 )}
                 {deleteStep === 'confirm-warned' && (
-                  <p className="rounded-md bg-warning-50 px-3 py-2 text-xs text-warning-700">
+                  <p className="rounded-md bg-warning-50 dark:bg-warning-700/20 px-3 py-2 text-xs text-warning-700 dark:text-warning-500">
                     Produk ini sudah pernah dijual. Riwayat transaksi akan tetap aman
                     (nama tersimpan di struk). Hapus produk ini dari daftar? Aksi ini
                     tidak bisa dibatalkan.
@@ -623,7 +623,7 @@ function ProductFormModal({
                   type="button"
                   onClick={() => void handleDeleteClick()}
                   disabled={isBusy}
-                  className="w-full rounded-md border-2 border-danger-400 px-4 py-2.5 text-sm font-bold text-danger-700 transition-colors hover:bg-danger-50 disabled:opacity-50"
+                  className="w-full rounded-md border-2 border-danger-500 dark:border-danger-600 px-4 py-2.5 text-sm font-bold text-danger-700 dark:text-danger-500 transition-colors hover:bg-danger-50 dark:hover:bg-danger-700/20 disabled:opacity-50"
                 >
                   {deleteStep === 'checking'
                     ? 'Memeriksa...'
@@ -987,7 +987,7 @@ export default function ProductsScreen() {
 
       {/* Error state */}
       {error && (
-        <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</div>
+        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">{error}</div>
       )}
 
       {/* Impor / Ekspor CSV — collapsible, default tertutup */}
@@ -1028,7 +1028,7 @@ export default function ProductsScreen() {
                 {importSummary.failed} gagal.
               </p>
             )}
-            {importError && <p className="mt-3 text-sm text-danger-700">{importError}</p>}
+            {importError && <p className="mt-3 text-sm text-danger-700 dark:text-danger-500">{importError}</p>}
           </div>
         )}
 
@@ -1143,7 +1143,7 @@ export default function ProductsScreen() {
                     type="button"
                     onClick={() => openRestock(product, 'kurangi')}
                     aria-label={`Koreksi stok ${product.name}`}
-                    className="flex flex-col items-center justify-center gap-0.5 border-l border-neutral-200 dark:border-dark-border px-2.5 text-neutral-400 dark:text-dark-muted hover:bg-danger-50 dark:hover:bg-danger-700/20 hover:text-danger-700 dark:hover:text-danger-400 active:bg-danger-100"
+                    className="flex flex-col items-center justify-center gap-0.5 border-l border-neutral-200 dark:border-dark-border px-2.5 text-neutral-400 dark:text-dark-muted hover:bg-danger-50 dark:hover:bg-danger-700/20 hover:text-danger-700 dark:hover:text-danger-500 active:bg-danger-100"
                   >
                     <span className="text-sm leading-none">✏️</span>
                     <span className="text-[10px] font-semibold leading-none">Koreks</span>
@@ -1288,7 +1288,7 @@ export default function ProductsScreen() {
                 onClick={() => { setRestockMode('kurangi'); setRestockQty(''); setRestockDone(null) }}
                 className={`rounded-lg py-2 text-sm font-semibold transition-colors ${
                   restockMode === 'kurangi'
-                    ? 'bg-white dark:bg-dark-elevated text-danger-700 dark:text-danger-400 shadow-sm'
+                    ? 'bg-white dark:bg-dark-elevated text-danger-700 dark:text-danger-500 shadow-sm'
                     : 'text-neutral-500 dark:text-dark-muted'
                 }`}
               >
@@ -1305,7 +1305,7 @@ export default function ProductsScreen() {
             </div>
 
             {restockMode === 'kurangi' && (
-              <div className="rounded-lg bg-warning-50 dark:bg-warning-700/15 px-3 py-2 text-xs text-warning-700 dark:text-warning-400">
+              <div className="rounded-lg bg-warning-50 dark:bg-warning-700/15 px-3 py-2 text-xs text-warning-700 dark:text-warning-500">
                 ✏️ Koreksi untuk barang rusak, hilang, atau salah hitung. Tercatat sebagai penyesuaian stok.
               </div>
             )}
@@ -1332,7 +1332,7 @@ export default function ProductsScreen() {
                     autoFocus
                     className={`w-full rounded-md border bg-white dark:bg-dark-card px-3 py-2 font-mono text-sm text-neutral-900 dark:text-white focus:outline-none ${
                       restockMode === 'kurangi'
-                        ? 'border-danger-300 dark:border-danger-700/50 focus:border-danger-500 dark:focus:border-danger-400'
+                        ? 'border-danger-100 dark:border-danger-700/50 focus:border-danger-500 dark:focus:border-danger-500'
                         : 'border-neutral-300 dark:border-dark-border focus:border-primary dark:focus:border-primary-400'
                     }`}
                   />
@@ -1340,7 +1340,7 @@ export default function ProductsScreen() {
                     const qty = Math.floor(Number(restockQty))
                     if (Number.isFinite(qty) && qty > restockProduct.stock) {
                       return (
-                        <p className="mt-1 text-xs text-danger-700 dark:text-danger-400">
+                        <p className="mt-1 text-xs text-danger-700 dark:text-danger-500">
                           Melebihi stok tersedia ({restockProduct.stock} {restockProduct.unit})
                         </p>
                       )

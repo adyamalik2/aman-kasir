@@ -150,9 +150,9 @@ export default function BarcodeScannerModal({ onScan, onClose }: BarcodeScannerM
 
       {/* Error panel */}
       {status === 'error' && errorMsg && (
-        <div className="bg-danger-50 px-4 py-3">
-          <p className="text-sm font-semibold text-danger-700">⚠️ Scan kamera tidak tersedia</p>
-          <p className="mt-1 text-xs text-danger-600">{errorMsg}</p>
+        <div className="bg-danger-50 dark:bg-danger-700/20 px-4 py-3">
+          <p className="text-sm font-semibold text-danger-700 dark:text-danger-500">⚠️ Scan kamera tidak tersedia</p>
+          <p className="mt-1 text-xs text-danger-600 dark:text-danger-500">{errorMsg}</p>
         </div>
       )}
 
@@ -160,7 +160,7 @@ export default function BarcodeScannerModal({ onScan, onClose }: BarcodeScannerM
       <button
         type="button"
         onClick={onClose}
-        className="w-full bg-white py-4 text-center text-sm font-bold text-neutral-700 active:bg-neutral-100"
+        className="w-full bg-white dark:bg-dark-elevated py-4 text-center text-sm font-bold text-neutral-700 dark:text-white active:bg-neutral-100 dark:active:bg-dark-border"
       >
         Tutup
       </button>

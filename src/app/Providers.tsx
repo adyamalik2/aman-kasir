@@ -112,7 +112,7 @@ function AuthProvider({ children }: ProvidersProps) {
 
 export default function Providers({ children }: ProvidersProps) {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={(import.meta.env.BASE_URL ?? '/').replace(/\/$/, '') || '/'}>
       <ThemeProvider>
         <DbInitProvider>
           <BackupHydrationProvider>

@@ -157,7 +157,7 @@ export default function StokHistoriScreen() {
       </div>
 
       {error && (
-        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-400">{error}</div>
+        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">{error}</div>
       )}
 
       {loading ? (
@@ -217,7 +217,7 @@ export default function StokHistoriScreen() {
                           <p className={`font-mono text-sm font-bold ${
                             isIn
                               ? 'text-success-700 dark:text-success-400'
-                              : 'text-danger-700 dark:text-danger-400'
+                              : 'text-danger-700 dark:text-danger-500'
                           }`}>
                             {isIn ? '+' : ''}{m.qtyChange}
                             {product?.unit ? ` ${product.unit}` : ''}

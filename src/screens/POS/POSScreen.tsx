@@ -305,7 +305,7 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
         <div className="flex-1 overflow-y-auto">
         <div className="space-y-4 p-5">
           {checkoutError && (
-            <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-400">
+            <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">
               {checkoutError}
             </div>
           )}
@@ -316,7 +316,7 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
               {formatCurrency(effectiveTotal)}
             </p>
             {discount > 0 && (
-              <p className="mt-0.5 text-xs text-success-600 dark:text-success-400 font-semibold">
+              <p className="mt-0.5 text-xs text-success-700 dark:text-success-400 font-semibold">
                 Diskon {formatCurrency(discount)} dari {formatCurrency(cartTotal)}
               </p>
             )}
@@ -364,7 +364,7 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
                     paymentMethod === m.value
                       ? 'border-primary bg-primary text-white'
                       : m.value === 'piutang'
-                        ? 'border-warning-300 dark:border-warning-700/50 text-warning-700 dark:text-warning-400 hover:bg-warning-50 dark:hover:bg-warning-700/10'
+                        ? 'border-warning-300 dark:border-warning-700/50 text-warning-700 dark:text-warning-500 hover:bg-warning-50 dark:hover:bg-warning-700/10'
                         : 'border-neutral-300 dark:border-dark-border text-neutral-700 dark:text-white hover:border-primary/50'
                   }`}
                 >
@@ -410,7 +410,7 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
                   <span className="text-neutral-600 dark:text-dark-muted">Kembalian</span>
                   <span
                     className={`font-mono font-bold ${
-                      change >= 0 ? 'text-success-700' : 'text-danger-700'
+                      change >= 0 ? 'text-success-700 dark:text-success-400' : 'text-danger-700 dark:text-danger-500'
                     }`}
                   >
                     {change >= 0 ? formatCurrency(change) : '-'}
@@ -429,7 +429,7 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
 
           {isPiutang && (
             <div className="space-y-1.5">
-              <div className="rounded-md bg-warning-50 dark:bg-warning-700/15 px-3 py-2 text-center text-sm text-warning-700 dark:text-warning-400">
+              <div className="rounded-md bg-warning-50 dark:bg-warning-700/15 px-3 py-2 text-center text-sm text-warning-700 dark:text-warning-500">
                 💳 Piutang — pembayaran dicatat sebagai hutang
               </div>
               {!selectedCustomerId && (
@@ -698,7 +698,7 @@ export default function POSScreen() {
       )}
 
       {stockAlert && (
-        <div className="rounded-md bg-warning-50 dark:bg-warning-700/20 px-4 py-3 text-sm font-semibold text-warning-700 dark:text-warning-400">
+        <div className="rounded-md bg-warning-50 dark:bg-warning-700/20 px-4 py-3 text-sm font-semibold text-warning-700 dark:text-warning-500">
           ⚠️ {stockAlert}
         </div>
       )}
@@ -727,7 +727,7 @@ export default function POSScreen() {
                   <p className="font-mono text-xs text-neutral-500 dark:text-dark-muted">
                     {formatCurrency(item.price)}
                     {item.stock > 0 && (
-                      <span className={`ml-2 ${item.qty >= item.stock ? 'text-warning-600 dark:text-warning-400 font-semibold' : 'text-neutral-400 dark:text-dark-muted'}`}>
+                      <span className={`ml-2 ${item.qty >= item.stock ? 'text-warning-600 dark:text-warning-500 font-semibold' : 'text-neutral-400 dark:text-dark-muted'}`}>
                         · Stok: {item.stock}
                       </span>
                     )}

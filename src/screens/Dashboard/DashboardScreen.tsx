@@ -148,7 +148,7 @@ export default function DashboardScreen() {
             <p className="text-xs font-semibold text-neutral-500 dark:text-dark-muted">Backup</p>
           </div>
           <p className={`mt-2 text-sm font-bold ${
-            hasLocalChanges ? 'text-warning-700 dark:text-warning-400' : 'text-neutral-900 dark:text-white'
+            hasLocalChanges ? 'text-warning-700 dark:text-warning-500' : 'text-neutral-900 dark:text-white'
           }`}>
             {backupStatusLabel}
           </p>
@@ -167,20 +167,20 @@ export default function DashboardScreen() {
       {outOfStockCount > 0 && (
         <Link
           to="/produk"
-          className="flex items-center gap-3 rounded-xl border border-danger-200 dark:border-danger-700/50 bg-danger-50 dark:bg-danger-700/10 p-4 transition-colors hover:bg-danger-100 dark:hover:bg-danger-700/20 active:scale-[0.99]"
+          className="flex items-center gap-3 rounded-xl border border-danger-100 dark:border-danger-700/50 bg-danger-50 dark:bg-danger-700/10 p-4 transition-colors hover:bg-danger-100 dark:hover:bg-danger-700/20 active:scale-[0.99]"
         >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-danger-100 dark:bg-danger-700/20 text-base">
             🚨
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-danger-600 dark:text-danger-400 uppercase tracking-wide">
+            <p className="text-xs font-semibold text-danger-600 dark:text-danger-500 uppercase tracking-wide">
               Stok Habis
             </p>
-            <p className="text-sm font-bold text-danger-700 dark:text-danger-300">
+            <p className="text-sm font-bold text-danger-700 dark:text-danger-500">
               {outOfStockCount} produk kehabisan stok
             </p>
           </div>
-          <span className="shrink-0 text-lg text-danger-400">›</span>
+          <span className="shrink-0 text-lg text-danger-500">›</span>
         </Link>
       )}
 
@@ -194,14 +194,14 @@ export default function DashboardScreen() {
             ⚠️
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-warning-600 dark:text-warning-400 uppercase tracking-wide">
+            <p className="text-xs font-semibold text-warning-600 dark:text-warning-500 uppercase tracking-wide">
               Peringatan Stok
             </p>
             <p className="text-sm font-bold text-warning-700 dark:text-warning-300">
               {lowStockCount} produk stok menipis
             </p>
           </div>
-          <span className="shrink-0 text-lg text-warning-400">›</span>
+          <span className="shrink-0 text-lg text-warning-500">›</span>
         </Link>
       )}
 
