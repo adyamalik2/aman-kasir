@@ -216,7 +216,11 @@ export default function BackupScreen() {
     try {
       await authService.signInWithGoogle()
     } catch (err) {
-      setLoginMessage(err instanceof Error ? err.message : 'Login Google gagal.')
+      const msg = err instanceof Error ? err.message : 'Login Google gagal.'
+      // Jangan tampilkan error jika user sengaja batalkan login
+      if (/cancel/i.test(msg)) return
+      // Tampilkan pesan singkat yang ramah untuk user
+      setLoginMessage('Login Google gagal. Pastikan koneksi internet aktif, lalu coba lagi.')
     }
   }
 

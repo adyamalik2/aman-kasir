@@ -158,16 +158,16 @@ export default function CustomersScreen() {
       {loading ? (
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-16 animate-pulse rounded-xl bg-neutral-200" />
+            <div key={i} className="h-16 animate-pulse rounded-xl bg-neutral-200 dark:bg-dark-border" />
           ))}
         </div>
       ) : customers.length === 0 ? (
         <div className="py-16 text-center">
           <p className="text-4xl">👤</p>
-          <p className="mt-2 font-semibold text-neutral-700">
+          <p className="mt-2 font-semibold text-neutral-700 dark:text-white">
             {searchQuery ? 'Tidak ada pelanggan ditemukan' : 'Belum ada pelanggan'}
           </p>
-          <p className="mt-1 text-xs text-neutral-400">
+          <p className="mt-1 text-xs text-neutral-400 dark:text-dark-muted">
             {searchQuery ? 'Coba kata kunci lain' : 'Ketuk "+ Tambah" untuk menambah pelanggan baru'}
           </p>
         </div>
@@ -286,7 +286,7 @@ export default function CustomersScreen() {
                 type="button"
                 onClick={() => setDeleteTarget(null)}
                 disabled={deleting}
-                className="w-full rounded-xl border border-neutral-200 py-3 text-sm font-semibold text-neutral-700"
+                className="w-full rounded-xl border border-neutral-200 dark:border-dark-border py-3 text-sm font-semibold text-neutral-700 dark:text-white"
               >
                 Batal
               </button>
@@ -316,7 +316,7 @@ function FormField({
   const base = 'block w-full rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-2.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-dark-muted focus:border-primary dark:focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-400'
   return (
     <div>
-      <label className="block text-xs font-semibold text-neutral-600">{label}</label>
+      <label className="block text-xs font-semibold text-neutral-600 dark:text-dark-muted">{label}</label>
       {multiline ? (
         <textarea
           value={value}

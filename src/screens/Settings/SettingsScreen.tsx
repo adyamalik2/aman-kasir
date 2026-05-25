@@ -381,9 +381,9 @@ export default function SettingsScreen() {
         )}
 
         {catLoading ? (
-          <p className="py-4 text-center text-sm text-neutral-400">Memuat...</p>
+          <p className="py-4 text-center text-sm text-neutral-400 dark:text-dark-muted">Memuat...</p>
         ) : (
-          <ul className="divide-y divide-neutral-100">
+          <ul className="divide-y divide-neutral-100 dark:divide-dark-border">
             {catRows.map((row) => (
               <li key={row.id} className="py-2.5">
                 {editingCatId === row.id ? (
@@ -397,19 +397,19 @@ export default function SettingsScreen() {
                         if (e.key === 'Enter') void handleSaveEdit()
                         if (e.key === 'Escape') setEditingCatId(null)
                       }}
-                      className="flex-1 rounded-md border border-primary px-2 py-1 text-sm focus:outline-none"
+                      className="flex-1 rounded-md border border-primary dark:border-primary-400 bg-white dark:bg-dark-elevated px-2 py-1 text-sm text-neutral-900 dark:text-white focus:outline-none"
                       autoFocus
                     />
                     <button
                       type="button"
                       onClick={() => void handleSaveEdit()}
-                      className="text-success-700 hover:text-success-800 text-sm font-bold"
+                      className="text-success-700 dark:text-success-400 hover:text-success-800 text-sm font-bold"
                       title="Simpan"
                     >✓</button>
                     <button
                       type="button"
                       onClick={() => { setEditingCatId(null); setCatError(null) }}
-                      className="text-neutral-400 hover:text-neutral-700 text-sm font-bold"
+                      className="text-neutral-400 dark:text-dark-muted hover:text-neutral-700 dark:hover:text-white text-sm font-bold"
                       title="Batal"
                     >✕</button>
                   </div>
@@ -417,19 +417,19 @@ export default function SettingsScreen() {
                   /* Normal row */
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <span className="text-sm font-semibold text-neutral-900">{row.name}</span>
-                      <span className="ml-2 text-xs text-neutral-400">
+                      <span className="text-sm font-semibold text-neutral-900 dark:text-white">{row.name}</span>
+                      <span className="ml-2 text-xs text-neutral-400 dark:text-dark-muted">
                         {row.activeCount} produk aktif
                       </span>
                     </div>
                     <div className="flex shrink-0 items-center gap-1">
                       {catDeleteConfirm === row.id && (
-                        <span className="mr-1 text-xs text-danger-600">Hapus?</span>
+                        <span className="mr-1 text-xs text-danger-600 dark:text-danger-400">Hapus?</span>
                       )}
                       <button
                         type="button"
                         onClick={() => handleStartEdit(row)}
-                        className="rounded p-1 text-neutral-500 hover:bg-neutral-100"
+                        className="rounded p-1 text-neutral-500 dark:text-dark-muted hover:bg-neutral-100 dark:hover:bg-dark-elevated"
                         title="Edit"
                       >✏️</button>
                       <button
@@ -437,8 +437,8 @@ export default function SettingsScreen() {
                         onClick={() => void handleDeleteCat(row)}
                         className={`rounded p-1 text-sm ${
                           catDeleteConfirm === row.id
-                            ? 'bg-danger-100 text-danger-700 font-bold'
-                            : 'text-neutral-500 hover:bg-neutral-100'
+                            ? 'bg-danger-100 dark:bg-danger-700/30 text-danger-700 dark:text-danger-400 font-bold'
+                            : 'text-neutral-500 dark:text-dark-muted hover:bg-neutral-100 dark:hover:bg-dark-elevated'
                         }`}
                         title="Hapus"
                       >🗑️</button>
@@ -446,7 +446,7 @@ export default function SettingsScreen() {
                         <button
                           type="button"
                           onClick={() => setCatDeleteConfirm(null)}
-                          className="text-xs text-neutral-400 underline"
+                          className="text-xs text-neutral-400 dark:text-dark-muted underline"
                         >Batal</button>
                       )}
                     </div>
@@ -469,7 +469,7 @@ export default function SettingsScreen() {
                 if (e.key === 'Escape') { setAddingCat(false); setNewCatName('') }
               }}
               placeholder="Nama kategori baru"
-              className="flex-1 rounded-md border border-primary px-2 py-1.5 text-sm focus:outline-none"
+              className="flex-1 rounded-md border border-primary dark:border-primary-400 bg-white dark:bg-dark-elevated px-2 py-1.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-dark-muted focus:outline-none"
               autoFocus
             />
             <button
@@ -480,14 +480,14 @@ export default function SettingsScreen() {
             <button
               type="button"
               onClick={() => { setAddingCat(false); setNewCatName(''); setCatError(null) }}
-              className="text-xs text-neutral-400 underline"
+              className="text-xs text-neutral-400 dark:text-dark-muted underline"
             >Batal</button>
           </div>
         ) : (
           <button
             type="button"
             onClick={() => { setAddingCat(true); setCatError(null) }}
-            className="mt-1 w-full rounded-md border border-dashed border-neutral-300 py-2 text-sm font-semibold text-neutral-500 hover:border-primary hover:text-primary"
+            className="mt-1 w-full rounded-md border border-dashed border-neutral-300 dark:border-dark-border py-2 text-sm font-semibold text-neutral-500 dark:text-dark-muted hover:border-primary dark:hover:border-primary-400 hover:text-primary dark:hover:text-primary-400"
           >
             + Tambah Kategori
           </button>
@@ -500,7 +500,7 @@ export default function SettingsScreen() {
 
         {/* Hapus Data Demo */}
         <div className="space-y-2">
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-neutral-500 dark:text-dark-muted">
             Hapus produk bawaan aplikasi (Kertas A4, Fotokopi, dll.) beserta stok awalnya.
             Transaksi dan produk buatan sendiri tidak terpengaruh.
           </p>
@@ -508,7 +508,7 @@ export default function SettingsScreen() {
             type="button"
             onClick={() => void handleDeleteDemo()}
             disabled={demoStatus === 'loading'}
-            className="w-full rounded-md border-2 border-warning-400 px-4 py-3 text-sm font-bold text-warning-700 hover:bg-warning-50 disabled:opacity-60"
+            className="w-full rounded-md border-2 border-warning-400 dark:border-warning-600 px-4 py-3 text-sm font-bold text-warning-700 dark:text-warning-400 hover:bg-warning-50 dark:hover:bg-warning-700/10 disabled:opacity-60"
           >
             {demoStatus === 'loading'
               ? 'Menghapus...'
@@ -519,7 +519,7 @@ export default function SettingsScreen() {
           {demoMessage && (
             <p
               className={`text-sm ${
-                demoStatus === 'error' ? 'text-danger-700' : 'text-neutral-700'
+                demoStatus === 'error' ? 'text-danger-700 dark:text-danger-400' : 'text-neutral-700 dark:text-white'
               }`}
             >
               {demoMessage}
@@ -527,11 +527,11 @@ export default function SettingsScreen() {
           )}
         </div>
 
-        <hr className="border-neutral-100" />
+        <hr className="border-neutral-100 dark:border-dark-border" />
 
         {/* Reset Aplikasi */}
         <div className="space-y-2">
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-neutral-500 dark:text-dark-muted">
             Hapus <strong>semua</strong> data (produk, transaksi, riwayat stok) dan reset
             aplikasi ke kondisi awal. Profil toko tetap disimpan. Tindakan ini tidak dapat
             dibatalkan.
@@ -540,7 +540,7 @@ export default function SettingsScreen() {
             type="button"
             onClick={() => void handleReset()}
             disabled={resetLoading}
-            className="w-full rounded-md border-2 border-danger-500 px-4 py-3 text-sm font-bold text-danger-700 hover:bg-danger-50 disabled:opacity-60"
+            className="w-full rounded-md border-2 border-danger-500 dark:border-danger-600 px-4 py-3 text-sm font-bold text-danger-700 dark:text-danger-400 hover:bg-danger-50 dark:hover:bg-danger-700/10 disabled:opacity-60"
           >
             {resetLoading
               ? 'Mereset...'
@@ -552,7 +552,7 @@ export default function SettingsScreen() {
             <button
               type="button"
               onClick={() => setResetConfirm(0)}
-              className="w-full text-xs text-neutral-500 underline"
+              className="w-full text-xs text-neutral-500 dark:text-dark-muted underline"
             >
               Batal
             </button>
