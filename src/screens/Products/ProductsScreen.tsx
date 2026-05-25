@@ -2,16 +2,19 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useProductStore } from '@/store/productStore'
 import { DexieProductRepository } from '@/repositories/implementations/DexieProductRepository'
+import { DexieCategoryRepository } from '@/repositories/implementations/DexieCategoryRepository'
 import { DeleteProductUseCase } from '@/usecases/product/DeleteProductUseCase'
 import type { Product } from '@/domain'
 import { formatCurrency } from '@/lib/currency'
 import { csvEscape, parseCsv } from '@/lib/csv'
 import { downloadBlob } from '@/services/export/download'
 import { db } from '@/infra/db/dexie'
+import { generateId } from '@/lib/id-generator'
 import type { CreateProductInput } from '@/usecases/product/CreateProductUseCase'
 import type { UpdateProductInput } from '@/usecases/product/UpdateProductUseCase'
 
 const deleteUseCase = new DeleteProductUseCase(new DexieProductRepository())
+const categoryRepo = new DexieCategoryRepository()
 
 // ---------------------------------------------------------------------------
 // Types
@@ -171,6 +174,7 @@ interface ProductFormModalProps {
   onDeactivate?: () => Promise<void>
   onHardDelete?: () => Promise<void>
   onCheckHistory?: () => Promise<boolean>
+  onAddCategory?: (name: string) => Promise<string>
 }
 
 function ProductFormModal({
@@ -184,6 +188,7 @@ function ProductFormModal({
   onDeactivate,
   onHardDelete,
   onCheckHistory,
+  onAddCategory,
 }: ProductFormModalProps) {
   const [values, setValues] = useState<ProductFormValues>(initialValues)
   const [isSaving, setIsSaving] = useState(false)
@@ -192,6 +197,29 @@ function ProductFormModal({
   const [barcodeHint, setBarcodeHint] = useState<string | null>(null)
   const barcodeInputRef = useRef<HTMLInputElement | null>(null)
   const errorRef = useRef<HTMLDivElement | null>(null)
+
+  // ── Inline tambah kategori ──────────────────────────────────────
+  const [showAddCat, setShowAddCat] = useState(false)
+  const [newCatName, setNewCatName] = useState('')
+  const [addingCat, setAddingCat] = useState(false)
+  const [addCatError, setAddCatError] = useState<string | null>(null)
+
+  const handleAddCatInline = async () => {
+    const name = newCatName.trim()
+    if (!name || !onAddCategory) return
+    setAddingCat(true)
+    setAddCatError(null)
+    try {
+      const newId = await onAddCategory(name)
+      setValues((prev) => ({ ...prev, categoryId: newId }))
+      setShowAddCat(false)
+      setNewCatName('')
+    } catch (err) {
+      setAddCatError(err instanceof Error ? err.message : 'Gagal menambah kategori.')
+    } finally {
+      setAddingCat(false)
+    }
+  }
 
   useEffect(() => {
     if (isOpen) {
@@ -417,7 +445,18 @@ function ProductFormModal({
 
           {/* Category */}
           <div>
-            <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-dark-muted">Kategori</label>
+            <div className="mb-1 flex items-center justify-between">
+              <label className="text-xs font-semibold text-neutral-600 dark:text-dark-muted">Kategori</label>
+              {onAddCategory && !showAddCat && (
+                <button
+                  type="button"
+                  onClick={() => { setShowAddCat(true); setAddCatError(null) }}
+                  className="text-xs font-semibold text-primary dark:text-primary-400 hover:underline"
+                >
+                  + Kategori Baru
+                </button>
+              )}
+            </div>
             <select
               value={values.categoryId}
               onChange={handleChange('categoryId')}
@@ -430,6 +469,46 @@ function ProductFormModal({
                 </option>
               ))}
             </select>
+
+            {/* Inline form tambah kategori */}
+            {showAddCat && (
+              <div className="mt-2 space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={newCatName}
+                    onChange={(e) => setNewCatName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') { e.preventDefault(); void handleAddCatInline() }
+                      if (e.key === 'Escape') { setShowAddCat(false); setNewCatName('') }
+                    }}
+                    placeholder="Nama kategori baru..."
+                    autoFocus
+                    disabled={addingCat}
+                    className="flex-1 rounded-md border border-primary dark:border-primary-400 bg-white dark:bg-dark-card px-3 py-2 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-dark-muted focus:outline-none disabled:opacity-60"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void handleAddCatInline()}
+                    disabled={addingCat || !newCatName.trim()}
+                    className="shrink-0 rounded-md bg-primary px-3 py-2 text-xs font-bold text-white hover:bg-primary-800 disabled:opacity-50"
+                  >
+                    {addingCat ? '...' : 'Simpan'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowAddCat(false); setNewCatName(''); setAddCatError(null) }}
+                    disabled={addingCat}
+                    className="shrink-0 text-xs text-neutral-400 dark:text-dark-muted underline"
+                  >
+                    Batal
+                  </button>
+                </div>
+                {addCatError && (
+                  <p className="text-xs text-danger-700 dark:text-danger-400">{addCatError}</p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Prices */}
@@ -622,6 +701,29 @@ export default function ProductsScreen() {
   useEffect(() => {
     void loadInactiveProducts()
   }, [])
+
+  // Tambah kategori baru inline dari form produk
+  const handleAddCategory = async (name: string): Promise<string> => {
+    const trimmed = name.trim()
+    if (!trimmed) throw new Error('Nama kategori tidak boleh kosong.')
+    const existing = categories.find(
+      (c) => c.name.trim().toLowerCase() === trimmed.toLowerCase(),
+    )
+    if (existing) return existing.id   // kembalikan id yang sudah ada, auto-select
+    const now = new Date().toISOString()
+    const id = generateId('cat')
+    await categoryRepo.create({
+      id,
+      name: trimmed,
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+      syncStatus: 'local_only',
+      syncVersion: 1,
+    })
+    await loadCategories()
+    return id
+  }
 
   const openEditForm = (product: Product) => {
     setEditingProduct(product)
@@ -1136,6 +1238,7 @@ export default function ProductsScreen() {
         onDeactivate={editingProduct ? handleDeactivate : undefined}
         onCheckHistory={editingProduct ? handleCheckHistory : undefined}
         onHardDelete={editingProduct ? handleHardDelete : undefined}
+        onAddCategory={handleAddCategory}
       />
 
       {/* Restock Sheet */}
