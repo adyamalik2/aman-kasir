@@ -160,18 +160,25 @@ export class RestoreService {
   }
 
   private async mergeTable<T extends { id: string }>(
-    table: { get: (id: string) => Promise<T | undefined>; add: (item: T) => Promise<string> },
+    table: {
+      bulkGet(ids: string[]): Promise<(T | undefined)[]>
+      bulkAdd(items: T[]): Promise<unknown>
+    },
     items: T[],
   ): Promise<number> {
-    let count = 0
-    for (const item of items) {
-      const existing = await table.get(item.id)
-      if (!existing) {
-        await table.add(item)
-        count += 1
-      }
+    if (items.length === 0) return 0
+
+    // Ambil semua record sekaligus (1 query) alih-alih satu per satu
+    const existingRecords = await table.bulkGet(items.map((i) => i.id))
+    const existingIds = new Set(
+      existingRecords.flatMap((e) => (e ? [e.id] : [])),
+    )
+
+    const toAdd = items.filter((i) => !existingIds.has(i.id))
+    if (toAdd.length > 0) {
+      await table.bulkAdd(toAdd)
     }
-    return count
+    return toAdd.length
   }
 }
 
