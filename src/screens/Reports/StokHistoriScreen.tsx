@@ -157,7 +157,7 @@ export default function StokHistoriScreen() {
       </div>
 
       {error && (
-        <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</div>
+        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-400">{error}</div>
       )}
 
       {loading ? (

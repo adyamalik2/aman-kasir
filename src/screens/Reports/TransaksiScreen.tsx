@@ -534,7 +534,7 @@ export default function TransaksiScreen() {
                       <p className="font-mono text-sm font-semibold text-neutral-900 dark:text-white">
                         {formatCurrency(row.pendapatan)}
                       </p>
-                      <p className="font-mono text-xs text-success-700">
+                      <p className="font-mono text-xs text-success-700 dark:text-success-400">
                         +{formatCurrency(row.keuntungan)}
                       </p>
                     </div>

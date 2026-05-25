@@ -284,9 +284,10 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
       <div className="absolute inset-0 bg-black/40" onClick={isSaving ? undefined : onClose} />
       <div
         data-bottom-sheet="true"
-        className="relative w-full max-w-lg rounded-t-2xl bg-white dark:bg-dark-elevated sm:rounded-2xl"
+        className="relative flex max-h-[92vh] w-full max-w-lg flex-col rounded-t-2xl bg-white dark:bg-dark-elevated sm:max-h-[85vh] sm:rounded-2xl"
       >
-        <div className="flex items-center justify-between border-b border-neutral-200 dark:border-dark-border px-5 py-4">
+        {/* Header — fixed */}
+        <div className="flex shrink-0 items-center justify-between border-b border-neutral-200 dark:border-dark-border px-5 py-4">
           <h3 className="font-bold text-neutral-900 dark:text-white">Pembayaran</h3>
           {!isSaving && (
             <button
@@ -300,9 +301,11 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
           )}
         </div>
 
+        {/* Body — scrollable */}
+        <div className="flex-1 overflow-y-auto">
         <div className="space-y-4 p-5">
           {checkoutError && (
-            <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">
+            <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-400">
               {checkoutError}
             </div>
           )}
@@ -323,16 +326,15 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
           <div>
             <p className="mb-1 text-xs font-semibold text-neutral-600 dark:text-dark-muted">Diskon (opsional)</p>
             <input
-              type="number"
+              type="text"
               inputMode="numeric"
+              pattern="[0-9]*"
               value={discountStr}
               onChange={(e) => {
                 setDiscountStr(e.target.value)
                 setPaidAmountStr('') // reset uang diterima saat diskon berubah
               }}
               placeholder="0"
-              min={0}
-              max={cartTotal}
               className="w-full rounded-md border border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-3 py-2.5 font-mono text-sm focus:border-primary dark:focus:border-primary-400 focus:outline-none"
             />
           </div>
@@ -426,8 +428,15 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
           )}
 
           {isPiutang && (
-            <div className="rounded-md bg-warning-50 dark:bg-warning-700/15 px-3 py-2 text-center text-sm text-warning-700 dark:text-warning-400">
-              💳 Piutang — pembayaran dicatat sebagai hutang
+            <div className="space-y-1.5">
+              <div className="rounded-md bg-warning-50 dark:bg-warning-700/15 px-3 py-2 text-center text-sm text-warning-700 dark:text-warning-400">
+                💳 Piutang — pembayaran dicatat sebagai hutang
+              </div>
+              {!selectedCustomerId && (
+                <div className="rounded-md bg-neutral-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border px-3 py-2 text-xs text-neutral-500 dark:text-dark-muted">
+                  💡 Sebaiknya pilih <strong>pelanggan</strong> agar piutang mudah dilacak di tab Piutang.
+                </div>
+              )}
             </div>
           )}
 
@@ -466,6 +475,11 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
             />
           </div>
 
+        </div>
+        </div>
+
+        {/* Footer — sticky confirm button */}
+        <div className="shrink-0 border-t border-neutral-200 dark:border-dark-border px-5 py-4">
           <button
             type="button"
             onClick={handleConfirm}
@@ -490,6 +504,7 @@ export default function POSScreen() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [receiptSnapshot, setReceiptSnapshot] = useState<ReceiptSnapshot | null>(null)
   const [stockAlert, setStockAlert] = useState<string | null>(null)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
 
   useEffect(() => {
     void loadProducts()
@@ -581,10 +596,7 @@ export default function POSScreen() {
 
   const clearCart = () => {
     if (cart.length === 0) return
-    const confirmed = window.confirm('Kosongkan semua item di keranjang?')
-    if (confirmed) {
-      clearCartSilently()
-    }
+    setShowClearConfirm(true)
   }
 
   const openCheckout = () => {
@@ -680,7 +692,7 @@ export default function POSScreen() {
       </div>
 
       {successMessage && (
-        <div className="rounded-md bg-success-50 px-4 py-3 text-sm font-semibold text-success-700">
+        <div className="rounded-md bg-success-50 dark:bg-success-700/20 px-4 py-3 text-sm font-semibold text-success-700 dark:text-success-400">
           {successMessage}
         </div>
       )}
@@ -824,6 +836,35 @@ export default function POSScreen() {
           closeLabel="Transaksi Baru"
           onClose={() => setReceiptSnapshot(null)}
         />
+      )}
+
+      {/* Konfirmasi kosongkan keranjang */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowClearConfirm(false)} />
+          <div className="relative w-full max-w-sm rounded-t-2xl bg-white dark:bg-dark-elevated p-5 sm:rounded-2xl">
+            <h3 className="font-bold text-neutral-900 dark:text-white">Kosongkan Keranjang?</h3>
+            <p className="mt-2 text-sm text-neutral-600 dark:text-dark-muted">
+              Semua {cart.length} produk di keranjang akan dihapus.
+            </p>
+            <div className="mt-4 space-y-2">
+              <button
+                type="button"
+                onClick={() => { clearCartSilently(); setShowClearConfirm(false) }}
+                className="w-full rounded-xl bg-danger-600 py-3 text-sm font-bold text-white hover:bg-danger-700"
+              >
+                Ya, Kosongkan
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowClearConfirm(false)}
+                className="w-full rounded-xl border border-neutral-200 dark:border-dark-border py-3 text-sm font-semibold text-neutral-700 dark:text-white"
+              >
+                Batal
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   )
