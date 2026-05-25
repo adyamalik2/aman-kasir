@@ -242,6 +242,7 @@ export default function SettingsScreen() {
           db.transactions,
           db.transactionItems,
           db.stockMovements,
+          db.customers,
         ],
         async () => {
           await Promise.all([
@@ -250,6 +251,7 @@ export default function SettingsScreen() {
             db.transactions.clear(),
             db.transactionItems.clear(),
             db.stockMovements.clear(),
+            db.customers.clear(),
           ])
         },
       )

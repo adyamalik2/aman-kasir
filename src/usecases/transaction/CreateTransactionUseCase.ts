@@ -118,11 +118,21 @@ export class CreateTransactionUseCase {
       date.getDate().toString().padStart(2, '0')
 
     const todayStr = date.toDateString()
-    const count = await db.transactions
+    const todayTxns = await db.transactions
       .filter((t) => new Date(t.date).toDateString() === todayStr)
-      .count()
+      .toArray()
 
-    const counter = (count + 1).toString().padStart(3, '0')
+    // Cari nomor urut terbesar hari ini agar tetap unik walau ada transaksi yang dihapus
+    let maxCounter = 0
+    for (const txn of todayTxns) {
+      const match = txn.invoiceNo.match(/-(\d+)$/)
+      if (match) {
+        const n = parseInt(match[1], 10)
+        if (n > maxCounter) maxCounter = n
+      }
+    }
+
+    const counter = (maxCounter + 1).toString().padStart(3, '0')
     return `INV-${dateStr}-${counter}`
   }
 }
