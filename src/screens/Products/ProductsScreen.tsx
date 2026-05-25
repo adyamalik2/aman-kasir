@@ -300,7 +300,7 @@ function ProductFormModal({
   }
 
   const inputClass =
-    'w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none'
+    'w-full rounded-md border border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-3 py-2 text-sm focus:border-primary dark:focus:border-primary-400 focus:outline-none'
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
@@ -310,11 +310,11 @@ function ProductFormModal({
       {/* Panel */}
       <div
         data-bottom-sheet="true"
-        className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white sm:max-h-[90vh] sm:rounded-2xl"
+        className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white dark:bg-dark-elevated sm:max-h-[90vh] sm:rounded-2xl"
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 bg-white px-5 py-4">
-          <h3 className="text-base font-bold text-neutral-900">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated px-5 py-4">
+          <h3 className="text-base font-bold text-neutral-900 dark:text-white">
             {editingId ? 'Edit Produk' : 'Tambah Produk'}
           </h3>
           {!isBusy && (
@@ -322,7 +322,7 @@ function ProductFormModal({
               type="button"
               onClick={onClose}
               data-android-back-close="true"
-              className="text-sm font-medium text-neutral-500 hover:text-neutral-800"
+              className="text-sm font-medium text-neutral-500 dark:text-dark-muted hover:text-neutral-800"
             >
               Batal
             </button>
@@ -336,7 +336,7 @@ function ProductFormModal({
 
           {/* Name */}
           <div>
-            <label className="mb-1 block text-xs font-semibold text-neutral-600">
+            <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-dark-muted">
               Nama Produk *
             </label>
             <input
@@ -352,7 +352,7 @@ function ProductFormModal({
           {/* SKU + Barcode */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-xs font-semibold text-neutral-600">
+              <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-dark-muted">
                 SKU (opsional)
               </label>
               <input
@@ -364,7 +364,7 @@ function ProductFormModal({
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-neutral-600">
+              <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-dark-muted">
                 Barcode (opsional)
               </label>
               <input
@@ -388,19 +388,19 @@ function ProductFormModal({
                 barcodeInputRef.current?.focus()
                 setBarcodeHint('Scanner USB/Bluetooth siap. Scan barcode ke kolom barcode.')
               }}
-              className="rounded-md border border-neutral-200 px-3 py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-50"
+              className="rounded-md border border-neutral-200 dark:border-dark-border px-3 py-2 text-xs font-bold text-neutral-700 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated"
             >
               Scan Barcode
             </button>
             <button
               type="button"
               onClick={generateBarcode}
-              className="rounded-md border border-primary-200 px-3 py-2 text-xs font-bold text-primary hover:bg-primary-50"
+              className="rounded-md border border-primary-200 dark:border-primary-700 px-3 py-2 text-xs font-bold text-primary dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20"
             >
               Generate Barcode
             </button>
             {barcodeHint && (
-              <p className="flex items-center text-xs font-semibold text-neutral-500">
+              <p className="flex items-center text-xs font-semibold text-neutral-500 dark:text-dark-muted">
                 {barcodeHint}
               </p>
             )}
@@ -408,7 +408,7 @@ function ProductFormModal({
 
           {/* Category */}
           <div>
-            <label className="mb-1 block text-xs font-semibold text-neutral-600">Kategori</label>
+            <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-dark-muted">Kategori</label>
             <select
               value={values.categoryId}
               onChange={handleChange('categoryId')}
@@ -426,7 +426,7 @@ function ProductFormModal({
           {/* Prices */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-xs font-semibold text-neutral-600">
+              <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-dark-muted">
                 Harga Jual *
               </label>
               <input
@@ -440,7 +440,7 @@ function ProductFormModal({
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-neutral-600">
+              <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-dark-muted">
                 Harga Modal
               </label>
               <input
@@ -458,7 +458,7 @@ function ProductFormModal({
           {/* Stock fields */}
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="mb-1 block text-xs font-semibold text-neutral-600">Stok</label>
+              <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-dark-muted">Stok</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -470,7 +470,7 @@ function ProductFormModal({
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-neutral-600">Stok Min</label>
+              <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-dark-muted">Stok Min</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -482,7 +482,7 @@ function ProductFormModal({
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold text-neutral-600">Satuan</label>
+              <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-dark-muted">Satuan</label>
               <input
                 type="text"
                 value={values.unit}
@@ -784,8 +784,8 @@ export default function ProductsScreen() {
     <section className="space-y-4 pb-4">
       {/* Page header */}
       <div>
-        <p className="text-sm font-medium text-neutral-500">Master Data</p>
-        <h2 className="mt-1 text-2xl font-bold text-neutral-900">Produk</h2>
+        <p className="text-sm font-medium text-neutral-500 dark:text-dark-muted">Master Data</p>
+        <h2 className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">Produk</h2>
       </div>
 
       {/* Error state */}
@@ -794,25 +794,25 @@ export default function ProductsScreen() {
       )}
 
       {/* Impor / Ekspor CSV — collapsible, default tertutup */}
-      <div className="rounded-lg border border-neutral-200 bg-surface">
+      <div className="rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card">
         <button
           type="button"
           onClick={() => setShowImportPanel((v) => !v)}
           className="flex w-full items-center justify-between px-4 py-3 text-left"
         >
-          <span className="text-sm font-semibold text-neutral-700">📥 Impor / Ekspor CSV</span>
-          <span className={`text-xs text-neutral-400 transition-transform ${showImportPanel ? 'rotate-180' : ''}`}>
+          <span className="text-sm font-semibold text-neutral-700 dark:text-white">📥 Impor / Ekspor CSV</span>
+          <span className={`text-xs text-neutral-400 dark:text-dark-muted transition-transform ${showImportPanel ? 'rotate-180' : ''}`}>
             ▼
           </span>
         </button>
 
         {showImportPanel && (
-          <div className="border-t border-neutral-100 px-4 pb-4 pt-3">
+          <div className="border-t border-neutral-100 dark:border-dark-border px-4 pb-4 pt-3">
             <div className="flex flex-col gap-2 sm:flex-row">
               <button
                 type="button"
                 onClick={downloadProductCsvTemplate}
-                className="rounded-md border border-neutral-200 px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                className="rounded-md border border-neutral-200 dark:border-dark-border px-4 py-2.5 text-sm font-semibold text-neutral-700 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated"
               >
                 Download Template CSV
               </button>
@@ -826,7 +826,7 @@ export default function ProductsScreen() {
               </button>
             </div>
             {importSummary && (
-              <p className="mt-3 text-sm text-neutral-600">
+              <p className="mt-3 text-sm text-neutral-600 dark:text-dark-muted">
                 Import selesai: {importSummary.success} berhasil, {importSummary.duplicate} duplikat,{' '}
                 {importSummary.failed} gagal.
               </p>
@@ -852,9 +852,9 @@ export default function ProductsScreen() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cari nama, SKU, atau barcode produk..."
-          className="w-full rounded-lg border border-neutral-200 bg-white py-2.5 pl-9 pr-4 text-sm focus:border-primary focus:outline-none"
+          className="w-full rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-dark-muted py-2.5 pl-9 pr-4 text-sm focus:border-primary dark:focus:border-primary-400 focus:outline-none"
         />
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-dark-muted text-sm">
           🔍
         </span>
       </div>
@@ -866,7 +866,7 @@ export default function ProductsScreen() {
             type="button"
             onClick={() => setSelectedCategory(null)}
             className={`flex-shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-              selectedCategory === null ? 'bg-primary text-white' : 'bg-neutral-100 text-neutral-600'
+              selectedCategory === null ? 'bg-primary text-white' : 'bg-neutral-100 dark:bg-dark-elevated text-neutral-600 dark:text-white'
             }`}
           >
             Semua
@@ -879,7 +879,7 @@ export default function ProductsScreen() {
               className={`flex-shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
                 selectedCategory === cat.id
                   ? 'bg-primary text-white'
-                  : 'bg-neutral-100 text-neutral-600'
+                  : 'bg-neutral-100 dark:bg-dark-elevated text-neutral-600 dark:text-white'
               }`}
             >
               {cat.name}
@@ -892,8 +892,8 @@ export default function ProductsScreen() {
       {isLoading ? (
         <div className="py-12 text-center text-sm text-neutral-500">Memuat produk...</div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-lg border border-neutral-200 bg-surface p-8 text-center">
-          <p className="text-sm text-neutral-500">
+        <div className="rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-8 text-center">
+          <p className="text-sm text-neutral-500 dark:text-dark-muted">
             {search || selectedCategory
               ? 'Produk tidak ditemukan. Coba ubah filter pencarian.'
               : 'Belum ada produk. Tap + untuk menambah produk pertama.'}
@@ -908,12 +908,12 @@ export default function ProductsScreen() {
                 <button
                   type="button"
                   onClick={() => openEditForm(product)}
-                  className="w-full rounded-lg border border-neutral-200 bg-surface p-4 text-left transition-colors hover:border-primary/40 active:bg-neutral-50"
+                  className="w-full rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-4 text-left transition-colors hover:border-primary/40 active:bg-neutral-50 dark:active:bg-dark-elevated"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold text-neutral-900">{product.name}</p>
-                      <p className="mt-0.5 text-xs text-neutral-500">
+                      <p className="truncate font-semibold text-neutral-900 dark:text-white">{product.name}</p>
+                      <p className="mt-0.5 text-xs text-neutral-500 dark:text-dark-muted">
                         {product.sku}
                         {catName ? ` · ${catName}` : ''}
                         {product.barcode ? ` · ${product.barcode}` : ''}
@@ -925,7 +925,7 @@ export default function ProductsScreen() {
                       </p>
                       <div className="flex items-center gap-1">
                         <StockBadge stock={product.stock} minStock={product.minStock} />
-                        <span className="text-xs text-neutral-400">{product.unit}</span>
+                        <span className="text-xs text-neutral-400 dark:text-dark-muted">{product.unit}</span>
                       </div>
                     </div>
                   </div>
@@ -938,7 +938,7 @@ export default function ProductsScreen() {
 
       {/* Count */}
       {!isLoading && filtered.length > 0 && (
-        <p className="text-center text-xs text-neutral-400">
+        <p className="text-center text-xs text-neutral-400 dark:text-dark-muted">
           {filtered.length} produk ditampilkan
         </p>
       )}

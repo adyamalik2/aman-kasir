@@ -20,7 +20,7 @@ export default function PeriodFilter({ period, onChange }: PeriodFilterProps) {
             className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
               period.preset === preset
                 ? 'bg-primary text-white'
-                : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                : 'bg-neutral-100 dark:bg-dark-elevated text-neutral-700 dark:text-white hover:bg-neutral-200 dark:hover:bg-dark-border'
             }`}
           >
             {PERIOD_PRESET_LABELS[preset]}
@@ -30,7 +30,7 @@ export default function PeriodFilter({ period, onChange }: PeriodFilterProps) {
 
       {period.preset === 'custom' && (
         <div className="flex flex-wrap items-center gap-2">
-          <label className="text-xs text-neutral-500">
+          <label className="text-xs text-neutral-500 dark:text-dark-muted">
             Dari
             <input
               type="date"
@@ -38,10 +38,10 @@ export default function PeriodFilter({ period, onChange }: PeriodFilterProps) {
               onChange={(e) =>
                 onChange({ ...period, customStart: e.target.value })
               }
-              className="ml-1 rounded border border-neutral-200 px-2 py-1 text-sm"
+              className="ml-1 rounded border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-2 py-1 text-sm"
             />
           </label>
-          <label className="text-xs text-neutral-500">
+          <label className="text-xs text-neutral-500 dark:text-dark-muted">
             Sampai
             <input
               type="date"
@@ -49,7 +49,7 @@ export default function PeriodFilter({ period, onChange }: PeriodFilterProps) {
               onChange={(e) =>
                 onChange({ ...period, customEnd: e.target.value })
               }
-              className="ml-1 rounded border border-neutral-200 px-2 py-1 text-sm"
+              className="ml-1 rounded border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-2 py-1 text-sm"
             />
           </label>
         </div>

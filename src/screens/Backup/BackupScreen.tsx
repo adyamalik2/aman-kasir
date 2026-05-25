@@ -237,22 +237,22 @@ export default function BackupScreen() {
   return (
     <section className="space-y-6">
       <div>
-        <p className="text-sm font-medium text-neutral-500">Lainnya</p>
-        <h2 className="mt-1 text-2xl font-bold text-neutral-900">Backup & Restore</h2>
+        <p className="text-sm font-medium text-neutral-500 dark:text-dark-muted">Lainnya</p>
+        <h2 className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">Backup & Restore</h2>
       </div>
 
       <div
         className={`rounded-lg border p-5 ${
           hasLocalChanges
-            ? 'border-warning-200 bg-warning-50'
-            : 'border-neutral-200 bg-surface'
+            ? 'border-warning-200 dark:border-warning-700/50 bg-warning-50 dark:bg-warning-700/10'
+            : 'border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card'
         }`}
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase text-neutral-500">Status Data</p>
-            <h3 className="mt-1 text-base font-bold text-neutral-900">{backupSafetyLabel}</h3>
-            <p className="mt-1 text-sm text-neutral-600">{backupSafetyDetail}</p>
+            <p className="text-xs font-semibold uppercase text-neutral-500 dark:text-dark-muted">Status Data</p>
+            <h3 className="mt-1 text-base font-bold text-neutral-900 dark:text-white">{backupSafetyLabel}</h3>
+            <p className="mt-1 text-sm text-neutral-600 dark:text-dark-muted">{backupSafetyDetail}</p>
           </div>
           <span
             className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-bold ${
@@ -263,15 +263,15 @@ export default function BackupScreen() {
           </span>
         </div>
         <div className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
-          <p className="rounded-md bg-white/70 px-3 py-2 text-neutral-600">
+          <p className="rounded-md bg-white/70 dark:bg-dark-elevated/60 px-3 py-2 text-neutral-600 dark:text-dark-muted">
             Lokal:{' '}
-            <span className="font-semibold text-neutral-900">
+            <span className="font-semibold text-neutral-900 dark:text-white">
               {lastBackupAt ? formatDate(lastBackupAt) : 'Belum pernah'}
             </span>
           </p>
-          <p className="rounded-md bg-white/70 px-3 py-2 text-neutral-600">
+          <p className="rounded-md bg-white/70 dark:bg-dark-elevated/60 px-3 py-2 text-neutral-600 dark:text-dark-muted">
             Cloud:{' '}
-            <span className="font-semibold text-neutral-900">
+            <span className="font-semibold text-neutral-900 dark:text-white">
               {lastCloudBackupAt ? formatDate(lastCloudBackupAt) : 'Belum pernah'}
             </span>
           </p>
@@ -280,33 +280,33 @@ export default function BackupScreen() {
 
       {/* ── Login & Akun ─────────────────────────────────────────── */}
       {isFirebaseConfigured && (
-        <div className="rounded-lg border border-neutral-200 bg-surface p-5 space-y-3">
-          <h3 className="text-sm font-bold text-neutral-900">Login & Akun</h3>
+        <div className="rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-5 space-y-3">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Login & Akun</h3>
           {isLoggedIn && user ? (
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-neutral-900">
+                <p className="truncate text-sm font-semibold text-neutral-900 dark:text-white">
                   {user.displayName ?? '—'}
                 </p>
-                <p className="truncate text-xs text-neutral-500">{user.email}</p>
+                <p className="truncate text-xs text-neutral-500 dark:text-dark-muted">{user.email}</p>
               </div>
               <button
                 type="button"
                 onClick={() => void authService.signOut()}
-                className="shrink-0 rounded-md border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-danger-700 hover:bg-danger-50"
+                className="shrink-0 rounded-md border border-neutral-200 dark:border-dark-border px-3 py-1.5 text-xs font-semibold text-danger-700 dark:text-danger-400 hover:bg-danger-50 dark:hover:bg-danger-700/20"
               >
                 Keluar
               </button>
             </div>
           ) : (
             <div className="space-y-2">
-              <p className="text-sm text-neutral-500">
+              <p className="text-sm text-neutral-500 dark:text-dark-muted">
                 Masuk untuk mengaktifkan backup cloud otomatis.
               </p>
               <button
                 type="button"
                 onClick={() => void handleLogin()}
-                className="w-full rounded-md border border-neutral-200 bg-surface px-4 py-3 text-sm font-bold text-neutral-700 hover:bg-neutral-50"
+                className="w-full rounded-md border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-elevated px-4 py-3 text-sm font-bold text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-border"
               >
                 Masuk dengan Google
               </button>
@@ -322,8 +322,8 @@ export default function BackupScreen() {
 
       {/* ── Backup Lokal ─────────────────────────────────────────── */}
       <div className="rounded-lg border border-neutral-200 bg-surface p-5 space-y-4">
-        <h3 className="text-sm font-bold text-neutral-900">Backup Lokal</h3>
-        <p className="text-sm text-neutral-500">
+        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Backup Lokal</h3>
+        <p className="text-sm text-neutral-500 dark:text-dark-muted">
           Backup terakhir:{' '}
           <span className="font-semibold text-neutral-800">
             {lastBackupAt ? formatDate(lastBackupAt) : 'Belum pernah'}
@@ -346,8 +346,8 @@ export default function BackupScreen() {
 
       {/* ── Cloud Backup (hanya jika login) ──────────────────────── */}
       {isFirebaseConfigured && isLoggedIn && user && (
-        <div className="rounded-lg border border-neutral-200 bg-surface p-5 space-y-4">
-          <h3 className="text-sm font-bold text-neutral-900">Cloud Backup</h3>
+        <div className="rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-5 space-y-4">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Cloud Backup</h3>
           <p className="text-sm text-neutral-500">
             Backup cloud terakhir:{' '}
             <span className="font-semibold text-neutral-800">
@@ -376,7 +376,7 @@ export default function BackupScreen() {
 
           {/* Daftar backup cloud */}
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase text-neutral-500">Riwayat Cloud</p>
+            <p className="text-xs font-semibold uppercase text-neutral-500 dark:text-dark-muted">Riwayat Cloud</p>
             {cloudListLoading ? (
               <p className="py-4 text-center text-sm text-neutral-400">Memuat...</p>
             ) : cloudListError ? (
@@ -386,15 +386,15 @@ export default function BackupScreen() {
                 Belum ada backup cloud.
               </p>
             ) : (
-              <ul className="divide-y divide-neutral-100">
+              <ul className="divide-y divide-neutral-100 dark:divide-dark-border">
                 {cloudList.map((meta) => (
                   <li key={meta.id} className="py-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-neutral-800">
+                        <p className="text-xs font-semibold text-neutral-800 dark:text-white">
                           {formatDate(meta.createdAt)}
                         </p>
-                        <p className="mt-0.5 text-xs text-neutral-500">
+                        <p className="mt-0.5 text-xs text-neutral-500 dark:text-dark-muted">
                           {meta.summary.productCount} produk ·{' '}
                           {meta.summary.transactionCount} transaksi ·{' '}
                           {formatBytes(meta.fileSizeBytes)}
@@ -409,7 +409,7 @@ export default function BackupScreen() {
                             setCloudRestoreMessage(null)
                             setCloudRestoreStatus('idle')
                           }}
-                          className="rounded-md border border-neutral-200 px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+                          className="rounded-md border border-neutral-200 dark:border-dark-border px-2 py-1 text-xs font-semibold text-neutral-700 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated"
                         >
                           Restore
                         </button>
@@ -433,11 +433,11 @@ export default function BackupScreen() {
 
       {/* ── Cloud Restore sheet ───────────────────────────────────── */}
       {cloudRestoreTarget && (
-        <div className="rounded-lg border-2 border-warning-300 bg-warning-50 p-5 space-y-4">
-          <h3 className="text-sm font-bold text-neutral-900">
+        <div className="rounded-lg border-2 border-warning-300 dark:border-warning-700/50 bg-warning-50 dark:bg-warning-700/10 p-5 space-y-4">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
             Restore dari Cloud: {formatDate(cloudRestoreTarget.createdAt)}
           </h3>
-          <p className="text-xs text-neutral-600">
+          <p className="text-xs text-neutral-600 dark:text-dark-muted">
             {cloudRestoreTarget.summary.productCount} produk ·{' '}
             {cloudRestoreTarget.summary.transactionCount} transaksi
           </p>
@@ -490,21 +490,21 @@ export default function BackupScreen() {
                 setCloudRestoreMessage(null)
               }}
               disabled={cloudRestoreStatus === 'loading'}
-              className="rounded-md border border-neutral-200 px-4 py-3 text-sm text-neutral-600 hover:bg-neutral-50 disabled:opacity-60"
+              className="rounded-md border border-neutral-200 dark:border-dark-border px-4 py-3 text-sm text-neutral-600 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated disabled:opacity-60"
             >
               Batal
             </button>
           </div>
 
           {cloudRestoreMessage && (
-            <p className="text-sm text-neutral-700">{cloudRestoreMessage}</p>
+            <p className="text-sm text-neutral-700 dark:text-dark-muted">{cloudRestoreMessage}</p>
           )}
         </div>
       )}
 
       {/* ── Restore Lokal ────────────────────────────────────────── */}
       <div className="rounded-lg border border-neutral-200 bg-surface p-5 space-y-4">
-        <h3 className="text-sm font-bold text-neutral-900">Restore dari File Lokal</h3>
+        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Restore dari File Lokal</h3>
         <label className="block">
           <span className="sr-only">Pilih file backup</span>
           <input
@@ -516,7 +516,7 @@ export default function BackupScreen() {
         </label>
 
         {preview && (
-          <div className="rounded-md bg-neutral-50 p-3 text-sm text-neutral-700 space-y-1">
+          <div className="rounded-md bg-neutral-50 dark:bg-dark-elevated p-3 text-sm text-neutral-700 dark:text-dark-muted space-y-1">
             <p>Preview backup ({formatDate(preview.timestamp)}):</p>
             <ul className="list-inside list-disc text-xs">
               <li>{preview.products} produk</li>
@@ -571,7 +571,7 @@ export default function BackupScreen() {
         )}
 
         {restoreMessage && (
-          <p className="text-sm text-neutral-700">{restoreMessage}</p>
+          <p className="text-sm text-neutral-700 dark:text-dark-muted">{restoreMessage}</p>
         )}
       </div>
     </section>

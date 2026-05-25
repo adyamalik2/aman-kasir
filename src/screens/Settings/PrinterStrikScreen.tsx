@@ -96,14 +96,14 @@ export default function PrinterStrikScreen() {
       <div className="flex items-center gap-3">
         <Link
           to="/lainnya"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 hover:bg-neutral-50"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 dark:border-dark-border text-neutral-500 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated"
           aria-label="Kembali"
         >
           ‹
         </Link>
         <div>
-          <p className="text-sm font-medium text-neutral-500">Lainnya</p>
-          <h2 className="text-2xl font-bold text-neutral-900">Printer dan Struk</h2>
+          <p className="text-sm font-medium text-neutral-500 dark:text-dark-muted">Lainnya</p>
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Printer dan Struk</h2>
         </div>
       </div>
 
@@ -147,10 +147,10 @@ export default function PrinterStrikScreen() {
             placeholder="Terima kasih telah berbelanja"
           />
           <div>
-            <label className="block text-xs font-semibold text-neutral-600">
+            <label className="block text-xs font-semibold text-neutral-600 dark:text-dark-muted">
               Margin bawah (baris kosong)
             </label>
-            <p className="mb-1 text-xs text-neutral-400">
+            <p className="mb-1 text-xs text-neutral-400 dark:text-dark-muted">
               Baris kosong setelah footer — berguna untuk thermal printer yang perlu jarak potong
             </p>
             <div className="flex items-center gap-3">
@@ -162,7 +162,7 @@ export default function PrinterStrikScreen() {
                   className={`h-9 w-9 rounded-full text-sm font-bold transition-colors ${
                     form.marginBawah === n
                       ? 'bg-primary text-white'
-                      : 'border border-neutral-200 bg-white text-neutral-600 hover:border-primary/40'
+                      : 'border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated text-neutral-600 dark:text-dark-muted hover:border-primary/40'
                   }`}
                 >
                   {n}
@@ -176,7 +176,7 @@ export default function PrinterStrikScreen() {
       {/* ── Section: Printer ───────────────────────────────── */}
       <Card title="Printer">
         <div className="space-y-2">
-          <label className="block text-xs font-semibold text-neutral-600">Jenis koneksi</label>
+          <label className="block text-xs font-semibold text-neutral-600 dark:text-dark-muted">Jenis koneksi</label>
           <div className="space-y-2">
             {(
               [
@@ -192,36 +192,36 @@ export default function PrinterStrikScreen() {
                 onClick={() => !soon && update('jenisKoneksi', value)}
                 className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
                   form.jenisKoneksi === value && !soon
-                    ? 'border-primary bg-primary/5'
+                    ? 'border-primary bg-primary/5 dark:bg-primary-900/20'
                     : soon
-                      ? 'border-neutral-100 bg-neutral-50 opacity-60'
-                      : 'border-neutral-200 bg-white hover:border-neutral-300'
+                      ? 'border-neutral-100 dark:border-dark-border bg-neutral-50 dark:bg-dark-elevated opacity-60'
+                      : 'border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated hover:border-neutral-300 dark:hover:border-dark-muted'
                 }`}
               >
                 <span
                   className={`mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 ${
                     form.jenisKoneksi === value && !soon
                       ? 'border-primary bg-primary'
-                      : 'border-neutral-300 bg-white'
+                      : 'border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-card'
                   }`}
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-neutral-900">{label}</span>
+                    <span className="text-sm font-semibold text-neutral-900 dark:text-white">{label}</span>
                     {soon && (
-                      <span className="rounded-full bg-neutral-200 px-2 py-0.5 text-xs font-semibold text-neutral-500">
+                      <span className="rounded-full bg-neutral-200 dark:bg-dark-border px-2 py-0.5 text-xs font-semibold text-neutral-500 dark:text-dark-muted">
                         Segera
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-neutral-500">{desc}</p>
+                  <p className="text-xs text-neutral-500 dark:text-dark-muted">{desc}</p>
                 </div>
               </button>
             ))}
           </div>
 
           {form.jenisKoneksi === 'browser' && (
-            <div className="rounded-lg bg-primary/5 px-3 py-2 text-xs text-primary">
+            <div className="rounded-lg bg-primary/5 dark:bg-primary-900/20 px-3 py-2 text-xs text-primary dark:text-primary-400">
               💡 Saat "Printer" ditekan di struk, browser akan membuka dialog print sistem. Anda bisa pilih printer atau simpan sebagai PDF.
             </div>
           )}
@@ -240,7 +240,7 @@ export default function PrinterStrikScreen() {
         <button
           type="button"
           onClick={handleSave}
-          className="w-full rounded-xl border border-neutral-200 bg-white py-3 text-sm font-bold text-neutral-700 hover:bg-neutral-50"
+          className="w-full rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated py-3 text-sm font-bold text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-border"
         >
           Simpan
         </button>
@@ -255,7 +255,7 @@ export default function PrinterStrikScreen() {
         <button
           type="button"
           onClick={() => setForm({ ...DEFAULT_RECEIPT_SETTINGS })}
-          className="w-full text-xs text-neutral-400 underline hover:text-neutral-600"
+          className="w-full text-xs text-neutral-400 dark:text-dark-muted underline hover:text-neutral-600 dark:hover:text-white"
         >
           Reset ke default
         </button>
@@ -264,10 +264,10 @@ export default function PrinterStrikScreen() {
       {/* ── Preview struk ──────────────────────────────────── */}
       {showTest && (
         <div ref={previewRef} className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-dark-muted">
             Preview Struk
           </p>
-          <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+          <div className="overflow-hidden rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-white">
             <ReceiptPreview
               transaction={dummySnapshot.transaction}
               items={dummySnapshot.items}
@@ -276,7 +276,7 @@ export default function PrinterStrikScreen() {
               settings={form}
             />
           </div>
-          <p className="text-center text-xs text-neutral-400">
+          <p className="text-center text-xs text-neutral-400 dark:text-dark-muted">
             Ini preview tampilan struk dengan pengaturan saat ini
           </p>
         </div>
@@ -291,8 +291,8 @@ export default function PrinterStrikScreen() {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-neutral-200 bg-surface p-4 space-y-3">
-      <h3 className="text-sm font-bold text-neutral-900">{title}</h3>
+    <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-4 space-y-3">
+      <h3 className="text-sm font-bold text-neutral-900 dark:text-white">{title}</h3>
       {children}
     </div>
   )
@@ -312,7 +312,7 @@ function ToggleRow({
   return (
     <div className="flex items-start justify-between gap-3 py-1">
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-neutral-800">{label}</p>
+        <p className="text-sm font-semibold text-neutral-800 dark:text-white">{label}</p>
         <p className="text-xs text-neutral-400">{description}</p>
       </div>
       <button
@@ -321,7 +321,7 @@ function ToggleRow({
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={`relative mt-0.5 inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
-          checked ? 'bg-primary' : 'bg-neutral-200'
+          checked ? 'bg-primary' : 'bg-neutral-200 dark:bg-dark-border'
         }`}
       >
         <span
@@ -349,14 +349,14 @@ function TextInput({
 }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-neutral-600">{label}</label>
+      <label className="block text-xs font-semibold text-neutral-600 dark:text-dark-muted">{label}</label>
       <p className="mb-1 text-xs text-neutral-400">{description}</p>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="block w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+        className="block w-full rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-dark-muted px-3 py-2 text-sm focus:border-primary dark:focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary dark:focus:ring-primary-400"
       />
     </div>
   )

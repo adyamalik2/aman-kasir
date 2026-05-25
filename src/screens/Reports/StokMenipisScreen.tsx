@@ -30,13 +30,13 @@ export default function StokMenipisScreen() {
       <div className="flex items-center gap-3">
         <Link
           to="/laporan"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 active:bg-neutral-200"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-dark-elevated active:bg-neutral-200 dark:active:bg-dark-border"
         >
           <span className="text-xl text-primary">‹</span>
         </Link>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Laporan</p>
-          <h2 className="text-lg font-bold text-neutral-900">Stok Menipis</h2>
+          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">Laporan</p>
+          <h2 className="text-lg font-bold text-neutral-900 dark:text-white">Stok Menipis</h2>
         </div>
       </div>
 
@@ -44,7 +44,7 @@ export default function StokMenipisScreen() {
         <button
           type="button"
           onClick={() => csvService.exportLowStock(products)}
-          className="rounded-lg border border-neutral-200 bg-white px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+          className="rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated px-4 py-2 text-xs font-semibold text-neutral-700 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-border"
         >
           Export CSV
         </button>
@@ -57,23 +57,23 @@ export default function StokMenipisScreen() {
       {loading ? (
         <div className="py-12 text-center text-sm text-neutral-400">Memuat stok menipis...</div>
       ) : products.length === 0 ? (
-        <div className="rounded-xl border border-neutral-200 bg-surface p-8 text-center">
+        <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-8 text-center">
           <p className="text-2xl">✅</p>
-          <p className="mt-2 text-sm font-semibold text-neutral-700">Semua stok produk aman</p>
-          <p className="mt-1 text-xs text-neutral-400">Tidak ada produk yang stoknya di bawah minimum.</p>
+          <p className="mt-2 text-sm font-semibold text-neutral-700 dark:text-white">Semua stok produk aman</p>
+          <p className="mt-1 text-xs text-neutral-400 dark:text-dark-muted">Tidak ada produk yang stoknya di bawah minimum.</p>
         </div>
       ) : (
         <ul className="space-y-2">
           {products.map((p) => (
             <li
               key={p.id}
-              className="flex items-center justify-between rounded-xl border border-warning-200 bg-warning-50/40 px-4 py-3"
+              className="flex items-center justify-between rounded-xl border border-warning-200 dark:border-warning-700/50 bg-warning-50/40 dark:bg-warning-700/10 px-4 py-3"
             >
               <div className="min-w-0">
-                <p className="font-medium text-neutral-900">{p.name}</p>
-                <p className="mt-0.5 text-xs text-neutral-500">
+                <p className="font-medium text-neutral-900 dark:text-white">{p.name}</p>
+                <p className="mt-0.5 text-xs text-neutral-500 dark:text-dark-muted">
                   Stok:{' '}
-                  <span className="font-semibold text-danger-700">
+                  <span className="font-semibold text-danger-700 dark:text-danger-400">
                     {p.stock} {p.unit}
                   </span>{' '}
                   · Min: {p.minStock} · {formatCurrency(p.sellPrice)}

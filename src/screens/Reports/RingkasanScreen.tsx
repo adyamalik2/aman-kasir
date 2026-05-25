@@ -223,13 +223,13 @@ export default function RingkasanScreen() {
       <div className="flex items-center gap-3">
         <Link
           to="/laporan"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 active:bg-neutral-200"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-dark-elevated active:bg-neutral-200 dark:active:bg-dark-border"
         >
           <span className="text-xl text-primary">‹</span>
         </Link>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Laporan</p>
-          <h2 className="text-lg font-bold text-neutral-900">Ringkasan Penjualan</h2>
+          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">Laporan</p>
+          <h2 className="text-lg font-bold text-neutral-900 dark:text-white">Ringkasan Penjualan</h2>
         </div>
       </div>
 
@@ -243,7 +243,7 @@ export default function RingkasanScreen() {
             className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
               period.preset === preset
                 ? 'bg-primary text-white'
-                : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                : 'bg-neutral-100 dark:bg-dark-elevated text-neutral-700 dark:text-white hover:bg-neutral-200 dark:hover:bg-dark-border'
             }`}
           >
             {label}
@@ -264,7 +264,7 @@ export default function RingkasanScreen() {
                   setPeriod({ preset: 'custom', customStart: e.target.value, customEnd: customEnd || e.target.value })
                 }
               }}
-              className="ml-1 rounded border border-neutral-200 px-2 py-1 text-sm"
+              className="ml-1 rounded border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-2 py-1 text-sm"
             />
           </label>
           <label className="text-xs text-neutral-500">
@@ -278,7 +278,7 @@ export default function RingkasanScreen() {
                   setPeriod({ preset: 'custom', customStart: customStart || e.target.value, customEnd: e.target.value })
                 }
               }}
-              className="ml-1 rounded border border-neutral-200 px-2 py-1 text-sm"
+              className="ml-1 rounded border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-2 py-1 text-sm"
             />
           </label>
         </div>
@@ -316,9 +316,9 @@ export default function RingkasanScreen() {
           </div>
 
           {/* Chart */}
-          <div className="rounded-xl border border-neutral-200 bg-surface p-4">
+          <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-4">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-dark-muted">
                 {chartLabel}
               </p>
               <div className="flex gap-1">
@@ -328,7 +328,7 @@ export default function RingkasanScreen() {
                     type="button"
                     onClick={() => setMetric(m)}
                     className={`rounded-full px-2 py-1 text-xs font-semibold transition-colors ${
-                      metric === m ? 'bg-primary text-white' : 'bg-neutral-100 text-neutral-600'
+                      metric === m ? 'bg-primary text-white' : 'bg-neutral-100 dark:bg-dark-elevated text-neutral-600 dark:text-white'
                     }`}
                   >
                     {m === 'count' ? 'Jml' : 'Pendapatan'}
@@ -367,10 +367,10 @@ function StatCard({
   positive?: boolean
 }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-neutral-200 bg-surface px-4 py-3">
+    <div className="flex items-center justify-between rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card px-4 py-3">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">{label}</p>
-        <p className="mt-1 font-mono text-xl font-bold text-neutral-900">
+        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">{label}</p>
+        <p className="mt-1 font-mono text-xl font-bold text-neutral-900 dark:text-white">
           {value}
           {suffix && <span className="ml-1 text-xs font-normal text-neutral-400">{suffix}</span>}
         </p>

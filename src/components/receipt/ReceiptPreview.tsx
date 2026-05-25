@@ -135,7 +135,11 @@ export function ReceiptPreview({
         </div>
         <div className="flex justify-between gap-3">
           <span>Bayar</span>
-          <span>{formatCurrency(transaction.paidAmount)}</span>
+          <span>
+            {transaction.paymentMethod === 'piutang'
+              ? 'Belum dibayar'
+              : formatCurrency(transaction.paidAmount)}
+          </span>
         </div>
         {transaction.changeAmount > 0 && (
           <div className="flex justify-between gap-3">

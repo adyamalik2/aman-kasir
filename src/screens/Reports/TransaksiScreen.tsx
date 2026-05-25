@@ -383,13 +383,13 @@ export default function TransaksiScreen() {
             <button
               type="button"
               onClick={item.onClick}
-              className="flex w-full items-center justify-between rounded-xl border border-neutral-200 bg-surface px-4 py-4 text-left transition-colors hover:bg-neutral-50 active:bg-neutral-100"
+              className="flex w-full items-center justify-between rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card px-4 py-4 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-dark-elevated active:bg-neutral-100 dark:active:bg-dark-elevated"
             >
               <div>
-                <p className="font-semibold text-neutral-900">{item.label}</p>
-                <p className="mt-0.5 text-xs text-neutral-400">{item.sub}</p>
+                <p className="font-semibold text-neutral-900 dark:text-white">{item.label}</p>
+                <p className="mt-0.5 text-xs text-neutral-400 dark:text-dark-muted">{item.sub}</p>
               </div>
-              <span className="text-xl text-neutral-300">›</span>
+              <span className="text-xl text-neutral-300 dark:text-dark-border">›</span>
             </button>
           </li>
         ))}
@@ -410,7 +410,7 @@ export default function TransaksiScreen() {
     return (
       <div className="space-y-4">
         {/* Chart */}
-        <div className="rounded-xl border border-neutral-200 bg-surface p-4">
+        <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-4">
           <MetricTabs metric={metric} onChange={setMetric} />
           <VerticalBarChart
             data={chartData}
@@ -428,28 +428,28 @@ export default function TransaksiScreen() {
             {rows.map((row) => (
               <li
                 key={row.key}
-                className="flex overflow-hidden rounded-xl border border-neutral-200 bg-surface"
+                className="flex overflow-hidden rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card"
               >
                 {/* Area klik → drill down */}
                 <button
                   type="button"
                   onClick={() => onRowClick(row)}
-                  className="flex flex-1 items-center justify-between px-4 py-3 text-left transition-colors hover:bg-neutral-50 active:bg-neutral-100"
+                  className="flex flex-1 items-center justify-between px-4 py-3 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-dark-elevated active:bg-neutral-100 dark:active:bg-dark-elevated"
                 >
                   <div>
-                    <p className="text-base font-bold text-neutral-900">{row.label}</p>
-                    <p className="mt-0.5 text-xs text-neutral-500">{row.count} transaksi</p>
+                    <p className="text-base font-bold text-neutral-900 dark:text-white">{row.label}</p>
+                    <p className="mt-0.5 text-xs text-neutral-500 dark:text-dark-muted">{row.count} transaksi</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-right">
-                      <p className="font-mono text-sm font-semibold text-neutral-900">
+                      <p className="font-mono text-sm font-semibold text-neutral-900 dark:text-white">
                         {formatCurrency(row.pendapatan)}
                       </p>
                       <p className="font-mono text-xs text-success-700">
                         +{formatCurrency(row.keuntungan)}
                       </p>
                     </div>
-                    <span className="text-xl text-neutral-300">›</span>
+                    <span className="text-xl text-neutral-300 dark:text-dark-border">›</span>
                   </div>
                 </button>
 
@@ -459,7 +459,7 @@ export default function TransaksiScreen() {
                   onClick={() =>
                     setBulkTarget({ label: getDeleteLabel(row), txnIds: row.txnIds })
                   }
-                  className="flex shrink-0 items-center border-l border-neutral-100 px-4 text-xl text-danger-300 transition-colors hover:bg-danger-50 hover:text-danger-600 active:bg-danger-100"
+                  className="flex shrink-0 items-center border-l border-neutral-100 dark:border-dark-border px-4 text-xl text-danger-300 dark:text-danger-700 transition-colors hover:bg-danger-50 dark:hover:bg-danger-700/20 hover:text-danger-600 dark:hover:text-danger-400 active:bg-danger-100 dark:active:bg-danger-700/30"
                   title={`Hapus ${row.count} transaksi`}
                 >
                   🗑
@@ -484,14 +484,14 @@ export default function TransaksiScreen() {
           return (
             <li
               key={txn.id}
-              className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-surface px-4 py-3"
+              className="flex items-center gap-3 rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card px-4 py-3"
             >
               {/* Waktu */}
               <div className="min-w-0 flex-1">
-                <p className="font-mono text-sm font-bold text-neutral-900">{fmtTime(txn.date)}</p>
-                <p className="mt-0.5 text-xs text-neutral-500">{txn.invoiceNo}</p>
+                <p className="font-mono text-sm font-bold text-neutral-900 dark:text-white">{fmtTime(txn.date)}</p>
+                <p className="mt-0.5 text-xs text-neutral-500 dark:text-dark-muted">{txn.invoiceNo}</p>
                 <div className="mt-1 flex gap-3">
-                  <span className="font-mono text-xs text-neutral-700">
+                  <span className="font-mono text-xs text-neutral-700 dark:text-dark-muted">
                     {formatCurrency(txn.total)}
                   </span>
                   <span className="font-mono text-xs text-success-700">
@@ -506,7 +506,7 @@ export default function TransaksiScreen() {
                   type="button"
                   onClick={() => void handleOpenReceipt(txn)}
                   disabled={loadingReceiptId === txn.id}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary disabled:opacity-50"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary dark:text-primary-400 disabled:opacity-50"
                   title="Lihat struk"
                 >
                   {loadingReceiptId === txn.id ? '…' : '🧾'}
@@ -601,21 +601,21 @@ export default function TransaksiScreen() {
           <button
             type="button"
             onClick={pop}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 active:bg-neutral-200"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-dark-elevated active:bg-neutral-200 dark:active:bg-dark-border"
           >
             <span className="text-xl text-primary">‹</span>
           </button>
         ) : (
           <Link
             to="/laporan"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 active:bg-neutral-200"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-dark-elevated active:bg-neutral-200 dark:active:bg-dark-border"
           >
             <span className="text-xl text-primary">‹</span>
           </Link>
         )}
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Laporan</p>
-          <h2 className="truncate text-lg font-bold text-neutral-900">{title}</h2>
+          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">Laporan</p>
+          <h2 className="truncate text-lg font-bold text-neutral-900 dark:text-white">{title}</h2>
         </div>
       </div>
 
@@ -628,9 +628,9 @@ export default function TransaksiScreen() {
       {/* Dialog hapus transaksi */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center">
-          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white p-6 sm:rounded-2xl">
-            <h3 className="text-base font-bold text-neutral-900">Hapus Transaksi?</h3>
-            <p className="mt-1 text-sm text-neutral-600">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white dark:bg-dark-elevated p-6 sm:rounded-2xl">
+            <h3 className="text-base font-bold text-neutral-900 dark:text-white">Hapus Transaksi?</h3>
+            <p className="mt-1 text-sm text-neutral-600 dark:text-dark-muted">
               {deleteTarget.invoiceNo} · {formatCurrency(deleteTarget.total)}
             </p>
             <p className="mt-2 text-xs text-danger-700">
@@ -645,9 +645,9 @@ export default function TransaksiScreen() {
                 onChange={(e) => setRestoreStock(e.target.checked)}
                 className="mt-0.5 h-4 w-4 accent-primary"
               />
-              <span className="text-sm text-neutral-700">
+              <span className="text-sm text-neutral-700 dark:text-white">
                 Kembalikan stok barang ke gudang
-                <span className="mt-0.5 block text-xs text-neutral-400">
+                <span className="mt-0.5 block text-xs text-neutral-400 dark:text-dark-muted">
                   Stok tiap produk dalam transaksi ini akan ditambah kembali
                 </span>
               </span>
@@ -666,7 +666,7 @@ export default function TransaksiScreen() {
                 type="button"
                 onClick={() => { setDeleteTarget(null); setRestoreStock(false) }}
                 disabled={deleting}
-                className="w-full rounded-lg border border-neutral-200 bg-white py-3 text-sm font-semibold text-neutral-600 disabled:opacity-50"
+                className="w-full rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated py-3 text-sm font-semibold text-neutral-600 dark:text-dark-muted disabled:opacity-50"
               >
                 Batal
               </button>
@@ -678,7 +678,7 @@ export default function TransaksiScreen() {
       {/* Dialog hapus bulk */}
       {bulkTarget && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center">
-          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white p-6 sm:rounded-2xl">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white dark:bg-dark-elevated p-6 sm:rounded-2xl">
             <h3 className="text-base font-bold text-neutral-900">Hapus {bulkTarget.label}?</h3>
             <p className="mt-1 text-sm text-neutral-600">
               <span className="font-bold text-danger-700">{bulkTarget.txnIds.length} transaksi</span>{' '}
@@ -696,9 +696,9 @@ export default function TransaksiScreen() {
                 onChange={(e) => setBulkRestoreStock(e.target.checked)}
                 className="mt-0.5 h-4 w-4 accent-primary"
               />
-              <span className="text-sm text-neutral-700">
+              <span className="text-sm text-neutral-700 dark:text-white">
                 Kembalikan stok semua barang ke gudang
-                <span className="mt-0.5 block text-xs text-neutral-400">
+                <span className="mt-0.5 block text-xs text-neutral-400 dark:text-dark-muted">
                   Stok tiap produk dari {bulkTarget.txnIds.length} transaksi akan ditambah kembali
                 </span>
               </span>
@@ -719,7 +719,7 @@ export default function TransaksiScreen() {
                 type="button"
                 onClick={() => { setBulkTarget(null); setBulkRestoreStock(false) }}
                 disabled={bulkDeleting}
-                className="w-full rounded-lg border border-neutral-200 bg-white py-3 text-sm font-semibold text-neutral-600 disabled:opacity-50"
+                className="w-full rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated py-3 text-sm font-semibold text-neutral-600 dark:text-dark-muted disabled:opacity-50"
               >
                 Batal
               </button>
@@ -757,7 +757,7 @@ function MetricTabs({ metric, onChange }: { metric: Metric; onChange: (m: Metric
           type="button"
           onClick={() => onChange(o.value)}
           className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-            metric === o.value ? 'bg-primary text-white' : 'bg-neutral-100 text-neutral-600'
+            metric === o.value ? 'bg-primary text-white' : 'bg-neutral-100 dark:bg-dark-elevated text-neutral-600 dark:text-white'
           }`}
         >
           {o.label}
@@ -769,8 +769,8 @@ function MetricTabs({ metric, onChange }: { metric: Metric; onChange: (m: Metric
 
 function EmptyState() {
   return (
-    <div className="rounded-xl border border-neutral-200 bg-surface p-8 text-center">
-      <p className="text-sm text-neutral-400">Belum ada transaksi pada periode ini.</p>
+    <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-8 text-center">
+      <p className="text-sm text-neutral-400 dark:text-dark-muted">Belum ada transaksi pada periode ini.</p>
     </div>
   )
 }

@@ -22,10 +22,11 @@ interface CartItem {
   qtyInput: string
 }
 
-const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
-  { value: 'cash', label: 'Tunai' },
-  { value: 'qris', label: 'QRIS' },
-  { value: 'transfer', label: 'Transfer' },
+const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: string }[] = [
+  { value: 'cash',     label: 'Tunai',    icon: '💵' },
+  { value: 'qris',     label: 'QRIS',     icon: '📲' },
+  { value: 'transfer', label: 'Transfer', icon: '🏦' },
+  { value: 'piutang',  label: 'Piutang',  icon: '💳' },
 ]
 
 function normalizeQtyInput(value: string, fallback = 1): number {
@@ -157,32 +158,32 @@ function ProductSearchBar({ products, onSelect }: ProductSearchBarProps) {
               }
             }}
             placeholder="Cari produk atau scan barcode..."
-            className="min-w-0 flex-1 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm focus:border-primary focus:outline-none"
+            className="min-w-0 flex-1 rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-4 py-3 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-dark-muted focus:border-primary dark:focus:border-primary-400 focus:outline-none"
           />
           <button
             type="button"
             onClick={handleScanButtonPress}
-            className="rounded-lg border border-neutral-200 bg-white px-3 py-3 text-xs font-bold text-neutral-700 hover:bg-neutral-50"
+            className="rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated px-3 py-3 text-xs font-bold text-neutral-700 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-border"
           >
             {isNativeApp() ? '📷 Scan' : 'Scan'}
           </button>
         </div>
 
-        {scanMessage && <p className="text-xs font-semibold text-neutral-500">{scanMessage}</p>}
+        {scanMessage && <p className="text-xs font-semibold text-neutral-500 dark:text-dark-muted">{scanMessage}</p>}
 
         {showDropdown && (
           <div className="relative">
-            <div className="absolute left-0 right-0 z-30 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg">
+            <div className="absolute left-0 right-0 z-30 overflow-hidden rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card shadow-lg">
               {results.map((p) => (
                 <button
                   key={p.id}
                   type="button"
                   onMouseDown={() => handleSelect(p)}
-                  className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-neutral-50"
+                  className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-dark-elevated"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-neutral-900">{p.name}</p>
-                    <p className="text-xs text-neutral-500">
+                    <p className="truncate text-sm font-semibold text-neutral-900 dark:text-white">{p.name}</p>
+                    <p className="text-xs text-neutral-500 dark:text-dark-muted">
                       {p.sku}
                       {p.barcode ? ` - ${p.barcode}` : ''}
                       {p.stock <= p.minStock && p.minStock > 0
@@ -231,7 +232,7 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
   const handleConfirm = async () => {
     setCheckoutError(null)
     try {
-      const finalPaid = isCash ? paidAmount : cartTotal
+      const finalPaid = isCash ? paidAmount : isPiutang ? 0 : cartTotal
       await onConfirm(paymentMethod, finalPaid, dateTimeLocalToIso(transactionDateLocal), notes.trim() || undefined)
     } catch (err) {
       setCheckoutError(err instanceof Error ? err.message : 'Gagal menyimpan transaksi.')
@@ -243,16 +244,16 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
       <div className="absolute inset-0 bg-black/40" onClick={isSaving ? undefined : onClose} />
       <div
         data-bottom-sheet="true"
-        className="relative w-full max-w-lg rounded-t-2xl bg-white sm:rounded-2xl"
+        className="relative w-full max-w-lg rounded-t-2xl bg-white dark:bg-dark-elevated sm:rounded-2xl"
       >
-        <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
-          <h3 className="font-bold text-neutral-900">Pembayaran</h3>
+        <div className="flex items-center justify-between border-b border-neutral-200 dark:border-dark-border px-5 py-4">
+          <h3 className="font-bold text-neutral-900 dark:text-white">Pembayaran</h3>
           {!isSaving && (
             <button
               type="button"
               onClick={onClose}
               data-android-back-close="true"
-              className="text-sm font-medium text-neutral-500 hover:text-neutral-800"
+              className="text-sm font-medium text-neutral-500 dark:text-dark-muted hover:text-neutral-800"
             >
               Batal
             </button>
@@ -266,26 +267,26 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
             </div>
           )}
 
-          <div className="rounded-lg bg-primary-50 px-4 py-4 text-center">
-            <p className="text-xs font-semibold uppercase text-neutral-500">Total Tagihan</p>
+          <div className="rounded-lg bg-primary-50 dark:bg-primary-900/30 px-4 py-4 text-center">
+            <p className="text-xs font-semibold uppercase text-neutral-500 dark:text-dark-muted">Total Tagihan</p>
             <p className="mt-1 font-mono text-3xl font-bold text-primary">
               {formatCurrency(cartTotal)}
             </p>
           </div>
 
           <div>
-            <p className="mb-1 text-xs font-semibold text-neutral-600">Tanggal Transaksi</p>
+            <p className="mb-1 text-xs font-semibold text-neutral-600 dark:text-dark-muted">Tanggal Transaksi</p>
             <input
               type="datetime-local"
               value={transactionDateLocal}
               onChange={(e) => setTransactionDateLocal(e.target.value)}
-              className="w-full rounded-md border border-neutral-300 px-3 py-3 text-sm font-semibold focus:border-primary focus:outline-none"
+              className="w-full rounded-md border border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-3 py-3 text-sm font-semibold focus:border-primary dark:focus:border-primary-400 focus:outline-none"
             />
           </div>
 
           <div>
-            <p className="mb-2 text-xs font-semibold text-neutral-600">Metode Pembayaran</p>
-            <div className="grid grid-cols-3 gap-2">
+            <p className="mb-2 text-xs font-semibold text-neutral-600 dark:text-dark-muted">Metode Pembayaran</p>
+            <div className="grid grid-cols-2 gap-2">
               {PAYMENT_METHODS.map((m) => (
                 <button
                   key={m.value}
@@ -294,12 +295,15 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
                     setPaymentMethod(m.value)
                     setPaidAmountStr('')
                   }}
-                  className={`rounded-md border py-2.5 text-sm font-semibold transition-colors ${
+                  className={`flex items-center justify-center gap-1.5 rounded-xl border py-2.5 text-sm font-semibold transition-colors ${
                     paymentMethod === m.value
                       ? 'border-primary bg-primary text-white'
-                      : 'border-neutral-300 text-neutral-700 hover:border-primary/50'
+                      : m.value === 'piutang'
+                        ? 'border-warning-300 dark:border-warning-700/50 text-warning-700 dark:text-warning-400 hover:bg-warning-50 dark:hover:bg-warning-700/10'
+                        : 'border-neutral-300 dark:border-dark-border text-neutral-700 dark:text-white hover:border-primary/50'
                   }`}
                 >
+                  <span>{m.icon}</span>
                   {m.label}
                 </button>
               ))}
@@ -308,7 +312,7 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
 
           {isCash && (
             <div>
-              <p className="mb-1 text-xs font-semibold text-neutral-600">Uang Diterima</p>
+              <p className="mb-1 text-xs font-semibold text-neutral-600 dark:text-dark-muted">Uang Diterima</p>
               <input
                 type="number"
                 inputMode="numeric"
@@ -317,11 +321,11 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
                 placeholder="Masukkan nominal..."
                 min={cartTotal}
                 autoFocus
-                className="w-full rounded-md border border-neutral-300 px-3 py-3 font-mono text-lg font-bold focus:border-primary focus:outline-none"
+                className="w-full rounded-md border border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-3 py-3 font-mono text-lg font-bold focus:border-primary dark:focus:border-primary-400 focus:outline-none"
               />
               {paidAmount > 0 && (
                 <div className="mt-2 flex justify-between text-sm">
-                  <span className="text-neutral-600">Kembalian</span>
+                  <span className="text-neutral-600 dark:text-dark-muted">Kembalian</span>
                   <span
                     className={`font-mono font-bold ${
                       change >= 0 ? 'text-success-700' : 'text-danger-700'
@@ -335,7 +339,7 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
           )}
 
           {!isCash && !isPiutang && (
-            <div className="rounded-md bg-neutral-100 px-3 py-2 text-center text-sm text-neutral-600">
+            <div className="rounded-md bg-neutral-100 dark:bg-dark-elevated px-3 py-2 text-center text-sm text-neutral-600 dark:text-dark-muted">
               Pembayaran tepat sejumlah{' '}
               <span className="font-mono font-bold">{formatCurrency(cartTotal)}</span>
             </div>
@@ -347,7 +351,7 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
                 💳 Piutang — pembayaran dicatat sebagai hutang
               </div>
               <div>
-                <p className="mb-1 text-xs font-semibold text-neutral-600">
+                <p className="mb-1 text-xs font-semibold text-neutral-600 dark:text-dark-muted">
                   Catatan (nama pelanggan / keterangan)
                 </p>
                 <input
@@ -355,7 +359,7 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Contoh: Pak Budi - ambil nanti sore"
-                  className="w-full rounded-md border border-neutral-300 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                  className="w-full rounded-md border border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-3 py-2.5 text-sm focus:border-primary dark:focus:border-primary-400 focus:outline-none"
                 />
               </div>
             </div>
@@ -546,8 +550,8 @@ export default function POSScreen() {
   return (
     <section className="space-y-4 pb-24">
       <div>
-        <p className="text-sm font-medium text-neutral-500">Kasir</p>
-        <h2 className="mt-1 text-2xl font-bold text-neutral-900">Transaksi Baru</h2>
+        <p className="text-sm font-medium text-neutral-500 dark:text-dark-muted">Kasir</p>
+        <h2 className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">Transaksi Baru</h2>
       </div>
 
       {successMessage && (
@@ -559,9 +563,9 @@ export default function POSScreen() {
       <ProductSearchBar products={products} onSelect={addToCart} />
 
       {cart.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-neutral-300 py-14 text-center">
-          <p className="text-sm text-neutral-500">Belum ada produk di keranjang.</p>
-          <p className="mt-1 text-xs text-neutral-400">
+        <div className="rounded-lg border border-dashed border-neutral-300 dark:border-dark-border py-14 text-center">
+          <p className="text-sm text-neutral-500 dark:text-dark-muted">Belum ada produk di keranjang.</p>
+          <p className="mt-1 text-xs text-neutral-400 dark:text-dark-muted">
             Cari produk di atas untuk mulai transaksi.
           </p>
         </div>
@@ -570,14 +574,14 @@ export default function POSScreen() {
           {cart.map((item) => (
             <div
               key={item.productId}
-              className="rounded-lg border border-neutral-200 bg-surface px-4 py-3"
+              className="rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card px-4 py-3"
             >
               <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-neutral-900">
+                  <p className="truncate text-sm font-semibold text-neutral-900 dark:text-white">
                     {item.productName}
                   </p>
-                  <p className="font-mono text-xs text-neutral-500">
+                  <p className="font-mono text-xs text-neutral-500 dark:text-dark-muted">
                     {formatCurrency(item.price)}
                   </p>
                 </div>
@@ -597,13 +601,13 @@ export default function POSScreen() {
               </div>
 
               <div className="mt-3 flex items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-neutral-500">Qty</span>
+                <span className="text-xs font-semibold text-neutral-500 dark:text-dark-muted">Qty</span>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => updateQty(item.productId, -1)}
                     disabled={item.qty <= 1}
-                    className="flex h-10 w-10 items-center justify-center rounded-md border border-neutral-300 text-lg font-bold text-neutral-600 hover:bg-neutral-100 disabled:opacity-40"
+                    className="flex h-10 w-10 items-center justify-center rounded-md border border-neutral-300 dark:border-dark-border text-lg font-bold text-neutral-600 dark:text-dark-muted hover:bg-neutral-100 dark:hover:bg-dark-elevated disabled:opacity-40"
                     aria-label={`Kurangi qty ${item.productName}`}
                   >
                     -
@@ -621,7 +625,7 @@ export default function POSScreen() {
                       }
                     }}
                     aria-label={`Qty ${item.productName}`}
-                    className="h-10 w-20 rounded-md border border-neutral-300 px-2 text-center font-mono text-base font-bold focus:border-primary focus:outline-none"
+                    className="h-10 w-20 rounded-md border border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-elevated text-neutral-900 dark:text-white px-2 text-center font-mono text-base font-bold focus:border-primary dark:focus:border-primary-400 focus:outline-none"
                   />
                   <button
                     type="button"
@@ -639,13 +643,13 @@ export default function POSScreen() {
       )}
 
       {cart.length > 0 && (
-        <div className="rounded-lg border border-neutral-200 bg-surface px-4 py-4">
+        <div className="rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-neutral-500 dark:text-dark-muted">
                 {cartCount} item - {cart.length} jenis
               </p>
-              <p className="text-sm font-semibold text-neutral-700">Total</p>
+              <p className="text-sm font-semibold text-neutral-700 dark:text-white">Total</p>
             </div>
             <p className="font-mono text-2xl font-bold text-primary">{formatCurrency(cartTotal)}</p>
           </div>
@@ -653,7 +657,7 @@ export default function POSScreen() {
             <button
               type="button"
               onClick={clearCart}
-              className="rounded-md border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-600 hover:bg-neutral-50"
+              className="rounded-md border border-neutral-300 dark:border-dark-border px-4 py-2.5 text-sm font-semibold text-neutral-600 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated"
             >
               Kosongkan
             </button>

@@ -114,13 +114,13 @@ export function ReceiptActionSheet({
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center">
       <div
         data-receipt-sheet="true"
-        className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-2xl bg-neutral-50 sm:rounded-2xl"
+        className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-t-2xl bg-neutral-50 dark:bg-dark-elevated sm:rounded-2xl"
       >
-        <div className="sticky top-0 z-10 border-b border-neutral-200 bg-white px-5 py-4">
+        <div className="sticky top-0 z-10 border-b border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated px-5 py-4">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase text-success-700">Struk transaksi</p>
-              <h3 className="mt-1 text-lg font-bold text-neutral-900">
+              <h3 className="mt-1 text-lg font-bold text-neutral-900 dark:text-white">
                 {snapshot.transaction.invoiceNo}
               </h3>
             </div>
@@ -128,7 +128,7 @@ export function ReceiptActionSheet({
               type="button"
               onClick={onClose}
               data-android-back-close="true"
-              className="rounded-md border border-neutral-200 px-3 py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-50"
+              className="rounded-md border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-2 text-xs font-bold text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-elevated"
             >
               {closeLabel}
             </button>
@@ -151,28 +151,28 @@ export function ReceiptActionSheet({
             <button
               type="button"
               onClick={() => receiptRef.current?.scrollIntoView({ behavior: 'smooth' })}
-              className="rounded-md border border-neutral-200 bg-white px-3 py-3 text-sm font-bold text-neutral-700 hover:bg-neutral-50"
+              className="rounded-md border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-3 text-sm font-bold text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-elevated"
             >
               Lihat Struk
             </button>
             <button
               type="button"
               onClick={() => openWhatsAppReceipt(snapshot)}
-              className="rounded-md border border-neutral-200 bg-white px-3 py-3 text-sm font-bold text-neutral-700 hover:bg-neutral-50"
+              className="rounded-md border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-3 text-sm font-bold text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-elevated"
             >
               WhatsApp
             </button>
             <button
               type="button"
               onClick={() => void handleCopy()}
-              className="rounded-md border border-neutral-200 bg-white px-3 py-3 text-sm font-bold text-neutral-700 hover:bg-neutral-50"
+              className="rounded-md border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-3 text-sm font-bold text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-elevated"
             >
               Copy Teks
             </button>
             <button
               type="button"
               onClick={handlePrint}
-              className="rounded-md border border-neutral-200 bg-white px-3 py-3 text-sm font-bold text-neutral-700 hover:bg-neutral-50"
+              className="rounded-md border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-3 text-sm font-bold text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-elevated"
             >
               Print
             </button>
@@ -180,7 +180,7 @@ export function ReceiptActionSheet({
               type="button"
               onClick={handleDownloadJpg}
               disabled={isBusy}
-              className="rounded-md border border-neutral-200 bg-white px-3 py-3 text-sm font-bold text-neutral-700 hover:bg-neutral-50 disabled:opacity-60"
+              className="rounded-md border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-3 text-sm font-bold text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-elevated disabled:opacity-60"
             >
               {busyAction === 'jpg' ? 'Membuat...' : 'JPG'}
             </button>
@@ -188,7 +188,7 @@ export function ReceiptActionSheet({
               type="button"
               onClick={handleDownloadPdf}
               disabled={isBusy}
-              className="rounded-md border border-neutral-200 bg-white px-3 py-3 text-sm font-bold text-neutral-700 hover:bg-neutral-50 disabled:opacity-60"
+              className="rounded-md border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-3 text-sm font-bold text-neutral-700 dark:text-white hover:bg-neutral-50 dark:hover:bg-dark-elevated disabled:opacity-60"
             >
               {busyAction === 'pdf' ? 'Membuat...' : 'PDF'}
             </button>
@@ -196,7 +196,7 @@ export function ReceiptActionSheet({
               type="button"
               onClick={handleShareJpg}
               disabled={isBusy}
-              className="rounded-md border border-primary-200 bg-white px-3 py-3 text-sm font-bold text-primary hover:bg-primary-50 disabled:opacity-60"
+              className="rounded-md border border-primary-200 dark:border-primary-800 bg-white dark:bg-dark-card px-3 py-3 text-sm font-bold text-primary hover:bg-primary-50 dark:hover:bg-primary-900/20 disabled:opacity-60"
             >
               {busyAction === 'share-jpg' ? 'Share...' : 'Share JPG'}
             </button>
@@ -210,7 +210,7 @@ export function ReceiptActionSheet({
             </button>
           </div>
 
-          <div className="bg-white py-4">
+          <div className="bg-white dark:bg-dark-elevated py-4">
             <div ref={receiptRef} className="mx-auto inline-block w-full max-w-[320px] bg-white">
               <ReceiptPreview
                 transaction={snapshot.transaction}
