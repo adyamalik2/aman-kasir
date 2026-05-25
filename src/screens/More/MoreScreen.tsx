@@ -36,9 +36,8 @@ const menuItems: MenuItem[] = [
   {
     icon: 'ℹ️',
     label: 'Tentang',
-    description: 'Informasi aplikasi AMAN Kasir.',
-    to: null,
-    badge: 'Segera',
+    description: 'Versi aplikasi, fitur, pengembang, dan teknologi.',
+    to: '/lainnya/tentang',
   },
 ]
 

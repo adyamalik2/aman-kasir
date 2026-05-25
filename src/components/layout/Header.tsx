@@ -29,7 +29,10 @@ export default function Header() {
     try {
       await authService.signInWithGoogle()
     } catch (err) {
-      setLoginError(err instanceof Error ? err.message : 'Login gagal.')
+      const msg = err instanceof Error ? err.message : 'Login gagal.'
+      // Jangan tampilkan error jika user sengaja batalkan login
+      if (/cancel/i.test(msg)) return
+      setLoginError('Login Google gagal. Pastikan koneksi internet aktif, lalu coba lagi.')
       setTimeout(() => setLoginError(null), 4000)
     }
   }
