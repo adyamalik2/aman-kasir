@@ -80,31 +80,31 @@ function ProductRankList({
   if (entries.length === 0) {
     return (
       <div>
-        <h3 className="text-sm font-bold text-neutral-900">{title}</h3>
-        <p className="mt-2 text-sm text-neutral-400">Belum ada penjualan pada periode ini.</p>
+        <h3 className="text-sm font-bold text-neutral-900 dark:text-white">{title}</h3>
+        <p className="mt-2 text-sm text-neutral-400 dark:text-dark-muted">Belum ada penjualan pada periode ini.</p>
       </div>
     )
   }
 
   return (
     <div>
-      <h3 className="text-sm font-bold text-neutral-900">{title}</h3>
+      <h3 className="text-sm font-bold text-neutral-900 dark:text-white">{title}</h3>
       <ol className="mt-2 space-y-2">
         {entries.map((entry, index) => (
           <li
             key={`${entry.productId}-${mode}`}
-            className="flex items-center justify-between rounded-lg border border-neutral-200 bg-surface px-3 py-2"
+            className="flex items-center justify-between rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card px-3 py-2"
           >
             <div className="flex min-w-0 items-center gap-2">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-50 text-xs font-bold text-primary">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-50 dark:bg-primary-900/30 text-xs font-bold text-primary dark:text-primary-400">
                 {index + 1}
               </span>
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-neutral-900">{entry.productName}</p>
-                {entry.sku && <p className="text-xs text-neutral-400">{entry.sku}</p>}
+                <p className="truncate text-sm font-medium text-neutral-900 dark:text-white">{entry.productName}</p>
+                {entry.sku && <p className="text-xs text-neutral-400 dark:text-dark-muted">{entry.sku}</p>}
               </div>
             </div>
-            <p className="ml-2 shrink-0 font-mono text-sm font-semibold text-primary">
+            <p className="ml-2 shrink-0 font-mono text-sm font-semibold text-primary dark:text-primary-400">
               {mode === 'qty' ? `${entry.qtySold}×` : formatCurrency(entry.revenue)}
             </p>
           </li>

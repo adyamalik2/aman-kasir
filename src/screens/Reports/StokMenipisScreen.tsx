@@ -188,7 +188,7 @@ export default function StokMenipisScreen() {
                     restockMode === m
                       ? m === 'tambah'
                         ? 'bg-primary text-white shadow-sm'
-                        : 'bg-warning-500 text-white shadow-sm'
+                        : 'bg-warning-500 dark:bg-warning-600 text-white shadow-sm'
                       : 'text-neutral-500 dark:text-dark-muted hover:bg-neutral-200 dark:hover:bg-dark-elevated'
                   }`}
                 >

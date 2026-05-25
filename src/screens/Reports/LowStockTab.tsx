@@ -54,19 +54,19 @@ export default function LowStockTab() {
       {loading ? (
         <p className="py-8 text-center text-sm text-neutral-500">Memuat stok menipis...</p>
       ) : products.length === 0 ? (
-        <div className="rounded-lg border border-neutral-200 bg-surface p-8 text-center">
-          <p className="text-sm text-neutral-500">Semua stok produk aman.</p>
+        <div className="rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-8 text-center">
+          <p className="text-sm text-neutral-500 dark:text-dark-muted">Semua stok produk aman.</p>
         </div>
       ) : (
         <ul className="space-y-2">
           {products.map((p) => (
             <li
               key={p.id}
-              className="flex items-center justify-between rounded-lg border border-warning-100 bg-warning-50/30 px-4 py-3"
+              className="flex items-center justify-between rounded-lg border border-warning-100 dark:border-warning-700/30 bg-warning-50/30 dark:bg-warning-700/10 px-4 py-3"
             >
               <div className="min-w-0">
-                <p className="font-medium text-neutral-900">{p.name}</p>
-                <p className="text-xs text-neutral-500">
+                <p className="font-medium text-neutral-900 dark:text-white">{p.name}</p>
+                <p className="text-xs text-neutral-500 dark:text-dark-muted">
                   Stok: {p.stock} {p.unit} · Min: {p.minStock} · {formatCurrency(p.sellPrice)}
                 </p>
               </div>
