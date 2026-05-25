@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import type { Transaction } from '@/domain'
+import type { Transaction, Customer } from '@/domain'
 import { formatCurrency } from '@/lib/currency'
 import { db } from '@/infra/db/dexie'
 import { DexieTransactionRepository } from '@/repositories/implementations/DexieTransactionRepository'
@@ -11,6 +11,9 @@ import { ReceiptActionSheet } from '@/components/receipt/ReceiptActionSheet'
 import type { ReceiptSnapshot } from '@/components/receipt/receiptUtils'
 import { getStoreProfile } from '@/lib/storeProfile'
 import { VerticalBarChart } from './components/VerticalBarChart'
+import { CsvExportService } from '@/services/export/CsvExportService'
+
+const csvService = new CsvExportService()
 
 // ---------------------------------------------------------------------------
 // Use case & constants
@@ -91,6 +94,18 @@ export default function TransaksiScreen() {
   const [receiptSnapshot, setReceiptSnapshot] = useState<ReceiptSnapshot | null>(null)
   const [loadingReceiptId, setLoadingReceiptId] = useState<string | null>(null)
 
+  // Customer map untuk tampilkan nama di list transaksi
+  const [customerMap, setCustomerMap] = useState<Map<string, Customer>>(new Map())
+
+  // Pencarian global
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Tandai Lunas langsung dari list transaksi
+  const [lunasTarget, setLunasTarget] = useState<Transaction | null>(null)
+  const [lunasMethod, setLunasMethod] = useState('tunai')
+  const [lunasNotes, setLunasNotes] = useState('')
+  const [lunasLoading, setLunasLoading] = useState(false)
+
   // Navigasi
   const push = (v: View) => setViewStack((s) => [...s, v])
   const pop = useCallback(() => setViewStack((s) => (s.length > 1 ? s.slice(0, -1) : s)), [])
@@ -127,8 +142,45 @@ export default function TransaksiScreen() {
       })
       .catch(() => push({ type: 'txns', label: 'Transaksi Hari Ini', txnIds: [] }))
       .finally(() => setLoading(false))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
+
+  // Load customer map sekali untuk tampil di list
+  useEffect(() => {
+    db.customers.toArray()
+      .then((cs) => setCustomerMap(new Map(cs.map((c) => [c.id, c]))))
+      .catch(() => {})
+  }, [])
+
+  // Load semua data untuk pencarian global (trigger saat searchQuery berubah dari '' ke ada isi)
+  const loadAllDataOnce = useCallback(async () => {
+    if (allTxns.length > 0) return
+    setLoading(true)
+    setError(null)
+    try {
+      const txns = await db.transactions.orderBy('date').reverse().toArray()
+      const ids = txns.map((t) => t.id)
+      const items = ids.length > 0
+        ? await db.transactionItems.where('transactionId').anyOf(ids).toArray()
+        : []
+      const pMap = new Map<string, number>()
+      for (const it of items) {
+        pMap.set(it.transactionId, (pMap.get(it.transactionId) ?? 0) + (it.price - it.costPrice) * it.qty)
+      }
+      setAllTxns(txns)
+      setProfitMap(pMap)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal memuat data.')
+    } finally {
+      setLoading(false)
+    }
+  }, [allTxns.length])
+
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      void loadAllDataOnce()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery])
 
   // Load semua data saat pertama kali bukan 'menu'
   useEffect(() => {
@@ -296,7 +348,12 @@ export default function TransaksiScreen() {
   const handleOpenReceipt = async (txn: Transaction) => {
     setLoadingReceiptId(txn.id)
     try {
-      const items = await txnRepo.getItemsByTransactionId(txn.id)
+      const [items, customerName] = await Promise.all([
+        txnRepo.getItemsByTransactionId(txn.id),
+        txn.customerId
+          ? db.customers.get(txn.customerId).then((c) => c?.nama)
+          : Promise.resolve(undefined),
+      ])
       setReceiptSnapshot({
         transaction: txn,
         items: items.map((item) => ({
@@ -309,9 +366,41 @@ export default function TransaksiScreen() {
         })),
         storeProfile: getStoreProfile(),
         cashierName: 'Kasir',
+        customerName,
       })
     } finally {
       setLoadingReceiptId(null)
+    }
+  }
+
+  // Tandai lunas
+  const handleLunas = async () => {
+    if (!lunasTarget) return
+    setLunasLoading(true)
+    try {
+      const now = new Date().toISOString()
+      await txnRepo.updateTransaction(lunasTarget.id, {
+        lunasAt: now,
+        lunasMethod,
+        lunasNotes: lunasNotes.trim() || undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any)
+      // Update local state
+      type TxnWithLunas = typeof lunasTarget & { lunasAt?: string; lunasMethod?: string; lunasNotes?: string }
+      setAllTxns((prev) =>
+        prev.map((t) =>
+          t.id === lunasTarget.id
+            ? ({ ...t, lunasAt: now, lunasMethod, lunasNotes: lunasNotes.trim() || undefined } as TxnWithLunas)
+            : t,
+        ),
+      )
+      setLunasTarget(null)
+      setLunasMethod('tunai')
+      setLunasNotes('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal menandai lunas.')
+    } finally {
+      setLunasLoading(false)
     }
   }
 
@@ -472,12 +561,30 @@ export default function TransaksiScreen() {
     )
   }
 
-  function renderTxnsList(txnIds: string[]) {
+  function renderTxnsList(txnIds: string[], exportLabel?: string) {
     const txns = allTxns.filter((t) => txnIds.includes(t.id))
+
+    const handleExportCsv = () => {
+      const filename = exportLabel
+        ? `transaksi-${exportLabel.toLowerCase().replace(/\s+/g, '-')}.csv`
+        : 'transaksi.csv'
+      csvService.exportTransactions(txns, filename)
+    }
 
     return txns.length === 0 ? (
       <EmptyState />
     ) : (
+      <>
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-neutral-400 dark:text-dark-muted">{txns.length} transaksi</p>
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            className="flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-1.5 text-xs font-semibold text-neutral-600 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated"
+          >
+            ⬇️ Export CSV
+          </button>
+        </div>
       <ul className="space-y-2">
         {txns.map((txn) => {
           const profit = profitMap.get(txn.id) ?? 0
@@ -490,6 +597,27 @@ export default function TransaksiScreen() {
               <div className="min-w-0 flex-1">
                 <p className="font-mono text-sm font-bold text-neutral-900 dark:text-white">{fmtTime(txn.date)}</p>
                 <p className="mt-0.5 text-xs text-neutral-500 dark:text-dark-muted">{txn.invoiceNo}</p>
+                {(txn.paymentMethod === 'piutang' || (txn.customerId && customerMap.get(txn.customerId))) && (
+                  <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                    {txn.customerId && customerMap.get(txn.customerId) && (
+                      <span className="text-xs font-semibold text-primary dark:text-primary-400">
+                        👤 {customerMap.get(txn.customerId)!.nama}
+                      </span>
+                    )}
+                    {txn.paymentMethod === 'piutang' && (
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      (txn as any).lunasAt ? (
+                        <span className="inline-flex items-center rounded-full bg-success-50 dark:bg-success-700/20 px-1.5 py-0.5 text-[10px] font-semibold text-success-700 dark:text-success-400">
+                          ✓ Lunas
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-warning-50 dark:bg-warning-700/20 px-1.5 py-0.5 text-[10px] font-semibold text-warning-700 dark:text-warning-400">
+                          ⏳ Belum Lunas
+                        </span>
+                      )
+                    )}
+                  </div>
+                )}
                 <div className="mt-1 flex gap-3">
                   <span className="font-mono text-xs text-neutral-700 dark:text-dark-muted">
                     {formatCurrency(txn.total)}
@@ -502,6 +630,22 @@ export default function TransaksiScreen() {
 
               {/* Aksi */}
               <div className="flex shrink-0 items-center gap-2">
+                {/* Tombol Lunasi — hanya untuk piutang belum lunas */}
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {txn.paymentMethod === 'piutang' && !(txn as any).lunasAt && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLunasTarget(txn)
+                      setLunasMethod('tunai')
+                      setLunasNotes('')
+                    }}
+                    className="flex h-8 items-center justify-center rounded-lg bg-success-50 dark:bg-success-700/20 px-2 text-xs font-bold text-success-700 dark:text-success-400"
+                    title="Tandai lunas"
+                  >
+                    ✓ Lunasi
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => void handleOpenReceipt(txn)}
@@ -524,12 +668,29 @@ export default function TransaksiScreen() {
           )
         })}
       </ul>
+      </>
     )
   }
 
   // ---------------------------------------------------------------------------
   // Build content
   // ---------------------------------------------------------------------------
+
+  // Hasil pencarian global
+  const searchResults = searchQuery.trim()
+    ? allTxns.filter((t) => {
+        const q = searchQuery.toLowerCase()
+        if (t.invoiceNo.toLowerCase().includes(q)) return true
+        if (t.notes?.toLowerCase().includes(q)) return true
+        if (t.paymentMethod.toLowerCase().includes(q)) return true
+        if (t.customerId) {
+          const c = customerMap.get(t.customerId)
+          if (c?.nama.toLowerCase().includes(q)) return true
+          if (c?.telepon?.toLowerCase().includes(q)) return true
+        }
+        return false
+      })
+    : []
 
   let title = 'Laporan Transaksi'
   let content: React.ReactNode = null
@@ -584,7 +745,7 @@ export default function TransaksiScreen() {
     title = currentView.label
     content = loading ? (
       <div className="py-12 text-center text-sm text-neutral-400">Memuat transaksi...</div>
-    ) : renderTxnsList(currentView.txnIds)
+    ) : renderTxnsList(currentView.txnIds, currentView.label)
   }
 
   const canGoBack = viewStack.length > 1
@@ -619,11 +780,43 @@ export default function TransaksiScreen() {
         </div>
       </div>
 
+      {/* Search bar global */}
+      <div className="relative">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-dark-muted text-sm">🔍</span>
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Cari no. invoice, pelanggan, catatan..."
+          className="w-full rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card pl-9 pr-4 py-2.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-dark-muted focus:border-primary dark:focus:border-primary-400 focus:outline-none"
+        />
+      </div>
+
       {error && (
         <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</div>
       )}
 
-      {content}
+      {searchQuery.trim() ? (
+        /* Hasil pencarian global */
+        loading ? (
+          <div className="py-12 text-center text-sm text-neutral-400 dark:text-dark-muted">Memuat...</div>
+        ) : searchResults.length === 0 ? (
+          <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-8 text-center">
+            <p className="text-lg">🔍</p>
+            <p className="mt-2 text-sm font-semibold text-neutral-700 dark:text-white">Tidak ada hasil</p>
+            <p className="mt-1 text-xs text-neutral-400 dark:text-dark-muted">
+              Coba kata kunci lain — no. invoice, nama pelanggan, atau catatan.
+            </p>
+          </div>
+        ) : (
+          <>
+            <p className="text-xs text-neutral-400 dark:text-dark-muted">
+              {searchResults.length} transaksi ditemukan
+            </p>
+            {renderTxnsList(searchResults.map((t) => t.id))}
+          </>
+        )
+      ) : content}
 
       {/* Dialog hapus transaksi */}
       {deleteTarget && (
@@ -679,9 +872,9 @@ export default function TransaksiScreen() {
       {bulkTarget && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center">
           <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white dark:bg-dark-elevated p-6 sm:rounded-2xl">
-            <h3 className="text-base font-bold text-neutral-900">Hapus {bulkTarget.label}?</h3>
-            <p className="mt-1 text-sm text-neutral-600">
-              <span className="font-bold text-danger-700">{bulkTarget.txnIds.length} transaksi</span>{' '}
+            <h3 className="text-base font-bold text-neutral-900 dark:text-white">Hapus {bulkTarget.label}?</h3>
+            <p className="mt-1 text-sm text-neutral-600 dark:text-dark-muted">
+              <span className="font-bold text-danger-700 dark:text-danger-400">{bulkTarget.txnIds.length} transaksi</span>{' '}
               akan dihapus permanen.
             </p>
             <p className="mt-2 text-xs text-danger-700">
@@ -722,6 +915,83 @@ export default function TransaksiScreen() {
                 className="w-full rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated py-3 text-sm font-semibold text-neutral-600 dark:text-dark-muted disabled:opacity-50"
               >
                 Batal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sheet Tandai Lunas */}
+      {lunasTarget && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={lunasLoading ? undefined : () => setLunasTarget(null)}
+          />
+          <div data-bottom-sheet="true" className="relative w-full max-w-lg rounded-t-2xl bg-white dark:bg-dark-elevated">
+            <div className="flex items-center justify-between border-b border-neutral-200 dark:border-dark-border px-5 py-4">
+              <div>
+                <h3 className="font-bold text-neutral-900 dark:text-white">Tandai Lunas</h3>
+                <p className="text-xs text-neutral-500 dark:text-dark-muted">
+                  {lunasTarget.invoiceNo} · {formatCurrency(lunasTarget.total)}
+                </p>
+              </div>
+              {!lunasLoading && (
+                <button
+                  type="button"
+                  data-android-back-close="true"
+                  onClick={() => setLunasTarget(null)}
+                  className="text-sm font-medium text-neutral-500 dark:text-dark-muted hover:text-neutral-800"
+                >
+                  Batal
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-3 p-5">
+              <div>
+                <p className="mb-1.5 text-xs font-semibold text-neutral-600 dark:text-dark-muted">Metode Pembayaran</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { value: 'tunai', label: '💵 Tunai' },
+                    { value: 'transfer', label: '🏦 Transfer' },
+                    { value: 'qris', label: '📲 QRIS' },
+                    { value: 'lainnya', label: '💳 Lainnya' },
+                  ].map((m) => (
+                    <button
+                      key={m.value}
+                      type="button"
+                      onClick={() => setLunasMethod(m.value)}
+                      className={`rounded-xl border py-2.5 text-sm font-semibold transition-colors ${
+                        lunasMethod === m.value
+                          ? 'border-primary bg-primary text-white'
+                          : 'border-neutral-300 dark:border-dark-border text-neutral-700 dark:text-white hover:border-primary/50'
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-1 text-xs font-semibold text-neutral-600 dark:text-dark-muted">Catatan (opsional)</p>
+                <input
+                  type="text"
+                  value={lunasNotes}
+                  onChange={(e) => setLunasNotes(e.target.value)}
+                  placeholder="cth. Dibayar transfer BCA"
+                  className="w-full rounded-md border border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-3 py-2.5 text-sm focus:border-primary dark:focus:border-primary-400 focus:outline-none"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => void handleLunas()}
+                disabled={lunasLoading}
+                className="w-full rounded-xl bg-success-700 py-3 text-sm font-bold text-white hover:bg-success-500 disabled:opacity-50"
+              >
+                {lunasLoading ? 'Menyimpan...' : '✓ Konfirmasi Pelunasan'}
               </button>
             </div>
           </div>

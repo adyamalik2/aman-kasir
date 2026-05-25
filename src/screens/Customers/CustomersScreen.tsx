@@ -4,8 +4,15 @@ import type { Customer } from '@/domain'
 import { DexieCustomerRepository } from '@/repositories/implementations/DexieCustomerRepository'
 import { generateId } from '@/lib/id-generator'
 import { hapticSuccess, hapticWarning } from '@/native/haptics'
+import { formatCurrency } from '@/lib/currency'
+import { db } from '@/infra/db/dexie'
 
 const repo = new DexieCustomerRepository()
+
+interface PiutangSummary {
+  count: number
+  total: number
+}
 
 const EMPTY_FORM = { nama: '', telepon: '', alamat: '', catatan: '' }
 
@@ -13,6 +20,7 @@ const EMPTY_FORM = { nama: '', telepon: '', alamat: '', catatan: '' }
 
 export default function CustomersScreen() {
   const [customers, setCustomers] = useState<Customer[]>([])
+  const [piutangMap, setPiutangMap] = useState<Map<string, PiutangSummary>>(new Map())
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -31,10 +39,21 @@ export default function CustomersScreen() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const data = searchQuery.trim()
-        ? await repo.search(searchQuery)
-        : await repo.getAll()
+      const [data, piutangTxns] = await Promise.all([
+        searchQuery.trim() ? repo.search(searchQuery) : repo.getAll(),
+        db.transactions.where('paymentMethod').equals('piutang').toArray(),
+      ])
       setCustomers(data)
+
+      // Hitung piutang belum lunas per pelanggan
+      const map = new Map<string, PiutangSummary>()
+      for (const txn of piutangTxns) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((txn as any).lunasAt || !txn.customerId) continue
+        const prev = map.get(txn.customerId) ?? { count: 0, total: 0 }
+        map.set(txn.customerId, { count: prev.count + 1, total: prev.total + txn.total })
+      }
+      setPiutangMap(map)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal memuat data pelanggan.')
     } finally {
@@ -184,9 +203,23 @@ export default function CustomersScreen() {
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-neutral-900 dark:text-white truncate">{c.nama}</p>
                 {c.telepon && <p className="text-xs text-neutral-500 dark:text-dark-muted">{c.telepon}</p>}
-                {c.catatan && <p className="text-xs text-neutral-400 dark:text-dark-muted truncate">{c.catatan}</p>}
+                {piutangMap.has(c.id) && (
+                  <p className="mt-0.5 text-xs font-semibold text-warning-700 dark:text-warning-400">
+                    💳 {piutangMap.get(c.id)!.count} piutang · {formatCurrency(piutangMap.get(c.id)!.total)}
+                  </p>
+                )}
+                {!piutangMap.has(c.id) && c.catatan && (
+                  <p className="text-xs text-neutral-400 dark:text-dark-muted truncate">{c.catatan}</p>
+                )}
               </div>
               <div className="flex shrink-0 gap-1">
+                <Link
+                  to={`/lainnya/pelanggan/${c.id}`}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary dark:text-primary-400 text-base hover:bg-primary-100 dark:hover:bg-primary-900/50"
+                  title="Detail"
+                >
+                  ›
+                </Link>
                 <button type="button" onClick={() => openEdit(c)}
                   className="rounded-lg p-2 text-neutral-500 dark:text-dark-muted hover:bg-neutral-100 dark:hover:bg-dark-elevated" title="Edit">✏️</button>
                 <button type="button" onClick={() => setDeleteTarget(c)}

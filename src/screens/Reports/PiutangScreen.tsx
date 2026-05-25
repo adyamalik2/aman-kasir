@@ -1,17 +1,27 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import type { Transaction } from '@/domain'
+import type { Transaction, Customer } from '@/domain'
 import { formatCurrency } from '@/lib/currency'
 import { DexieTransactionRepository } from '@/repositories/implementations/DexieTransactionRepository'
 import { hapticSuccess, hapticWarning } from '@/native/haptics'
+import { db } from '@/infra/db/dexie'
+import { CsvExportService } from '@/services/export/CsvExportService'
 
 const txnRepo = new DexieTransactionRepository()
+const csvService = new CsvExportService()
 
 function formatTanggal(iso: string): string {
   return new Date(iso).toLocaleDateString('id-ID', {
     day: 'numeric', month: 'short', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   })
+}
+
+// Extended type untuk piutang dengan field tambahan saat lunas
+type PiutangTxn = Transaction & {
+  lunasAt?: string
+  lunasMethod?: string
+  lunasNotes?: string
 }
 
 // Cek apakah transaksi sudah ditandai lunas (field lunasAt di-inject saat tandai lunas)
@@ -22,7 +32,8 @@ function isLunas(txn: Transaction & { lunasAt?: string }): boolean {
 // ---------------------------------------------------------------------------
 
 export default function PiutangScreen() {
-  const [allPiutang, setAllPiutang] = useState<(Transaction & { lunasAt?: string })[]>([])
+  const [allPiutang, setAllPiutang] = useState<PiutangTxn[]>([])
+  const [customerMap, setCustomerMap] = useState<Map<string, Customer>>(new Map())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [tab, setTab] = useState<'belum' | 'lunas'>('belum')
@@ -30,13 +41,22 @@ export default function PiutangScreen() {
   // Dialog tandai lunas
   const [confirmTarget, setConfirmTarget] = useState<Transaction | null>(null)
   const [confirming, setConfirming] = useState(false)
+  const [lunasMethod, setLunasMethod] = useState('tunai')
+  const [lunasNotes, setLunasNotes] = useState('')
+
+  // Filter pencarian
+  const [searchQuery, setSearchQuery] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const data = await txnRepo.getPiutang()
-      setAllPiutang(data as (Transaction & { lunasAt?: string })[])
+      const [data, customers] = await Promise.all([
+        txnRepo.getPiutang(),
+        db.customers.toArray(),
+      ])
+      setAllPiutang(data as PiutangTxn[])
+      setCustomerMap(new Map(customers.map((c) => [c.id, c])))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal memuat data piutang.')
     } finally {
@@ -50,14 +70,18 @@ export default function PiutangScreen() {
     if (!confirmTarget) return
     setConfirming(true)
     try {
+      const now = new Date().toISOString()
       await txnRepo.updateTransaction(confirmTarget.id, {
+        lunasAt: now,
+        lunasMethod,
+        lunasNotes: lunasNotes.trim() || undefined,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        lunasAt: new Date().toISOString() } as any)
+      } as any)
       await hapticSuccess()
       setAllPiutang((prev) =>
         prev.map((t) =>
           t.id === confirmTarget.id
-            ? { ...t, lunasAt: new Date().toISOString() }
+            ? { ...t, lunasAt: now, lunasMethod, lunasNotes: lunasNotes.trim() || undefined }
             : t,
         ),
       )
@@ -72,7 +96,19 @@ export default function PiutangScreen() {
 
   const belum = allPiutang.filter((t) => !isLunas(t))
   const lunas = allPiutang.filter((t) => isLunas(t))
-  const shown = tab === 'belum' ? belum : lunas
+  const baseShown = tab === 'belum' ? belum : lunas
+  const shown = searchQuery.trim()
+    ? baseShown.filter((t) => {
+        const cust = t.customerId ? customerMap.get(t.customerId) : null
+        const q = searchQuery.toLowerCase()
+        return (
+          t.invoiceNo.toLowerCase().includes(q) ||
+          (cust?.nama.toLowerCase().includes(q) ?? false) ||
+          (cust?.telepon?.toLowerCase().includes(q) ?? false) ||
+          (t.notes?.toLowerCase().includes(q) ?? false)
+        )
+      })
+    : baseShown
 
   const totalBelum = belum.reduce((s, t) => s + t.total, 0)
 
@@ -91,6 +127,30 @@ export default function PiutangScreen() {
           <h2 className="text-lg font-bold text-neutral-900 dark:text-white">Piutang</h2>
         </div>
       </div>
+
+      {/* Export CSV */}
+      {allPiutang.length > 0 && (
+        <button
+          type="button"
+          onClick={() =>
+            csvService.exportPiutang(
+              allPiutang.map((t) => ({
+                invoiceNo: t.invoiceNo,
+                date: t.date,
+                customerName: t.customerId ? customerMap.get(t.customerId)?.nama : undefined,
+                total: t.total,
+                status: t.lunasAt ? 'Lunas' : 'Belum Lunas',
+                lunasAt: t.lunasAt,
+                lunasMethod: t.lunasMethod,
+                lunasNotes: t.lunasNotes,
+              })),
+            )
+          }
+          className="rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated px-4 py-2 text-xs font-semibold text-neutral-700 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-border"
+        >
+          Export CSV
+        </button>
+      )}
 
       {/* Ringkasan total piutang belum lunas */}
       {!loading && belum.length > 0 && (
@@ -121,6 +181,15 @@ export default function PiutangScreen() {
         ))}
       </div>
 
+      {/* Cari piutang */}
+      <input
+        type="search"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        placeholder="Cari nama pelanggan atau no. invoice..."
+        className="w-full rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-4 py-2.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-dark-muted focus:border-primary dark:focus:border-primary-400 focus:outline-none"
+      />
+
       {error && (
         <div className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">{error}</div>
       )}
@@ -134,15 +203,19 @@ export default function PiutangScreen() {
       ) : shown.length === 0 ? (
         <div className="py-16 text-center">
           <p className="text-3xl">
-            {tab === 'belum' ? '✅' : '📋'}
+            {searchQuery.trim() ? '🔍' : tab === 'belum' ? '✅' : '📋'}
           </p>
           <p className="mt-2 font-semibold text-neutral-700 dark:text-white">
-            {tab === 'belum' ? 'Tidak ada piutang yang belum lunas' : 'Belum ada piutang yang dilunasi'}
+            {searchQuery.trim()
+              ? 'Tidak ada hasil pencarian'
+              : tab === 'belum' ? 'Tidak ada piutang yang belum lunas' : 'Belum ada piutang yang dilunasi'}
           </p>
           <p className="mt-1 text-xs text-neutral-400 dark:text-dark-muted">
-            {tab === 'belum'
-              ? 'Semua piutang sudah dibayar 👍'
-              : 'Piutang yang sudah dilunasi akan muncul di sini'}
+            {searchQuery.trim()
+              ? 'Coba kata kunci lain'
+              : tab === 'belum'
+                ? 'Semua piutang sudah dibayar 👍'
+                : 'Piutang yang sudah dilunasi akan muncul di sini'}
           </p>
         </div>
       ) : (
@@ -156,6 +229,17 @@ export default function PiutangScreen() {
                 <div className="min-w-0 flex-1">
                   <p className="text-xs text-neutral-400 dark:text-dark-muted">{formatTanggal(txn.date)}</p>
                   <p className="mt-0.5 font-semibold text-neutral-900 dark:text-white">{txn.invoiceNo}</p>
+                  {txn.customerId && customerMap.get(txn.customerId) && (
+                    <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-primary dark:text-primary-400">
+                      <span>👤</span>
+                      {customerMap.get(txn.customerId)!.nama}
+                      {customerMap.get(txn.customerId)!.telepon && (
+                        <span className="font-normal text-neutral-400 dark:text-dark-muted">
+                          · {customerMap.get(txn.customerId)!.telepon}
+                        </span>
+                      )}
+                    </p>
+                  )}
                   {txn.notes && (
                     <p className="mt-0.5 text-sm text-neutral-600 dark:text-dark-muted">📝 {txn.notes}</p>
                   )}
@@ -163,16 +247,20 @@ export default function PiutangScreen() {
                     {formatCurrency(txn.total)}
                   </p>
                   {isLunas(txn) && txn.lunasAt && (
-                    <p className="mt-0.5 text-xs text-success-600">
+                    <p className="mt-0.5 text-xs text-success-600 dark:text-success-400">
                       ✓ Lunas {formatTanggal(txn.lunasAt)}
+                      {txn.lunasMethod && <span> · {txn.lunasMethod}</span>}
                     </p>
+                  )}
+                  {isLunas(txn) && txn.lunasNotes && (
+                    <p className="mt-0.5 text-xs text-neutral-400 dark:text-dark-muted">📝 {txn.lunasNotes}</p>
                   )}
                 </div>
 
                 {!isLunas(txn) && (
                   <button
                     type="button"
-                    onClick={() => setConfirmTarget(txn)}
+                    onClick={() => { setConfirmTarget(txn); setLunasMethod('tunai'); setLunasNotes('') }}
                     className="shrink-0 rounded-lg bg-success-50 dark:bg-success-700/20 px-3 py-2 text-xs font-bold text-success-700 dark:text-success-400 hover:bg-success-100 dark:hover:bg-success-700/30 active:scale-95"
                   >
                     Tandai Lunas
@@ -187,7 +275,11 @@ export default function PiutangScreen() {
       {/* Dialog konfirmasi tandai lunas */}
       {confirmTarget && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center">
-          <div className="w-full max-w-sm rounded-t-2xl bg-white dark:bg-dark-elevated p-5 sm:rounded-2xl">
+          <div
+            className="absolute inset-0"
+            onClick={confirming ? undefined : () => setConfirmTarget(null)}
+          />
+          <div data-bottom-sheet="true" className="relative w-full max-w-sm rounded-t-2xl bg-white dark:bg-dark-elevated p-5 sm:rounded-2xl">
             <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">
               Konfirmasi
             </p>
@@ -199,10 +291,44 @@ export default function PiutangScreen() {
               {' '}—{' '}
               <span className="font-mono font-bold">{formatCurrency(confirmTarget.total)}</span>
             </p>
+            {confirmTarget.customerId && customerMap.get(confirmTarget.customerId) && (
+              <p className="mt-1 text-sm font-semibold text-primary dark:text-primary-400">
+                👤 {customerMap.get(confirmTarget.customerId)!.nama}
+              </p>
+            )}
             {confirmTarget.notes && (
               <p className="mt-1 text-sm text-neutral-500 dark:text-dark-muted">📝 {confirmTarget.notes}</p>
             )}
-            <p className="mt-2 text-xs text-neutral-400 dark:text-dark-muted">
+            {/* Metode bayar */}
+            <div className="mt-3">
+              <label className="block text-xs font-semibold text-neutral-600 dark:text-dark-muted mb-1">
+                Metode Bayar
+              </label>
+              <select
+                value={lunasMethod}
+                onChange={(e) => setLunasMethod(e.target.value)}
+                className="w-full rounded-lg border border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:border-primary dark:focus:border-primary-400"
+              >
+                <option value="tunai">Tunai</option>
+                <option value="transfer">Transfer Bank</option>
+                <option value="qris">QRIS</option>
+                <option value="lainnya">Lainnya</option>
+              </select>
+            </div>
+            <div className="mt-2">
+              <label className="block text-xs font-semibold text-neutral-600 dark:text-dark-muted mb-1">
+                Catatan Pelunasan (opsional)
+              </label>
+              <input
+                type="text"
+                value={lunasNotes}
+                onChange={(e) => setLunasNotes(e.target.value)}
+                placeholder="cth. Dibayar tunai siang ini"
+                className="w-full rounded-lg border border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none focus:border-primary dark:focus:border-primary-400"
+              />
+            </div>
+
+            <p className="mt-3 text-xs text-neutral-400 dark:text-dark-muted">
               Tindakan ini menandai piutang sebagai sudah dibayar. Riwayat transaksi tetap tersimpan.
             </p>
 
@@ -211,7 +337,7 @@ export default function PiutangScreen() {
                 type="button"
                 onClick={() => void handleTandaiLunas()}
                 disabled={confirming}
-                className="w-full rounded-xl bg-success-600 py-3 text-sm font-bold text-white hover:bg-success-700 disabled:opacity-60"
+                className="w-full rounded-xl bg-success-700 py-3 text-sm font-bold text-white hover:bg-success-500 disabled:opacity-60"
               >
                 {confirming ? 'Menyimpan...' : '✓ Ya, Tandai Lunas'}
               </button>
@@ -219,6 +345,7 @@ export default function PiutangScreen() {
                 type="button"
                 onClick={() => setConfirmTarget(null)}
                 disabled={confirming}
+                data-android-back-close="true"
                 className="w-full rounded-xl border border-neutral-200 dark:border-dark-border py-3 text-sm font-semibold text-neutral-700 dark:text-dark-muted"
               >
                 Batal

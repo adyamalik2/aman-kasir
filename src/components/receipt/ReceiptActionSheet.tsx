@@ -217,6 +217,7 @@ export function ReceiptActionSheet({
                 items={snapshot.items}
                 storeProfile={snapshot.storeProfile}
                 cashierName={snapshot.cashierName}
+                customerName={snapshot.customerName}
                 settings={settings}
               />
             </div>

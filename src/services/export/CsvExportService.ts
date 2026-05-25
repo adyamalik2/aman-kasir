@@ -103,4 +103,92 @@ export class CsvExportService {
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
     downloadBlob(blob, filename)
   }
+
+  /** Export daftar piutang (belum lunas & sudah lunas) */
+  exportPiutang(
+    rows: {
+      invoiceNo: string
+      date: string
+      customerName?: string
+      total: number
+      status: string
+      lunasAt?: string
+      lunasMethod?: string
+      lunasNotes?: string
+    }[],
+    filename = 'laporan-piutang.csv',
+  ): void {
+    const header = buildCsvRow([
+      'No Invoice', 'Tanggal', 'Pelanggan', 'Total',
+      'Status', 'Tanggal Lunas', 'Metode Bayar', 'Catatan Pelunasan',
+    ])
+    const dataRows = rows.map((r) =>
+      buildCsvRow([
+        r.invoiceNo,
+        r.date,
+        r.customerName ?? '',
+        r.total,
+        r.status,
+        r.lunasAt ?? '',
+        r.lunasMethod ?? '',
+        r.lunasNotes ?? '',
+      ]),
+    )
+    const csv = [header, ...dataRows].join('\n')
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+    downloadBlob(blob, filename)
+  }
+
+  /** Export histori pergerakan stok */
+  exportHistoriStok(
+    rows: {
+      tanggal: string
+      produk: string
+      sku?: string
+      tipe: string
+      perubahan: number
+      sebelum: number
+      sesudah: number
+      catatan?: string
+    }[],
+    filename = 'histori-stok.csv',
+  ): void {
+    const header = buildCsvRow(['Tanggal', 'Produk', 'SKU', 'Tipe', 'Perubahan', 'Stok Sebelum', 'Stok Sesudah', 'Catatan'])
+    const dataRows = rows.map((r) =>
+      buildCsvRow([
+        r.tanggal,
+        r.produk,
+        r.sku ?? '',
+        r.tipe,
+        r.perubahan > 0 ? `+${r.perubahan}` : String(r.perubahan),
+        r.sebelum,
+        r.sesudah,
+        r.catatan ?? '',
+      ]),
+    )
+    const csv = [header, ...dataRows].join('\n')
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+    downloadBlob(blob, filename)
+  }
+
+  /** Export laporan laba & margin per produk */
+  exportProfitReport(
+    perProduk: { productName: string; categoryName?: string; qtySold: number; revenue: number; grossProfit: number }[],
+    filename = 'laporan-laba.csv',
+  ): void {
+    const header = buildCsvRow(['Produk', 'Kategori', 'Qty Terjual', 'Omzet', 'Laba Kotor', 'Margin %'])
+    const dataRows = perProduk.map((r) =>
+      buildCsvRow([
+        r.productName,
+        r.categoryName ?? '',
+        r.qtySold,
+        r.revenue,
+        r.grossProfit,
+        r.revenue > 0 ? `${((r.grossProfit / r.revenue) * 100).toFixed(1)}%` : '—',
+      ]),
+    )
+    const csv = [header, ...dataRows].join('\n')
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+    downloadBlob(blob, filename)
+  }
 }

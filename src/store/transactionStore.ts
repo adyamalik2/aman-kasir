@@ -21,11 +21,13 @@ interface TransactionState {
   createTransaction(
     cartItems: CartItemInput[],
     subtotal: number,
+    discount: number,
     total: number,
     paidAmount: number,
     paymentMethod: PaymentMethod,
     notes?: string,
     transactionDate?: string,
+    customerId?: string,
   ): Promise<Transaction>
   loadTodaySummary(): Promise<void>
 }
@@ -60,16 +62,18 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
     return items
   },
 
-  async createTransaction(cartItems, subtotal, total, paidAmount, paymentMethod, notes, transactionDate) {
+  async createTransaction(cartItems, subtotal, discount, total, paidAmount, paymentMethod, notes, transactionDate, customerId) {
     const useCase = new CreateTransactionUseCase(repo)
     const transaction = await useCase.execute({
       cartItems,
       subtotal,
+      discount,
       total,
       paidAmount,
       paymentMethod,
       notes,
       transactionDate,
+      customerId,
     })
 
     // Optimistic update: prepend to list + update today's summary

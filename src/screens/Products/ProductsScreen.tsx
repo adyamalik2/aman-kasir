@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useProductStore } from '@/store/productStore'
 import { DexieProductRepository } from '@/repositories/implementations/DexieProductRepository'
 import { DeleteProductUseCase } from '@/usecases/product/DeleteProductUseCase'
@@ -126,6 +126,12 @@ function productToFormValues(p: Product): ProductFormValues {
 // StockBadge
 // ---------------------------------------------------------------------------
 
+function fmtStock(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}jt`
+  if (n >= 10_000)    return `${Math.round(n / 1_000)}rb`
+  return String(n)
+}
+
 function StockBadge({ stock, minStock }: { stock: number; minStock: number }) {
   const isZero = stock === 0
   const isLow = !isZero && minStock > 0 && stock <= minStock
@@ -136,10 +142,13 @@ function StockBadge({ stock, minStock }: { stock: number; minStock: number }) {
       ? 'bg-warning-50 text-warning-700'
       : 'bg-success-50 text-success-700'
 
-  const label = isZero ? 'Habis' : String(stock)
+  const label = isZero ? 'Habis' : fmtStock(stock)
 
   return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${colorClass}`}>
+    <span
+      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${colorClass}`}
+      title={isZero ? 'Habis' : String(stock)}
+    >
       {label}
     </span>
   )
@@ -584,15 +593,100 @@ export default function ProductsScreen() {
   const [showImportPanel, setShowImportPanel] = useState(false)
   const csvInputRef = useRef<HTMLInputElement | null>(null)
 
+  // ── Tambah / Kurangi Stok ────────────────────────────────────────────────
+  const [restockProduct, setRestockProduct] = useState<Product | null>(null)
+  const [restockMode, setRestockMode] = useState<'tambah' | 'kurangi'>('tambah')
+  const [restockQty, setRestockQty] = useState('')
+  const [restockNote, setRestockNote] = useState('')
+  const [restocking, setRestocking] = useState(false)
+  const [restockDone, setRestockDone] = useState<string | null>(null)
+
+  // ── Produk Nonaktif ──────────────────────────────────────────────────────
+  const [inactiveProducts, setInactiveProducts] = useState<Product[]>([])
+  const [showInactive, setShowInactive] = useState(false)
+  const [reactivating, setReactivating] = useState<string | null>(null)
+
   useEffect(() => {
     void loadProducts()
     void loadCategories()
   }, [loadProducts, loadCategories])
 
+  // Load produk nonaktif
+  const loadInactiveProducts = async () => {
+    try {
+      const all = await db.products.toArray()
+      setInactiveProducts(all.filter((p) => !p.isActive))
+    } catch { /* non-critical */ }
+  }
+
+  useEffect(() => {
+    void loadInactiveProducts()
+  }, [])
+
   const openEditForm = (product: Product) => {
     setEditingProduct(product)
     setFormInitialValues(productToFormValues(product))
     setIsFormOpen(true)
+  }
+
+  const openRestock = (product: Product, mode: 'tambah' | 'kurangi' = 'tambah') => {
+    setRestockProduct(product)
+    setRestockMode(mode)
+    setRestockQty('')
+    setRestockNote('')
+    setRestockDone(null)
+  }
+
+  const handleRestock = async () => {
+    if (!restockProduct) return
+    const qty = Math.floor(Number(restockQty))
+    if (!Number.isFinite(qty) || qty <= 0) return
+    if (restockMode === 'kurangi' && qty > restockProduct.stock) return
+    setRestocking(true)
+    try {
+      const now = new Date().toISOString()
+      const qtyBefore = restockProduct.stock
+      const isAdd = restockMode === 'tambah'
+      const qtyAfter = isAdd ? qtyBefore + qty : Math.max(0, qtyBefore - qty)
+      await db.transaction('rw', [db.products, db.stockMovements], async () => {
+        await db.products.update(restockProduct.id, {
+          stock: qtyAfter,
+          updatedAt: now,
+          syncStatus: 'local_only' as const,
+        })
+        await db.stockMovements.add({
+          id: `sm-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          productId: restockProduct.id,
+          type: isAdd ? ('purchase' as const) : ('adjustment' as const),
+          qtyChange: isAdd ? qty : -qty,
+          qtyBefore,
+          qtyAfter,
+          notes: restockNote.trim() || undefined,
+          createdAt: now,
+        })
+      })
+      await loadProducts()
+      const verb = isAdd ? 'bertambah' : 'berkurang'
+      setRestockDone(`Stok ${restockProduct.name} ${verb} ${qty} → total ${qtyAfter} ${restockProduct.unit}`)
+      setRestockQty('')
+      setRestockNote('')
+      setTimeout(() => {
+        setRestockProduct(null)
+        setRestockDone(null)
+      }, 2000)
+    } finally {
+      setRestocking(false)
+    }
+  }
+
+  const handleReactivate = async (product: Product) => {
+    setReactivating(product.id)
+    try {
+      await toggleActive(product.id)
+      setInactiveProducts((prev) => prev.filter((p) => p.id !== product.id))
+    } catch { /* ignore */ } finally {
+      setReactivating(null)
+    }
   }
 
   useEffect(() => {
@@ -686,6 +780,7 @@ export default function ProductsScreen() {
   const handleDeactivate = async () => {
     if (editingProduct) {
       await toggleActive(editingProduct.id)
+      await loadInactiveProducts()
     }
   }
 
@@ -905,31 +1000,63 @@ export default function ProductsScreen() {
             const catName = getCategoryName(product.categoryId)
             return (
               <li key={product.id}>
-                <button
-                  type="button"
-                  onClick={() => openEditForm(product)}
-                  className="w-full rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-4 text-left transition-colors hover:border-primary/40 active:bg-neutral-50 dark:active:bg-dark-elevated"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold text-neutral-900 dark:text-white">{product.name}</p>
-                      <p className="mt-0.5 text-xs text-neutral-500 dark:text-dark-muted">
-                        {product.sku}
-                        {catName ? ` · ${catName}` : ''}
-                        {product.barcode ? ` · ${product.barcode}` : ''}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1.5">
-                      <p className="font-mono text-sm font-bold text-primary">
-                        {formatCurrency(product.sellPrice)}
-                      </p>
-                      <div className="flex items-center gap-1">
-                        <StockBadge stock={product.stock} minStock={product.minStock} />
-                        <span className="text-xs text-neutral-400 dark:text-dark-muted">{product.unit}</span>
+                <div className="flex items-stretch overflow-hidden rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card transition-colors hover:border-primary/40">
+                  {/* Tap area utama → edit produk */}
+                  <button
+                    type="button"
+                    onClick={() => openEditForm(product)}
+                    className="min-w-0 flex-1 overflow-hidden p-4 text-left active:bg-neutral-50 dark:active:bg-dark-elevated"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-semibold text-neutral-900 dark:text-white">{product.name}</p>
+                        <p className="mt-0.5 text-xs text-neutral-500 dark:text-dark-muted">
+                          {product.sku}
+                          {catName ? ` · ${catName}` : ''}
+                          {product.barcode ? ` · ${product.barcode}` : ''}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5">
+                        <p className="font-mono text-sm font-bold text-primary">
+                          {formatCurrency(product.sellPrice)}
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <StockBadge stock={product.stock} minStock={product.minStock} />
+                          <span className="text-xs text-neutral-400 dark:text-dark-muted">{product.unit}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </button>
+                  </button>
+                  {/* Tombol histori stok */}
+                  <Link
+                    to={`/laporan/histori-stok?productId=${product.id}`}
+                    aria-label={`Histori stok ${product.name}`}
+                    className="flex flex-col items-center justify-center gap-0.5 border-l border-neutral-200 dark:border-dark-border px-3 text-neutral-400 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated active:bg-neutral-100 dark:active:bg-dark-elevated"
+                  >
+                    <span className="text-sm leading-none">🗂️</span>
+                    <span className="text-[10px] font-semibold leading-none">Histori</span>
+                  </Link>
+                  {/* Tombol koreksi stok */}
+                  <button
+                    type="button"
+                    onClick={() => openRestock(product, 'kurangi')}
+                    aria-label={`Koreksi stok ${product.name}`}
+                    className="flex flex-col items-center justify-center gap-0.5 border-l border-neutral-200 dark:border-dark-border px-2.5 text-neutral-400 dark:text-dark-muted hover:bg-danger-50 dark:hover:bg-danger-700/20 hover:text-danger-700 dark:hover:text-danger-400 active:bg-danger-100"
+                  >
+                    <span className="text-sm leading-none">✏️</span>
+                    <span className="text-[10px] font-semibold leading-none">Koreks</span>
+                  </button>
+                  {/* Tombol restock */}
+                  <button
+                    type="button"
+                    onClick={() => openRestock(product, 'tambah')}
+                    aria-label={`Tambah stok ${product.name}`}
+                    className="flex flex-col items-center justify-center gap-0.5 border-l border-neutral-200 dark:border-dark-border px-3.5 text-primary dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 active:bg-primary-100 dark:active:bg-primary-900/30"
+                  >
+                    <span className="text-lg font-bold leading-none">+</span>
+                    <span className="text-[10px] font-semibold leading-none">Stok</span>
+                  </button>
+                </div>
               </li>
             )
           })}
@@ -941,6 +1068,48 @@ export default function ProductsScreen() {
         <p className="text-center text-xs text-neutral-400 dark:text-dark-muted">
           {filtered.length} produk ditampilkan
         </p>
+      )}
+
+      {/* Produk Nonaktif */}
+      {!isLoading && inactiveProducts.length > 0 && (
+        <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card">
+          <button
+            type="button"
+            onClick={() => setShowInactive((v) => !v)}
+            className="flex w-full items-center justify-between px-4 py-3 text-left"
+          >
+            <span className="text-sm font-semibold text-neutral-500 dark:text-dark-muted">
+              🚫 Produk Nonaktif ({inactiveProducts.length})
+            </span>
+            <span className={`text-xs text-neutral-400 dark:text-dark-muted transition-transform ${showInactive ? 'rotate-180' : ''}`}>▼</span>
+          </button>
+
+          {showInactive && (
+            <ul className="border-t border-neutral-100 dark:border-dark-border divide-y divide-neutral-100 dark:divide-dark-border">
+              {inactiveProducts.map((p) => {
+                const catName = getCategoryName(p.categoryId)
+                return (
+                  <li key={p.id} className="flex items-center gap-3 px-4 py-3 opacity-60">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-neutral-700 dark:text-dark-muted line-through">{p.name}</p>
+                      <p className="text-xs text-neutral-400 dark:text-dark-muted">
+                        {p.sku}{catName ? ` · ${catName}` : ''}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void handleReactivate(p)}
+                      disabled={reactivating === p.id}
+                      className="shrink-0 rounded-lg bg-primary-50 dark:bg-primary-900/30 px-3 py-1.5 text-xs font-bold text-primary dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/50 disabled:opacity-50"
+                    >
+                      {reactivating === p.id ? '...' : 'Aktifkan'}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
       )}
 
       {/* FAB */}
@@ -968,6 +1137,171 @@ export default function ProductsScreen() {
         onCheckHistory={editingProduct ? handleCheckHistory : undefined}
         onHardDelete={editingProduct ? handleHardDelete : undefined}
       />
+
+      {/* Restock Sheet */}
+      {restockProduct && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={restocking ? undefined : () => setRestockProduct(null)}
+          />
+
+          {/* Panel */}
+          <div data-bottom-sheet="true" className="relative w-full max-w-lg space-y-4 rounded-t-2xl bg-white dark:bg-dark-elevated p-5">
+            {/* Header */}
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs text-neutral-500 dark:text-dark-muted">Manajemen Stok</p>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">{restockProduct.name}</h3>
+              </div>
+              {!restocking && (
+                <button
+                  type="button"
+                  onClick={() => setRestockProduct(null)}
+                  data-android-back-close="true"
+                  className="text-sm font-medium text-neutral-500 dark:text-dark-muted hover:text-neutral-800 dark:hover:text-white"
+                >
+                  Batal
+                </button>
+              )}
+            </div>
+
+            {/* Tab Tambah / Kurangi */}
+            <div className="grid grid-cols-2 gap-1 rounded-xl bg-neutral-100 dark:bg-dark-card p-1">
+              <button
+                type="button"
+                onClick={() => { setRestockMode('tambah'); setRestockQty(''); setRestockDone(null) }}
+                className={`rounded-lg py-2 text-sm font-semibold transition-colors ${
+                  restockMode === 'tambah'
+                    ? 'bg-white dark:bg-dark-elevated text-primary shadow-sm'
+                    : 'text-neutral-500 dark:text-dark-muted'
+                }`}
+              >
+                📦 Tambah
+              </button>
+              <button
+                type="button"
+                onClick={() => { setRestockMode('kurangi'); setRestockQty(''); setRestockDone(null) }}
+                className={`rounded-lg py-2 text-sm font-semibold transition-colors ${
+                  restockMode === 'kurangi'
+                    ? 'bg-white dark:bg-dark-elevated text-danger-700 dark:text-danger-400 shadow-sm'
+                    : 'text-neutral-500 dark:text-dark-muted'
+                }`}
+              >
+                ✏️ Koreksi
+              </button>
+            </div>
+
+            {/* Stok saat ini */}
+            <div className="flex items-center justify-between rounded-lg bg-neutral-50 dark:bg-dark-card px-4 py-3">
+              <span className="text-sm text-neutral-500 dark:text-dark-muted">Stok saat ini</span>
+              <span className="font-bold text-neutral-900 dark:text-white">
+                {restockProduct.stock} {restockProduct.unit}
+              </span>
+            </div>
+
+            {restockMode === 'kurangi' && (
+              <div className="rounded-lg bg-warning-50 dark:bg-warning-700/15 px-3 py-2 text-xs text-warning-700 dark:text-warning-400">
+                ✏️ Koreksi untuk barang rusak, hilang, atau salah hitung. Tercatat sebagai penyesuaian stok.
+              </div>
+            )}
+
+            {/* Success state */}
+            {restockDone ? (
+              <div className="rounded-lg bg-success-50 dark:bg-success-700/20 px-4 py-3 text-center text-sm font-semibold text-success-700 dark:text-success-400">
+                ✓ {restockDone}
+              </div>
+            ) : (
+              <>
+                {/* Input jumlah */}
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-dark-muted">
+                    Jumlah {restockMode === 'tambah' ? 'Tambah' : 'Kurangi'} *
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={restockQty}
+                    onChange={(e) => setRestockQty(e.target.value)}
+                    placeholder={`cth. 50 (${restockProduct.unit})`}
+                    autoFocus
+                    className={`w-full rounded-md border bg-white dark:bg-dark-card px-3 py-2 font-mono text-sm text-neutral-900 dark:text-white focus:outline-none ${
+                      restockMode === 'kurangi'
+                        ? 'border-danger-300 dark:border-danger-700/50 focus:border-danger-500 dark:focus:border-danger-400'
+                        : 'border-neutral-300 dark:border-dark-border focus:border-primary dark:focus:border-primary-400'
+                    }`}
+                  />
+                  {restockMode === 'kurangi' && (() => {
+                    const qty = Math.floor(Number(restockQty))
+                    if (Number.isFinite(qty) && qty > restockProduct.stock) {
+                      return (
+                        <p className="mt-1 text-xs text-danger-700 dark:text-danger-400">
+                          Melebihi stok tersedia ({restockProduct.stock} {restockProduct.unit})
+                        </p>
+                      )
+                    }
+                    return null
+                  })()}
+                </div>
+
+                {/* Catatan */}
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-dark-muted">
+                    Catatan {restockMode === 'tambah' ? '(opsional)' : '*'}
+                  </label>
+                  <input
+                    type="text"
+                    value={restockNote}
+                    onChange={(e) => setRestockNote(e.target.value)}
+                    placeholder={restockMode === 'tambah' ? 'cth. Beli dari Toko ABC' : 'cth. Barang rusak, koreksi stok opname'}
+                    className="w-full rounded-md border border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-2 text-sm text-neutral-900 dark:text-white focus:border-primary dark:focus:border-primary-400 focus:outline-none"
+                  />
+                </div>
+
+                {/* Preview hasil */}
+                {(() => {
+                  const qty = Math.floor(Number(restockQty))
+                  if (Number.isFinite(qty) && qty > 0) {
+                    const after = restockMode === 'tambah'
+                      ? restockProduct.stock + qty
+                      : Math.max(0, restockProduct.stock - qty)
+                    const sign = restockMode === 'tambah' ? '+' : '-'
+                    return (
+                      <p className="text-sm text-neutral-500 dark:text-dark-muted">
+                        Stok setelah {restockMode === 'tambah' ? 'tambah' : 'koreksi'}:{' '}
+                        <strong className="text-neutral-900 dark:text-white">
+                          {restockProduct.stock} {sign} {qty} = {after} {restockProduct.unit}
+                        </strong>
+                      </p>
+                    )
+                  }
+                  return null
+                })()}
+
+                <button
+                  type="button"
+                  onClick={() => void handleRestock()}
+                  disabled={
+                    restocking ||
+                    !restockQty.trim() ||
+                    Math.floor(Number(restockQty)) <= 0 ||
+                    (restockMode === 'kurangi' && Math.floor(Number(restockQty)) > restockProduct.stock)
+                  }
+                  className={`w-full rounded-md px-4 py-3 text-sm font-bold text-white transition-colors disabled:opacity-50 ${
+                    restockMode === 'kurangi'
+                      ? 'bg-danger-600 hover:bg-danger-700'
+                      : 'bg-primary hover:bg-primary-800'
+                  }`}
+                >
+                  {restocking ? 'Menyimpan...' : restockMode === 'tambah' ? 'Tambah Stok' : 'Simpan Koreksi'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   )
 }

@@ -315,7 +315,7 @@ export default function BackupScreen() {
                 Masuk dengan Google
               </button>
               {loginMessage && (
-                <p className="rounded-md bg-danger-50 px-3 py-2 text-sm text-danger-700">
+                <p className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-400">
                   {loginMessage}
                 </p>
               )}
@@ -325,11 +325,11 @@ export default function BackupScreen() {
       )}
 
       {/* ── Backup Lokal ─────────────────────────────────────────── */}
-      <div className="rounded-lg border border-neutral-200 bg-surface p-5 space-y-4">
+      <div className="rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-5 space-y-4">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Backup Lokal</h3>
         <p className="text-sm text-neutral-500 dark:text-dark-muted">
           Backup terakhir:{' '}
-          <span className="font-semibold text-neutral-800">
+          <span className="font-semibold text-neutral-800 dark:text-white">
             {lastBackupAt ? formatDate(lastBackupAt) : 'Belum pernah'}
           </span>
         </p>
@@ -507,7 +507,7 @@ export default function BackupScreen() {
       )}
 
       {/* ── Restore Lokal ────────────────────────────────────────── */}
-      <div className="rounded-lg border border-neutral-200 bg-surface p-5 space-y-4">
+      <div className="rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-5 space-y-4">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Restore dari File Lokal</h3>
         <label className="block">
           <span className="sr-only">Pilih file backup</span>

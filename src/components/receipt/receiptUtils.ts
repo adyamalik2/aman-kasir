@@ -13,6 +13,7 @@ export interface ReceiptSnapshot {
   items: ReceiptPreviewItem[]
   storeProfile: StoreProfile
   cashierName: string
+  customerName?: string   // diisi saat metode = piutang dan ada pelanggan terpilih
 }
 
 export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
@@ -43,6 +44,7 @@ export function buildReceiptText(snapshot: ReceiptSnapshot): string {
     `No: ${transaction.invoiceNo}`,
     `Tanggal: ${date}`,
     `Kasir: ${cashierName}`,
+    snapshot.customerName ? `Pelanggan: ${snapshot.customerName}` : '',
     '',
     ...items.flatMap((item) => [
       item.productName,
@@ -96,6 +98,7 @@ export function buildWhatsAppReceiptText(snapshot: ReceiptSnapshot): string {
     `*No. Invoice:* ${transaction.invoiceNo}`,
     `*Tanggal:* ${formatWhatsAppDate(transaction.date)}`,
     `*Kasir:* ${cashierName || 'Kasir'}`,
+    snapshot.customerName ? `*Pelanggan:* ${snapshot.customerName}` : '',
     '',
     '*Detail Belanja*',
     '',
@@ -358,6 +361,7 @@ function buildPrintHtml(snapshot: ReceiptSnapshot): string {
   ${showNomorTransaksi ? `<div class="row"><span>No</span><strong>${escapeHtml(transaction.invoiceNo)}</strong></div>` : ''}
   <div class="row"><span>Tanggal</span><span>${escapeHtml(date)}</span></div>
   <div class="row"><span>Kasir</span><span>${escapeHtml(cashierName)}</span></div>
+  ${snapshot.customerName ? `<div class="row"><span>Pelanggan</span><span class="bold">${escapeHtml(snapshot.customerName)}</span></div>` : ''}
 
   <div class="divider"></div>
 

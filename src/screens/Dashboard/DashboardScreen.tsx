@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { db } from '@/infra/db/dexie'
 import { Link } from 'react-router-dom'
 import { useAppStore } from '@/store/appStore'
 import { useAuthStore } from '@/store/authStore'
@@ -16,6 +17,7 @@ export default function DashboardScreen() {
   const { todaySummary, loadTodaySummary } = useTransactionStore()
   const { user, isLoggedIn } = useAuthStore()
   const [lowStockCount, setLowStockCount] = useState(0)
+  const [outOfStockCount, setOutOfStockCount] = useState(0)
   const [summaryLoaded, setSummaryLoaded] = useState(false)
 
   useEffect(() => {
@@ -23,10 +25,18 @@ export default function DashboardScreen() {
   }, [loadTodaySummary])
 
   useEffect(() => {
-    getLowStock
-      .execute()
-      .then((products) => setLowStockCount(products.length))
-      .catch(() => { /* non-critical */ })
+    const refresh = () => {
+      getLowStock.execute()
+        .then((products) => setLowStockCount(products.length))
+        .catch(() => { /* non-critical */ })
+      db.products.toArray()
+        .then((products) => setOutOfStockCount(products.filter(p => p.isActive && p.stock === 0).length))
+        .catch(() => { /* non-critical */ })
+    }
+    refresh()
+    const handleVisibility = () => { if (!document.hidden) refresh() }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [])
 
   const backupStatusLabel = hasLocalChanges
@@ -152,6 +162,27 @@ export default function DashboardScreen() {
           )}
         </Link>
       </div>
+
+      {/* ── Peringatan stok habis ── */}
+      {outOfStockCount > 0 && (
+        <Link
+          to="/produk"
+          className="flex items-center gap-3 rounded-xl border border-danger-200 dark:border-danger-700/50 bg-danger-50 dark:bg-danger-700/10 p-4 transition-colors hover:bg-danger-100 dark:hover:bg-danger-700/20 active:scale-[0.99]"
+        >
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-danger-100 dark:bg-danger-700/20 text-base">
+            🚨
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold text-danger-600 dark:text-danger-400 uppercase tracking-wide">
+              Stok Habis
+            </p>
+            <p className="text-sm font-bold text-danger-700 dark:text-danger-300">
+              {outOfStockCount} produk kehabisan stok
+            </p>
+          </div>
+          <span className="shrink-0 text-lg text-danger-400">›</span>
+        </Link>
+      )}
 
       {/* ── Peringatan stok menipis ── */}
       {lowStockCount > 0 && (

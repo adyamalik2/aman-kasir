@@ -38,6 +38,18 @@ const MENU_ITEMS: MenuItem[] = [
     title: 'Piutang',
     description: 'Transaksi piutang yang belum & sudah dilunasi',
   },
+  {
+    to: '/laporan/laba',
+    icon: '💰',
+    title: 'Laba & Margin',
+    description: 'Laba kotor dan margin per produk & kategori',
+  },
+  {
+    to: '/laporan/histori-stok',
+    icon: '🗂️',
+    title: 'Histori Stok',
+    description: 'Pergerakan stok masuk & keluar per produk',
+  },
 ]
 
 export default function ReportsScreen() {

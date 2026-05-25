@@ -253,7 +253,7 @@ export default function RingkasanScreen() {
 
       {period.preset === 'custom' && (
         <div className="flex flex-wrap items-center gap-2">
-          <label className="text-xs text-neutral-500">
+          <label className="text-xs text-neutral-500 dark:text-dark-muted">
             Dari
             <input
               type="date"
@@ -267,7 +267,7 @@ export default function RingkasanScreen() {
               className="ml-1 rounded border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-2 py-1 text-sm"
             />
           </label>
-          <label className="text-xs text-neutral-500">
+          <label className="text-xs text-neutral-500 dark:text-dark-muted">
             Sampai
             <input
               type="date"
@@ -289,7 +289,7 @@ export default function RingkasanScreen() {
       )}
 
       {loading ? (
-        <div className="py-12 text-center text-sm text-neutral-400">Memuat ringkasan...</div>
+        <div className="py-12 text-center text-sm text-neutral-400 dark:text-dark-muted">Memuat ringkasan...</div>
       ) : stats ? (
         <>
           {/* Stats cards */}
@@ -372,13 +372,15 @@ function StatCard({
         <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">{label}</p>
         <p className="mt-1 font-mono text-xl font-bold text-neutral-900 dark:text-white">
           {value}
-          {suffix && <span className="ml-1 text-xs font-normal text-neutral-400">{suffix}</span>}
+          {suffix && <span className="ml-1 text-xs font-normal text-neutral-400 dark:text-dark-muted">{suffix}</span>}
         </p>
       </div>
       {change !== undefined && positive !== undefined && (
         <span
           className={`rounded-full px-2 py-1 text-xs font-bold ${
-            positive ? 'bg-success-50 text-success-700' : 'bg-danger-50 text-danger-700'
+            positive
+              ? 'bg-success-50 dark:bg-success-700/20 text-success-700 dark:text-success-400'
+              : 'bg-danger-50 dark:bg-danger-700/20 text-danger-700 dark:text-danger-400'
           }`}
         >
           {change}

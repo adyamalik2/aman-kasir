@@ -11,6 +11,8 @@ import { getReceiptSettings } from '@/lib/receiptSettings'
 import { isNativeApp } from '@/native/platform'
 import { hapticSuccess } from '@/native/haptics'
 import BarcodeScannerModal from '@/components/scanner/BarcodeScannerModal'
+import { db } from '@/infra/db/dexie'
+import type { Customer } from '@/domain'
 
 interface CartItem {
   productId: string
@@ -20,6 +22,7 @@ interface CartItem {
   costPrice: number
   qty: number
   qtyInput: string
+  stock: number   // stok tersedia saat ditambahkan — untuk validasi batas qty
 }
 
 const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: string }[] = [
@@ -36,7 +39,8 @@ function normalizeQtyInput(value: string, fallback = 1): number {
 }
 
 function normalizeCartItem(item: CartItem): CartItem {
-  const qty = normalizeQtyInput(item.qtyInput, item.qty)
+  const raw = normalizeQtyInput(item.qtyInput, item.qty)
+  const qty = item.stock > 0 ? Math.min(raw, item.stock) : raw
   return { ...item, qty, qtyInput: String(qty) }
 }
 
@@ -204,6 +208,18 @@ function ProductSearchBar({ products, onSelect }: ProductSearchBarProps) {
   )
 }
 
+function quickCashPresets(total: number): number[] {
+  const round = (n: number, to: number) => Math.ceil(n / to) * to
+  const candidates = [
+    total,
+    round(total, 5_000),
+    round(total, 10_000),
+    round(total, 50_000),
+    round(total, 100_000),
+  ]
+  return [...new Set(candidates)].filter((v) => v >= total).slice(0, 5)
+}
+
 interface CheckoutModalProps {
   cartTotal: number
   isSaving: boolean
@@ -212,28 +228,52 @@ interface CheckoutModalProps {
     paymentMethod: PaymentMethod,
     paidAmount: number,
     transactionDate: string,
+    discount: number,
     notes?: string,
+    customerId?: string,
+    customerName?: string,
   ) => Promise<void>
 }
 
 function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModalProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash')
   const [paidAmountStr, setPaidAmountStr] = useState('')
+  const [discountStr, setDiscountStr] = useState('')
   const [transactionDateLocal, setTransactionDateLocal] = useState(() => toDateTimeLocalValue())
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [notes, setNotes] = useState('')
+  const [selectedCustomerId, setSelectedCustomerId] = useState('')
+  const [customers, setCustomers] = useState<Customer[]>([])
 
+  const discount = Math.max(0, Math.min(Number(discountStr) || 0, cartTotal))
+  const effectiveTotal = cartTotal - discount
   const paidAmount = Number(paidAmountStr) || 0
-  const change = paidAmount - cartTotal
+  const change = paidAmount - effectiveTotal
   const isCash = paymentMethod === 'cash'
   const isPiutang = paymentMethod === 'piutang'
-  const canConfirm = !isSaving && (!isCash || paidAmount >= cartTotal)
+  const canConfirm = !isSaving && (!isCash || paidAmount >= effectiveTotal)
+
+  // Muat daftar pelanggan sekali saat modal dibuka
+  useEffect(() => {
+    db.customers.toArray().then(setCustomers).catch(() => setCustomers([]))
+  }, [])
 
   const handleConfirm = async () => {
     setCheckoutError(null)
     try {
-      const finalPaid = isCash ? paidAmount : isPiutang ? 0 : cartTotal
-      await onConfirm(paymentMethod, finalPaid, dateTimeLocalToIso(transactionDateLocal), notes.trim() || undefined)
+      const finalPaid = isCash ? paidAmount : isPiutang ? 0 : effectiveTotal
+      const pickedCustomer = selectedCustomerId
+        ? customers.find((c) => c.id === selectedCustomerId)
+        : undefined
+      await onConfirm(
+        paymentMethod,
+        finalPaid,
+        dateTimeLocalToIso(transactionDateLocal),
+        discount,
+        notes.trim() || undefined,
+        pickedCustomer?.id,
+        pickedCustomer?.nama,
+      )
     } catch (err) {
       setCheckoutError(err instanceof Error ? err.message : 'Gagal menyimpan transaksi.')
     }
@@ -270,8 +310,31 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
           <div className="rounded-lg bg-primary-50 dark:bg-primary-900/30 px-4 py-4 text-center">
             <p className="text-xs font-semibold uppercase text-neutral-500 dark:text-dark-muted">Total Tagihan</p>
             <p className="mt-1 font-mono text-3xl font-bold text-primary">
-              {formatCurrency(cartTotal)}
+              {formatCurrency(effectiveTotal)}
             </p>
+            {discount > 0 && (
+              <p className="mt-0.5 text-xs text-success-600 dark:text-success-400 font-semibold">
+                Diskon {formatCurrency(discount)} dari {formatCurrency(cartTotal)}
+              </p>
+            )}
+          </div>
+
+          {/* Diskon per transaksi */}
+          <div>
+            <p className="mb-1 text-xs font-semibold text-neutral-600 dark:text-dark-muted">Diskon (opsional)</p>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={discountStr}
+              onChange={(e) => {
+                setDiscountStr(e.target.value)
+                setPaidAmountStr('') // reset uang diterima saat diskon berubah
+              }}
+              placeholder="0"
+              min={0}
+              max={cartTotal}
+              className="w-full rounded-md border border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-3 py-2.5 font-mono text-sm focus:border-primary dark:focus:border-primary-400 focus:outline-none"
+            />
           </div>
 
           <div>
@@ -319,10 +382,27 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
                 value={paidAmountStr}
                 onChange={(e) => setPaidAmountStr(e.target.value)}
                 placeholder="Masukkan nominal..."
-                min={cartTotal}
+                min={effectiveTotal}
                 autoFocus
                 className="w-full rounded-md border border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-3 py-3 font-mono text-lg font-bold focus:border-primary dark:focus:border-primary-400 focus:outline-none"
               />
+              {/* Quick cash chips */}
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {quickCashPresets(effectiveTotal).map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setPaidAmountStr(String(preset))}
+                    className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                      Number(paidAmountStr) === preset
+                        ? 'border-primary bg-primary text-white'
+                        : 'border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-elevated text-neutral-700 dark:text-dark-muted hover:border-primary/60'
+                    }`}
+                  >
+                    {preset === effectiveTotal ? 'Pas' : formatCurrency(preset)}
+                  </button>
+                ))}
+              </div>
               {paidAmount > 0 && (
                 <div className="mt-2 flex justify-between text-sm">
                   <span className="text-neutral-600 dark:text-dark-muted">Kembalian</span>
@@ -341,29 +421,50 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
           {!isCash && !isPiutang && (
             <div className="rounded-md bg-neutral-100 dark:bg-dark-elevated px-3 py-2 text-center text-sm text-neutral-600 dark:text-dark-muted">
               Pembayaran tepat sejumlah{' '}
-              <span className="font-mono font-bold">{formatCurrency(cartTotal)}</span>
+              <span className="font-mono font-bold">{formatCurrency(effectiveTotal)}</span>
             </div>
           )}
 
           {isPiutang && (
-            <div className="space-y-1">
-              <div className="rounded-md bg-warning-50 px-3 py-2 text-center text-sm text-warning-700">
-                💳 Piutang — pembayaran dicatat sebagai hutang
-              </div>
-              <div>
-                <p className="mb-1 text-xs font-semibold text-neutral-600 dark:text-dark-muted">
-                  Catatan (nama pelanggan / keterangan)
-                </p>
-                <input
-                  type="text"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Contoh: Pak Budi - ambil nanti sore"
-                  className="w-full rounded-md border border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-3 py-2.5 text-sm focus:border-primary dark:focus:border-primary-400 focus:outline-none"
-                />
-              </div>
+            <div className="rounded-md bg-warning-50 dark:bg-warning-700/15 px-3 py-2 text-center text-sm text-warning-700 dark:text-warning-400">
+              💳 Piutang — pembayaran dicatat sebagai hutang
             </div>
           )}
+
+          {/* Pelanggan — tampil untuk semua metode jika ada data pelanggan */}
+          {customers.length > 0 && (
+            <div>
+              <p className="mb-1 text-xs font-semibold text-neutral-600 dark:text-dark-muted">
+                Pelanggan (opsional)
+              </p>
+              <select
+                value={selectedCustomerId}
+                onChange={(e) => setSelectedCustomerId(e.target.value)}
+                className="w-full rounded-md border border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-3 py-2.5 text-sm focus:border-primary dark:focus:border-primary-400 focus:outline-none"
+              >
+                <option value="">— Pilih pelanggan (opsional) —</option>
+                {customers.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nama}{c.telepon ? ` · ${c.telepon}` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Catatan — tampil untuk semua metode */}
+          <div>
+            <p className="mb-1 text-xs font-semibold text-neutral-600 dark:text-dark-muted">
+              Catatan (opsional)
+            </p>
+            <input
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Contoh: ambil nanti sore"
+              className="w-full rounded-md border border-neutral-300 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white px-3 py-2.5 text-sm focus:border-primary dark:focus:border-primary-400 focus:outline-none"
+            />
+          </div>
 
           <button
             type="button"
@@ -388,6 +489,7 @@ export default function POSScreen() {
   const [isSaving, setIsSaving] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [receiptSnapshot, setReceiptSnapshot] = useState<ReceiptSnapshot | null>(null)
+  const [stockAlert, setStockAlert] = useState<string | null>(null)
 
   useEffect(() => {
     void loadProducts()
@@ -396,14 +498,27 @@ export default function POSScreen() {
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0)
   const cartCount = cart.reduce((sum, item) => sum + item.qty, 0)
 
+  const showStockAlert = (msg: string) => {
+    setStockAlert(msg)
+    setTimeout(() => setStockAlert(null), 2500)
+  }
+
   const addToCart = (product: Product) => {
+    if (product.stock <= 0) {
+      showStockAlert(`Stok ${product.name} habis`)
+      return
+    }
     setCart((prev) => {
       const existing = prev.find((item) => item.productId === product.id)
       if (existing) {
+        if (existing.qty >= product.stock) {
+          showStockAlert(`Stok ${product.name} hanya ${product.stock} ${product.unit || 'pcs'}`)
+          return prev
+        }
         return prev.map((item) => {
           if (item.productId !== product.id) return item
-          const qty = item.qty + 1
-          return { ...item, qty, qtyInput: String(qty) }
+          const qty = Math.min(item.qty + 1, product.stock)
+          return { ...item, qty, qtyInput: String(qty), stock: product.stock }
         })
       }
       return [
@@ -416,6 +531,7 @@ export default function POSScreen() {
           costPrice: product.costPrice,
           qty: 1,
           qtyInput: '1',
+          stock: product.stock,
         },
       ]
     })
@@ -425,7 +541,7 @@ export default function POSScreen() {
     setCart((prev) =>
       prev.map((item) => {
         if (item.productId !== productId) return item
-        const qty = Math.max(1, item.qty + delta)
+        const qty = Math.max(1, Math.min(item.qty + delta, item.stock))
         return { ...item, qty, qtyInput: String(qty) }
       }),
     )
@@ -437,7 +553,8 @@ export default function POSScreen() {
         if (item.productId !== productId) return item
         const parsed = Math.floor(Number(value))
         if (value !== '' && Number.isFinite(parsed) && parsed >= 1) {
-          return { ...item, qty: parsed, qtyInput: value }
+          const qty = item.stock > 0 ? Math.min(parsed, item.stock) : parsed
+          return { ...item, qty, qtyInput: value }
         }
         return { ...item, qtyInput: value }
       }),
@@ -479,12 +596,17 @@ export default function POSScreen() {
     paymentMethod: PaymentMethod,
     paidAmount: number,
     transactionDate: string,
+    discount: number,
     notes?: string,
+    customerId?: string,
+    customerName?: string,
   ) => {
     setIsSaving(true)
     try {
       const normalizedCart = cart.map(normalizeCartItem)
-      const finalTotal = normalizedCart.reduce((sum, item) => sum + item.price * item.qty, 0)
+      const itemsTotal = normalizedCart.reduce((sum, item) => sum + item.price * item.qty, 0)
+      const finalDiscount = Math.max(0, Math.min(discount, itemsTotal))
+      const finalTotal = itemsTotal - finalDiscount
       const cartItems = normalizedCart.map((item) => ({
         productId: item.productId,
         productName: item.productName,
@@ -496,12 +618,14 @@ export default function POSScreen() {
 
       const txn = await createTransaction(
         cartItems,
-        finalTotal,
+        itemsTotal,
+        finalDiscount,
         finalTotal,
         paidAmount,
         paymentMethod,
         notes,
         transactionDate,
+        customerId,
       )
 
       const receiptItems: ReceiptPreviewItem[] = normalizedCart.map((item) => ({
@@ -518,6 +642,7 @@ export default function POSScreen() {
         items: receiptItems,
         storeProfile: getStoreProfile(),
         cashierName: 'Kasir',
+        customerName,
       }
       setReceiptSnapshot(snapshot)
 
@@ -560,6 +685,12 @@ export default function POSScreen() {
         </div>
       )}
 
+      {stockAlert && (
+        <div className="rounded-md bg-warning-50 dark:bg-warning-700/20 px-4 py-3 text-sm font-semibold text-warning-700 dark:text-warning-400">
+          ⚠️ {stockAlert}
+        </div>
+      )}
+
       <ProductSearchBar products={products} onSelect={addToCart} />
 
       {cart.length === 0 ? (
@@ -583,6 +714,11 @@ export default function POSScreen() {
                   </p>
                   <p className="font-mono text-xs text-neutral-500 dark:text-dark-muted">
                     {formatCurrency(item.price)}
+                    {item.stock > 0 && (
+                      <span className={`ml-2 ${item.qty >= item.stock ? 'text-warning-600 dark:text-warning-400 font-semibold' : 'text-neutral-400 dark:text-dark-muted'}`}>
+                        · Stok: {item.stock}
+                      </span>
+                    )}
                   </p>
                 </div>
 
@@ -630,7 +766,8 @@ export default function POSScreen() {
                   <button
                     type="button"
                     onClick={() => updateQty(item.productId, 1)}
-                    className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-lg font-bold text-white hover:bg-primary-800"
+                    disabled={item.qty >= item.stock}
+                    className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-lg font-bold text-white hover:bg-primary-800 disabled:opacity-40 disabled:cursor-not-allowed"
                     aria-label={`Tambah qty ${item.productName}`}
                   >
                     +

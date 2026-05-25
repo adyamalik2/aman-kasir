@@ -15,11 +15,13 @@ export interface CartItemInput {
 export interface CreateTransactionInput {
   cartItems: CartItemInput[]
   subtotal: number
+  discount: number
   total: number
   paidAmount: number
   paymentMethod: PaymentMethod
   notes?: string
   transactionDate?: string
+  customerId?: string
 }
 
 export class CreateTransactionUseCase {
@@ -42,8 +44,9 @@ export class CreateTransactionUseCase {
           id: transactionId,
           invoiceNo,
           date: now,
+          customerId: input.customerId,
           subtotal: input.subtotal,
-          discount: 0,
+          discount: input.discount,
           tax: 0,
           total: input.total,
           paidAmount: input.paidAmount,

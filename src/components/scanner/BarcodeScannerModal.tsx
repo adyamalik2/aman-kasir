@@ -11,14 +11,13 @@ interface BarcodeDetectorApi {
   detect(source: HTMLVideoElement): Promise<DetectedBarcode[]>
 }
 
-declare class BarcodeDetectorCtor {
-  constructor(options?: { formats?: string[] })
-  detect(source: HTMLVideoElement): Promise<DetectedBarcode[]>
+interface BarcodeDetectorConstructor {
+  new(options?: { formats?: string[] }): BarcodeDetectorApi
 }
 
 function getBarcodeDetector(): BarcodeDetectorApi | null {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const BarcodeDetector = (window as any).BarcodeDetector as typeof BarcodeDetectorCtor | undefined
+  const BarcodeDetector = (window as any).BarcodeDetector as BarcodeDetectorConstructor | undefined
   if (!BarcodeDetector) return null
   return new BarcodeDetector({
     formats: ['ean_13', 'ean_8', 'code_128', 'code_39', 'qr_code', 'itf', 'upc_a', 'upc_e'],

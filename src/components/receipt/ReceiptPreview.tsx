@@ -13,6 +13,7 @@ interface ReceiptPreviewProps {
   items: ReceiptPreviewItem[]
   storeProfile: StoreProfile
   cashierName?: string
+  customerName?: string
   className?: string
   /** Pengaturan printer dan struk — opsional, fallback ke default jika tidak diberikan */
   settings?: Partial<PrinterSettings>
@@ -45,6 +46,7 @@ export function ReceiptPreview({
   items,
   storeProfile,
   cashierName = 'Kasir',
+  customerName,
   className = '',
   settings,
 }: ReceiptPreviewProps) {
@@ -84,6 +86,12 @@ export function ReceiptPreview({
           <span>Kasir</span>
           <span className="text-right">{cashierName}</span>
         </div>
+        {customerName && (
+          <div className="flex justify-between gap-3">
+            <span>Pelanggan</span>
+            <span className="text-right font-bold">{customerName}</span>
+          </div>
+        )}
       </section>
 
       <section className="border-b border-dashed border-black py-3">

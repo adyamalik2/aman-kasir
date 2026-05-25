@@ -377,7 +377,7 @@ export default function SettingsScreen() {
         <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Kelola Kategori</h3>
 
         {catError && (
-          <div className="rounded-md bg-danger-50 px-3 py-2 text-xs text-danger-700">{catError}</div>
+          <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-xs text-danger-700 dark:text-danger-400">{catError}</div>
         )}
 
         {catLoading ? (

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 
-const APP_VERSION = '0.1.0'
+const APP_VERSION = '1.0.0'
 
 interface InfoRowProps {
   label: string
@@ -67,9 +67,11 @@ export default function AboutScreen() {
         <ul className="space-y-2">
           {[
             { icon: '🛒', text: 'Kasir POS cepat — tunai, QRIS, transfer, piutang' },
-            { icon: '📦', text: 'Manajemen produk & stok otomatis berkurang' },
-            { icon: '📊', text: 'Laporan penjualan, produk terlaris, stok menipis' },
-            { icon: '💳', text: 'Pencatatan piutang & pelunasan' },
+            { icon: '💰', text: 'Diskon per transaksi & tombol uang pas otomatis' },
+            { icon: '📦', text: 'Manajemen produk, stok, koreksi & histori pergerakan' },
+            { icon: '📊', text: 'Laporan penjualan, laba & margin, produk terlaris' },
+            { icon: '💳', text: 'Piutang lengkap — pelacakan, pelunasan & export CSV' },
+            { icon: '👤', text: 'Manajemen pelanggan, detail & riwayat transaksi' },
             { icon: '🖨️', text: 'Struk digital — cetak, share JPG/PDF, WhatsApp' },
             { icon: '☁️', text: 'Backup lokal & cloud (Google Drive)' },
             { icon: '📵', text: 'Bekerja 100% tanpa internet (offline-first)' },

@@ -61,7 +61,7 @@ export default function TerlarisScreen() {
       )}
 
       {loading ? (
-        <div className="py-12 text-center text-sm text-neutral-400">Memuat produk terlaris...</div>
+        <div className="py-12 text-center text-sm text-neutral-400 dark:text-dark-muted">Memuat produk terlaris...</div>
       ) : report ? (
         <div className="space-y-6">
           <RankList title="Terlaris (Qty Terjual)" entries={report.byQty} mode="qty" />
