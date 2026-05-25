@@ -1,6 +1,10 @@
-import type { Product, Category, Transaction, TransactionItem, StockMovement } from '@/domain'
+import type { Product, Category, Transaction, TransactionItem, StockMovement, Customer } from '@/domain'
 
-export const BACKUP_VERSION = 1
+/**
+ * v1 — schema awal (tanpa customers)
+ * v2 — tambah field customers (opsional, backward-compat dengan v1)
+ */
+export const BACKUP_VERSION = 2
 
 export interface BackupSettings {
   storeName?: string
@@ -14,6 +18,8 @@ export interface BackupFile {
   transactions: Transaction[]
   transaction_items: TransactionItem[]
   stock_movements: StockMovement[]
+  /** Opsional: tidak ada di backup v1 lama */
+  customers?: Customer[]
   settings: BackupSettings
 }
 
@@ -25,6 +31,7 @@ export interface RestoreCounts {
   transactions: number
   transaction_items: number
   stock_movements: number
+  customers: number
 }
 
 export interface RestoreResult {
@@ -39,6 +46,7 @@ export interface BackupPreview {
   transactions: number
   transaction_items: number
   stock_movements: number
+  customers: number
   timestamp: string
   version: number
 }

@@ -15,6 +15,7 @@ const emptyRestored = () => ({
   transactions: 0,
   transaction_items: 0,
   stock_movements: 0,
+  customers: 0,
 })
 
 export class CloudRestoreService {

@@ -1,0 +1,27 @@
+{
+  "name": "AMAN Kasir",
+  "short_name": "AMAN Kasir",
+  "description": "Aplikasi kasir offline-first untuk UMKM Indonesia",
+  "start_url": "/aman-kasir/",
+  "scope": "/aman-kasir/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1E3A8A",
+  "background_color": "#ffffff",
+  "lang": "id",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "/aman-kasir/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/aman-kasir/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -139,7 +139,7 @@ export default function BackupScreen() {
     if (result.success) {
       const r = result.restored
       setRestoreMessage(
-        `Restore berhasil. Produk: ${r.products}, Transaksi: ${r.transactions}, Item: ${r.transaction_items}`,
+        `Restore berhasil. Produk: ${r.products}, Transaksi: ${r.transactions}, Item: ${r.transaction_items}, Pelanggan: ${r.customers}`,
       )
       setPreview(null)
       setPendingFile(null)
@@ -200,7 +200,7 @@ export default function BackupScreen() {
     if (result.success) {
       const r = result.restored
       setCloudRestoreMessage(
-        `Restore cloud berhasil. Produk: ${r.products}, Transaksi: ${r.transactions}`,
+        `Restore cloud berhasil. Produk: ${r.products}, Transaksi: ${r.transactions}, Pelanggan: ${r.customers}`,
       )
       setCloudRestoreTarget(null)
       setCloudRestoreConfirm(0)
@@ -528,6 +528,7 @@ export default function BackupScreen() {
               <li>{preview.transactions} transaksi</li>
               <li>{preview.transaction_items} item transaksi</li>
               <li>{preview.stock_movements} pergerakan stok</li>
+              <li>{preview.customers} pelanggan</li>
             </ul>
           </div>
         )}

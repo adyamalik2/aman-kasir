@@ -5,13 +5,14 @@ import { downloadBlob } from '@/services/export/download'
 
 export class BackupService {
   async exportFullDatabase(): Promise<BackupFile> {
-    const [products, categories, transactions, transactionItems, stockMovements] =
+    const [products, categories, transactions, transactionItems, stockMovements, customers] =
       await Promise.all([
         db.products.toArray(),
         db.categories.toArray(),
         db.transactions.toArray(),
         db.transactionItems.toArray(),
         db.stockMovements.toArray(),
+        db.customers.toArray(),
       ])
 
     const storeName = useAppStore.getState().storeName
@@ -24,6 +25,7 @@ export class BackupService {
       transactions,
       transaction_items: transactionItems,
       stock_movements: stockMovements,
+      customers,
       settings: { storeName },
     }
   }

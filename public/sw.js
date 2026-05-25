@@ -2,7 +2,15 @@ const CACHE_VERSION = 'aman-kasir-v2'
 const APP_SHELL_CACHE = `${CACHE_VERSION}-shell`
 const STATIC_CACHE = `${CACHE_VERSION}-static`
 
-const APP_SHELL = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png']
+// Deteksi base path dari lokasi sw.js agar bekerja di root (/) maupun subdir (/aman-kasir/)
+const BASE = self.location.pathname.replace(/\/sw\.js$/, '') || ''
+
+const APP_SHELL = [
+  `${BASE}/`,
+  `${BASE}/manifest.webmanifest`,
+  `${BASE}/icons/icon-192.png`,
+  `${BASE}/icons/icon-512.png`,
+]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -61,10 +69,13 @@ async function networkFirstNavigation(request) {
   try {
     const response = await fetch(request)
     const cache = await caches.open(APP_SHELL_CACHE)
-    cache.put('/', response.clone())
+    cache.put(`${BASE}/`, response.clone())
     return response
   } catch {
-    const cached = await caches.match('/') || await caches.match('/index.html')
+    const cached =
+      await caches.match(`${BASE}/`) ||
+      await caches.match(`${BASE}/index.html`) ||
+      await caches.match('/')
     if (cached) return cached
 
     return new Response('AMAN Kasir sedang offline. Buka kembali setelah koneksi tersedia.', {

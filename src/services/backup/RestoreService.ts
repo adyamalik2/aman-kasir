@@ -19,7 +19,8 @@ export class RestoreService {
     }
 
     const version = json.version
-    if (version !== BACKUP_VERSION) {
+    // Terima v1 (tanpa customers) dan v2 (dengan customers) — tolak lainnya
+    if (typeof version !== 'number' || version < 1 || version > BACKUP_VERSION) {
       return {
         valid: false,
         error: `Versi backup tidak didukung (v${String(version)}).`,
@@ -56,6 +57,7 @@ export class RestoreService {
       transactions: data.transactions.length,
       transaction_items: data.transaction_items.length,
       stock_movements: data.stock_movements.length,
+      customers: data.customers?.length ?? 0,
     }
   }
 
@@ -81,6 +83,7 @@ export class RestoreService {
           db.transactions,
           db.transactionItems,
           db.stockMovements,
+          db.customers,
         ],
         async () => {
           if (mode === 'replace') {
@@ -90,6 +93,7 @@ export class RestoreService {
               db.transactions.clear(),
               db.transactionItems.clear(),
               db.stockMovements.clear(),
+              db.customers.clear(),
             ])
             await this.bulkInsertAll(data, restored)
           } else {
@@ -131,6 +135,10 @@ export class RestoreService {
       await db.stockMovements.bulkAdd(data.stock_movements)
       restored.stock_movements = data.stock_movements.length
     }
+    if (data.customers && data.customers.length > 0) {
+      await db.customers.bulkAdd(data.customers)
+      restored.customers = data.customers.length
+    }
   }
 
   private async mergeAll(data: BackupFile, restored: RestoreResult['restored']): Promise<void> {
@@ -145,6 +153,10 @@ export class RestoreService {
       db.stockMovements,
       data.stock_movements,
     )
+    // Backup v1 tidak punya customers — aman jika undefined
+    if (data.customers) {
+      restored.customers = await this.mergeTable(db.customers, data.customers)
+    }
   }
 
   private async mergeTable<T extends { id: string }>(
@@ -170,5 +182,6 @@ function emptyCounts(): RestoreResult['restored'] {
     transactions: 0,
     transaction_items: 0,
     stock_movements: 0,
+    customers: 0,
   }
 }

@@ -20,7 +20,7 @@ export function registerServiceWorker(): void {
 
   window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register('/sw.js')
+      .register(`${import.meta.env.BASE_URL}sw.js`)
       .then((reg) => {
         _registration = reg
         _callbacks.forEach((cb) => cb(reg))
