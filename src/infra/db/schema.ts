@@ -6,6 +6,7 @@ export const TABLE_NAMES = {
   transactions: 'transactions',
   transactionItems: 'transactionItems',
   stockMovements: 'stockMovements',
+  customers: 'customers',
 } as const
 
 export type TableName = (typeof TABLE_NAMES)[keyof typeof TABLE_NAMES]

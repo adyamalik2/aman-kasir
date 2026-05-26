@@ -173,43 +173,53 @@ export default function RingkasanScreen() {
   const [customStart, setCustomStart] = useState('')
   const [customEnd, setCustomEnd] = useState('')
 
+  // Effect 1: Stats cards — hanya re-fetch saat period berubah
   useEffect(() => {
     let cancelled = false
     setLoading(true)
     setError(null)
 
-    const run = async () => {
-      const { start, end } = resolvePeriod(period)
+    const { start, end } = resolvePeriod(period)
+    Promise.all([
+      fetchStats(start, end),
+      (async () => {
+        const prevRange = getPreviousRange(period)
+        return prevRange ? fetchStats(prevRange.start, prevRange.end) : null
+      })(),
+    ])
+      .then(([curr, prev]) => {
+        if (cancelled) return
+        setStats(curr)
+        setPrevStats(prev)
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Gagal memuat data.')
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
 
-      const [curr, prev] = await Promise.all([
-        fetchStats(start, end),
-        (async () => {
-          const prevRange = getPreviousRange(period)
-          return prevRange ? fetchStats(prevRange.start, prevRange.end) : null
-        })(),
-      ])
+    return () => { cancelled = true }
+  }, [period])
 
-      if (cancelled) return
-      setStats(curr)
-      setPrevStats(prev)
+  // Effect 2: Chart data — re-fetch saat period atau metric berubah (tidak butuh stats ulang)
+  useEffect(() => {
+    let cancelled = false
 
-      // Chart data
-      const isSingleDay = period.preset === 'today' || period.preset === 'yesterday'
-      if (isSingleDay) {
-        const date = period.preset === 'yesterday'
-          ? (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d })()
-          : new Date()
-        setChartData(await fetchHourly(date, metric))
-      } else {
-        setChartData(await fetchDaily(start, end, metric))
-      }
-    }
+    const { start, end } = resolvePeriod(period)
+    const isSingleDay = period.preset === 'today' || period.preset === 'yesterday'
+    const chartPromise = isSingleDay
+      ? fetchHourly(
+          period.preset === 'yesterday'
+            ? (() => { const d = new Date(); d.setDate(d.getDate() - 1); return d })()
+            : new Date(),
+          metric,
+        )
+      : fetchDaily(start, end, metric)
 
-    run().catch((err) => {
-      if (!cancelled) setError(err instanceof Error ? err.message : 'Gagal memuat data.')
-    }).finally(() => {
-      if (!cancelled) setLoading(false)
-    })
+    chartPromise
+      .then((data) => { if (!cancelled) setChartData(data) })
+      .catch(() => {}) // chart failure non-critical
 
     return () => { cancelled = true }
   }, [period, metric])

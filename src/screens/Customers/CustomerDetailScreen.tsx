@@ -10,7 +10,8 @@ import { DexieTransactionRepository } from '@/repositories/implementations/Dexie
 
 const txnRepo = new DexieTransactionRepository()
 
-type PiutangTxn = Transaction & { lunasAt?: string; lunasMethod?: string }
+// lunasAt/lunasMethod/lunasNotes sudah ada di domain Transaction
+type PiutangTxn = Transaction
 
 const METHOD_LABELS: Record<string, string> = {
   cash: 'Tunai',

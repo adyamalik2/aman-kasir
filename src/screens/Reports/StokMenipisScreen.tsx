@@ -5,6 +5,7 @@ import { formatCurrency } from '@/lib/currency'
 import { CsvExportService } from '@/services/export/CsvExportService'
 import { getLowStock } from './reportApi'
 import { db } from '@/infra/db/dexie'
+import { generateId } from '@/lib/id-generator'
 
 const csvService = new CsvExportService()
 
@@ -62,7 +63,7 @@ export default function StokMenipisScreen() {
           syncStatus: 'local_only' as const,
         })
         await db.stockMovements.add({
-          id: `sm-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          id: generateId('sm'),
           productId: restockProduct.id,
           type: isTambah ? ('purchase' as const) : ('adjustment' as const),
           qtyChange,

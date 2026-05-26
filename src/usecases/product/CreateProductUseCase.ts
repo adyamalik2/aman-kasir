@@ -15,10 +15,11 @@ export interface CreateProductInput {
 }
 
 function generateAutoSku(): string {
-  const digits = Math.floor(Math.random() * 100000)
-    .toString()
-    .padStart(5, '0')
-  return `PRD-${digits}`
+  // Gabungkan 4 char terakhir timestamp base-36 + 4 char random
+  // → ~1.6 triliun kombinasi, risiko kolisi dapat diabaikan
+  const ts = Date.now().toString(36).slice(-4).toUpperCase()
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase()
+  return `PRD-${ts}${rand}`
 }
 
 export class CreateProductUseCase {

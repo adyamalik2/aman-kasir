@@ -50,9 +50,9 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (
-    url.pathname.startsWith('/assets/') ||
-    url.pathname.startsWith('/icons/') ||
-    url.pathname === '/manifest.webmanifest'
+    url.pathname.startsWith(`${BASE}/assets/`) ||
+    url.pathname.startsWith(`${BASE}/icons/`) ||
+    url.pathname === `${BASE}/manifest.webmanifest`
   ) {
     event.respondWith(cacheFirstStatic(request))
   }

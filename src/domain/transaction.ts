@@ -18,6 +18,12 @@ export interface Transaction extends BaseSyncFields {
   paymentMethod: PaymentMethod
   status: TransactionStatus
   notes?: string
+  /** Waktu pelunasan piutang (ISO string) — diisi saat tandai lunas */
+  lunasAt?: string
+  /** Metode pembayaran saat piutang dilunasi */
+  lunasMethod?: string
+  /** Catatan saat piutang dilunasi */
+  lunasNotes?: string
 }
 
 export interface TransactionItem {

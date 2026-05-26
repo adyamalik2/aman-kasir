@@ -48,8 +48,7 @@ export default function CustomersScreen() {
       // Hitung piutang belum lunas per pelanggan
       const map = new Map<string, PiutangSummary>()
       for (const txn of piutangTxns) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((txn as any).lunasAt || !txn.customerId) continue
+        if (txn.lunasAt || !txn.customerId) continue
         const prev = map.get(txn.customerId) ?? { count: 0, total: 0 }
         map.set(txn.customerId, { count: prev.count + 1, total: prev.total + txn.total })
       }

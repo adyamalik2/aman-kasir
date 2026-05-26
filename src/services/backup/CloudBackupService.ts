@@ -10,7 +10,7 @@
  *   id            string
  *   createdAt     Timestamp
  *   deviceName    string
- *   version       number (1)
+ *   version       number (lihat BACKUP_VERSION di types.ts, saat ini 2)
  *   summary       { productCount, transactionCount, categoryCount }
  *   fileSizeBytes number (ukuran JSON asli sebelum compress, dalam byte)
  *   data          string (JSON backup di-compress dengan LZString.compressToUTF16)

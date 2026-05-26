@@ -383,14 +383,12 @@ export default function TransaksiScreen() {
         lunasAt: now,
         lunasMethod,
         lunasNotes: lunasNotes.trim() || undefined,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
+      })
       // Update local state
-      type TxnWithLunas = typeof lunasTarget & { lunasAt?: string; lunasMethod?: string; lunasNotes?: string }
       setAllTxns((prev) =>
         prev.map((t) =>
           t.id === lunasTarget.id
-            ? ({ ...t, lunasAt: now, lunasMethod, lunasNotes: lunasNotes.trim() || undefined } as TxnWithLunas)
+            ? { ...t, lunasAt: now, lunasMethod, lunasNotes: lunasNotes.trim() || undefined }
             : t,
         ),
       )
@@ -605,8 +603,7 @@ export default function TransaksiScreen() {
                       </span>
                     )}
                     {txn.paymentMethod === 'piutang' && (
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      (txn as any).lunasAt ? (
+                      txn.lunasAt ? (
                         <span className="inline-flex items-center rounded-full bg-success-50 dark:bg-success-700/20 px-1.5 py-0.5 text-[10px] font-semibold text-success-700 dark:text-success-400">
                           ✓ Lunas
                         </span>
@@ -631,8 +628,7 @@ export default function TransaksiScreen() {
               {/* Aksi */}
               <div className="flex shrink-0 items-center gap-2">
                 {/* Tombol Lunasi — hanya untuk piutang belum lunas */}
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {txn.paymentMethod === 'piutang' && !(txn as any).lunasAt && (
+                {txn.paymentMethod === 'piutang' && !txn.lunasAt && (
                   <button
                     type="button"
                     onClick={() => {

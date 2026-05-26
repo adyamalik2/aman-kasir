@@ -91,6 +91,7 @@ export function markBackupClean(options: {
 
   localStorage.setItem(STORAGE_KEYS.hasLocalChanges, 'false')
   localStorage.removeItem(STORAGE_KEYS.lastChangeReason)
+  localStorage.removeItem(STORAGE_KEYS.lastChangeAt)
 
   return getBackupStatusMetadata()
 }

@@ -17,15 +17,11 @@ function formatTanggal(iso: string): string {
   })
 }
 
-// Extended type untuk piutang dengan field tambahan saat lunas
-type PiutangTxn = Transaction & {
-  lunasAt?: string
-  lunasMethod?: string
-  lunasNotes?: string
-}
+// Field lunasAt/lunasMethod/lunasNotes sudah ada di domain Transaction
+type PiutangTxn = Transaction
 
-// Cek apakah transaksi sudah ditandai lunas (field lunasAt di-inject saat tandai lunas)
-function isLunas(txn: Transaction & { lunasAt?: string }): boolean {
+// Cek apakah transaksi sudah ditandai lunas
+function isLunas(txn: Transaction): boolean {
   return Boolean(txn.lunasAt)
 }
 
@@ -75,8 +71,7 @@ export default function PiutangScreen() {
         lunasAt: now,
         lunasMethod,
         lunasNotes: lunasNotes.trim() || undefined,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
+      })
       await hapticSuccess()
       setAllPiutang((prev) =>
         prev.map((t) =>
