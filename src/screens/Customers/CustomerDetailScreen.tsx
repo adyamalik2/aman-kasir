@@ -7,6 +7,7 @@ import { ReceiptActionSheet } from '@/components/receipt/ReceiptActionSheet'
 import type { ReceiptSnapshot } from '@/components/receipt/receiptUtils'
 import { getStoreProfile } from '@/lib/storeProfile'
 import { DexieTransactionRepository } from '@/repositories/implementations/DexieTransactionRepository'
+import { Icon, BackHeader } from '@/components/ui'
 
 const txnRepo = new DexieTransactionRepository()
 
@@ -96,18 +97,7 @@ export default function CustomerDetailScreen() {
   return (
     <section className="space-y-4 pb-4">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          to="/lainnya/pelanggan"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-dark-elevated active:bg-neutral-200 dark:active:bg-dark-border"
-        >
-          <span className="text-xl text-primary">‹</span>
-        </Link>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">Pelanggan</p>
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white">Detail Pelanggan</h2>
-        </div>
-      </div>
+      <BackHeader to="/lainnya/pelanggan" eyebrow="Pelanggan" title="Detail Pelanggan" icon="user" />
 
       {error && (
         <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">{error}</div>
@@ -120,8 +110,10 @@ export default function CustomerDetailScreen() {
           ))}
         </div>
       ) : !customer ? (
-        <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-8 text-center">
-          <p className="text-2xl">👤</p>
+        <div className="flex flex-col items-center rounded-2xl border border-neutral-200 bg-white p-8 text-center dark:border-dark-border dark:bg-dark-card">
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400 dark:bg-dark-elevated">
+            <Icon name="user" size={26} />
+          </span>
           <p className="mt-2 text-sm font-semibold text-neutral-700 dark:text-white">Pelanggan tidak ditemukan</p>
         </div>
       ) : (
@@ -129,8 +121,8 @@ export default function CustomerDetailScreen() {
           {/* Info Pelanggan */}
           <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card p-4 space-y-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 dark:bg-primary-900/30 text-2xl">
-                👤
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-gradient text-white shadow-glow">
+                <Icon name="user" size={24} />
               </div>
               <div className="min-w-0">
                 <p className="truncate text-base font-bold text-neutral-900 dark:text-white">{customer.nama}</p>
@@ -140,13 +132,15 @@ export default function CustomerDetailScreen() {
               </div>
             </div>
             {customer.alamat && (
-              <div className="rounded-lg bg-neutral-50 dark:bg-dark-elevated px-3 py-2">
-                <p className="text-xs text-neutral-500 dark:text-dark-muted">📍 {customer.alamat}</p>
+              <div className="flex items-start gap-2 rounded-xl bg-neutral-50 px-3 py-2 dark:bg-dark-elevated">
+                <Icon name="map-pin" size={14} className="mt-0.5 shrink-0 text-neutral-400" />
+                <p className="text-xs text-neutral-500 dark:text-dark-muted">{customer.alamat}</p>
               </div>
             )}
             {customer.catatan && (
-              <div className="rounded-lg bg-neutral-50 dark:bg-dark-elevated px-3 py-2">
-                <p className="text-xs text-neutral-500 dark:text-dark-muted">📝 {customer.catatan}</p>
+              <div className="flex items-start gap-2 rounded-xl bg-neutral-50 px-3 py-2 dark:bg-dark-elevated">
+                <Icon name="file-text" size={14} className="mt-0.5 shrink-0 text-neutral-400" />
+                <p className="text-xs text-neutral-500 dark:text-dark-muted">{customer.catatan}</p>
               </div>
             )}
             <p className="text-xs text-neutral-400 dark:text-dark-muted">
@@ -181,8 +175,8 @@ export default function CustomerDetailScreen() {
           {/* Piutang belum lunas */}
           {belumLunas.length > 0 && (
             <div className="rounded-xl border border-warning-200 dark:border-warning-700/40 bg-warning-50 dark:bg-warning-700/10 p-4">
-              <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-warning-700 dark:text-warning-500">
-                ⚠️ Piutang Belum Lunas ({belumLunas.length})
+              <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-warning-700 dark:text-warning-500">
+                <Icon name="alert-triangle" size={14} /> Piutang Belum Lunas ({belumLunas.length})
               </h3>
               <ul className="space-y-1.5">
                 {belumLunas.map((t) => (
@@ -231,12 +225,12 @@ export default function CustomerDetailScreen() {
                           </span>
                           {txn.paymentMethod === 'piutang' && (
                             pt.lunasAt ? (
-                              <span className="rounded-full bg-success-50 dark:bg-success-700/20 px-2 py-0.5 text-[10px] font-semibold text-success-700 dark:text-success-400">
-                                ✓ Lunas
+                              <span className="inline-flex items-center gap-1 rounded-full bg-success-50 px-2 py-0.5 text-[10px] font-semibold text-success-700 dark:bg-success-700/20 dark:text-success-400">
+                                <Icon name="check" size={11} strokeWidth={2.5} /> Lunas
                               </span>
                             ) : (
-                              <span className="rounded-full bg-warning-50 dark:bg-warning-700/20 px-2 py-0.5 text-[10px] font-semibold text-warning-700 dark:text-warning-500">
-                                ⏳ Belum Lunas
+                              <span className="inline-flex items-center gap-1 rounded-full bg-warning-50 px-2 py-0.5 text-[10px] font-semibold text-warning-700 dark:bg-warning-700/20 dark:text-warning-500">
+                                <Icon name="clock" size={11} /> Belum Lunas
                               </span>
                             )
                           )}
@@ -246,17 +240,19 @@ export default function CustomerDetailScreen() {
                           <p className="text-xs text-neutral-400 dark:text-dark-muted">{fmtDateTime(txn.date)}</p>
                         </div>
                         {txn.notes && (
-                          <p className="mt-0.5 text-xs text-neutral-500 dark:text-dark-muted">📝 {txn.notes}</p>
+                          <p className="mt-0.5 flex items-center gap-1 text-xs text-neutral-500 dark:text-dark-muted">
+                            <Icon name="file-text" size={12} className="shrink-0" /> {txn.notes}
+                          </p>
                         )}
                       </div>
                       <button
                         type="button"
                         onClick={() => void handleOpenReceipt(txn)}
                         disabled={loadingReceiptId === txn.id}
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary dark:text-primary-400 disabled:opacity-50"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary disabled:opacity-50 dark:bg-primary-900/30 dark:text-primary-400"
                         title="Lihat struk"
                       >
-                        {loadingReceiptId === txn.id ? '…' : '🧾'}
+                        {loadingReceiptId === txn.id ? '…' : <Icon name="receipt" size={17} />}
                       </button>
                     </li>
                   )

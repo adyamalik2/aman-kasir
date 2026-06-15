@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import type { PeriodInput } from '@/lib/period'
+import { BackHeader } from '@/components/ui'
 import { formatCurrency } from '@/lib/currency'
 import type { TopProductsReport } from '@/usecases/reports/types'
 import { CsvExportService } from '@/services/export/CsvExportService'
@@ -31,18 +31,7 @@ export default function TerlarisScreen() {
   return (
     <section className="space-y-4">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          to="/laporan"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-dark-elevated active:bg-neutral-200 dark:active:bg-dark-border"
-        >
-          <span className="text-xl text-primary">‹</span>
-        </Link>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">Laporan</p>
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white">Produk Terlaris</h2>
-        </div>
-      </div>
+      <BackHeader to="/laporan" eyebrow="Laporan" title="Produk Terlaris" icon="star" />
 
       <PeriodFilter period={period} onChange={setPeriod} />
 

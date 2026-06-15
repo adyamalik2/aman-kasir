@@ -1,9 +1,0 @@
-/*
- * App.css — DIKOSONGKAN dengan sengaja
- *
- * AMAN Kasir menggunakan Tailwind CSS utility-first.
- * Styling komponen dilakukan langsung di className JSX, BUKAN di file .css terpisah.
- *
- * Jika butuh custom CSS yang tidak bisa dilakukan Tailwind:
- * → Tambahkan di src/index.css dalam @layer components { ... }
- */

@@ -13,6 +13,7 @@ import { hapticSuccess } from '@/native/haptics'
 import BarcodeScannerModal from '@/components/scanner/BarcodeScannerModal'
 import { db } from '@/infra/db/dexie'
 import type { Customer } from '@/domain'
+import { Icon, PageHeader, type IconName } from '@/components/ui'
 
 interface CartItem {
   productId: string
@@ -25,11 +26,11 @@ interface CartItem {
   stock: number   // stok tersedia saat ditambahkan — untuk validasi batas qty
 }
 
-const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: string }[] = [
-  { value: 'cash',     label: 'Tunai',    icon: '💵' },
-  { value: 'qris',     label: 'QRIS',     icon: '📲' },
-  { value: 'transfer', label: 'Transfer', icon: '🏦' },
-  { value: 'piutang',  label: 'Piutang',  icon: '💳' },
+const PAYMENT_METHODS: { value: PaymentMethod; label: string; icon: IconName }[] = [
+  { value: 'cash',     label: 'Tunai',    icon: 'cash' },
+  { value: 'qris',     label: 'QRIS',     icon: 'qr' },
+  { value: 'transfer', label: 'Transfer', icon: 'bank' },
+  { value: 'piutang',  label: 'Piutang',  icon: 'credit-card' },
 ]
 
 function normalizeQtyInput(value: string, fallback = 1): number {
@@ -90,7 +91,7 @@ function ProductSearchBar({ products, onSelect }: ProductSearchBarProps) {
     onSelect(product)
     setQuery('')
     setShowDropdown(false)
-    setScanMessage(`✓ ${product.name} ditambahkan.`)
+    setScanMessage(`${product.name} ditambahkan ke keranjang.`)
   }
 
   const handleBarcodeSubmit = (overrideValue?: string) => {
@@ -146,30 +147,39 @@ function ProductSearchBar({ products, onSelect }: ProductSearchBarProps) {
 
       <div className="space-y-2">
         <div className="flex gap-2">
-          <input
-            ref={inputRef}
-            type="search"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value)
-              setScanMessage(null)
-            }}
-            onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                handleBarcodeSubmit()
-              }
-            }}
-            placeholder="Cari produk atau scan barcode..."
-            className="min-w-0 flex-1 rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-4 py-3 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-dark-muted focus:border-primary dark:focus:border-primary-400 focus:outline-none"
-          />
+          <div className="relative min-w-0 flex-1">
+            <Icon
+              name="search"
+              size={18}
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-dark-muted"
+            />
+            <input
+              ref={inputRef}
+              type="search"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value)
+                setScanMessage(null)
+              }}
+              onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  handleBarcodeSubmit()
+                }
+              }}
+              placeholder="Cari produk atau scan barcode..."
+              className="w-full rounded-xl border border-neutral-200 bg-white py-3 pl-10 pr-4 text-sm text-neutral-900 placeholder-neutral-400 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none dark:border-dark-border dark:bg-dark-card dark:text-white dark:placeholder-dark-muted dark:focus:border-primary-400"
+            />
+          </div>
           <button
             type="button"
             onClick={handleScanButtonPress}
-            className="rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-elevated px-3 py-3 text-xs font-bold text-neutral-700 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-border"
+            aria-label="Scan barcode"
+            className="flex shrink-0 items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-3.5 text-xs font-bold text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-dark-border dark:bg-dark-elevated dark:text-dark-muted dark:hover:bg-dark-border"
           >
-            {isNativeApp() ? '📷 Scan' : 'Scan'}
+            <Icon name={isNativeApp() ? 'camera' : 'scan'} size={18} />
+            Scan
           </button>
         </div>
 
@@ -310,9 +320,9 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
             </div>
           )}
 
-          <div className="rounded-lg bg-primary-50 dark:bg-primary-900/30 px-4 py-4 text-center">
-            <p className="text-xs font-semibold uppercase text-neutral-500 dark:text-dark-muted">Total Tagihan</p>
-            <p className="mt-1 font-mono text-3xl font-bold text-primary">
+          <div className="rounded-2xl bg-primary-50 px-4 py-4 text-center dark:bg-primary-900/30">
+            <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-dark-muted">Total Tagihan</p>
+            <p className="mt-1 font-mono text-3xl font-bold text-primary-700 dark:text-primary-300">
               {formatCurrency(effectiveTotal)}
             </p>
             {discount > 0 && (
@@ -360,15 +370,15 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
                     setPaymentMethod(m.value)
                     setPaidAmountStr('')
                   }}
-                  className={`flex items-center justify-center gap-1.5 rounded-xl border py-2.5 text-sm font-semibold transition-colors ${
+                  className={`flex items-center justify-center gap-1.5 rounded-xl border py-3 text-sm font-semibold transition-all active:scale-[0.98] ${
                     paymentMethod === m.value
-                      ? 'border-primary bg-primary text-white'
+                      ? 'border-transparent bg-brand-gradient text-white shadow-glow'
                       : m.value === 'piutang'
                         ? 'border-warning-300 dark:border-warning-700/50 text-warning-700 dark:text-warning-500 hover:bg-warning-50 dark:hover:bg-warning-700/10'
                         : 'border-neutral-300 dark:border-dark-border text-neutral-700 dark:text-white hover:border-primary/50'
                   }`}
                 >
-                  <span>{m.icon}</span>
+                  <Icon name={m.icon} size={18} />
                   {m.label}
                 </button>
               ))}
@@ -429,12 +439,16 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
 
           {isPiutang && (
             <div className="space-y-1.5">
-              <div className="rounded-md bg-warning-50 dark:bg-warning-700/15 px-3 py-2 text-center text-sm text-warning-700 dark:text-warning-500">
-                💳 Piutang — pembayaran dicatat sebagai hutang
+              <div className="flex items-center justify-center gap-2 rounded-xl bg-warning-50 px-3 py-2.5 text-sm text-warning-700 dark:bg-warning-700/15 dark:text-warning-500">
+                <Icon name="credit-card" size={16} className="shrink-0" />
+                Piutang — pembayaran dicatat sebagai hutang
               </div>
               {!selectedCustomerId && (
-                <div className="rounded-md bg-neutral-50 dark:bg-dark-elevated border border-neutral-200 dark:border-dark-border px-3 py-2 text-xs text-neutral-500 dark:text-dark-muted">
-                  💡 Sebaiknya pilih <strong>pelanggan</strong> agar piutang mudah dilacak di tab Piutang.
+                <div className="flex items-start gap-2 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-500 dark:border-dark-border dark:bg-dark-elevated dark:text-dark-muted">
+                  <Icon name="info" size={14} className="mt-0.5 shrink-0" />
+                  <span>
+                    Sebaiknya pilih <strong>pelanggan</strong> agar piutang mudah dilacak di tab Piutang.
+                  </span>
                 </div>
               )}
             </div>
@@ -484,9 +498,16 @@ function CheckoutModal({ cartTotal, isSaving, onClose, onConfirm }: CheckoutModa
             type="button"
             onClick={handleConfirm}
             disabled={!canConfirm}
-            className="w-full rounded-md bg-primary py-3 text-sm font-bold text-white transition-colors hover:bg-primary-800 disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-gradient py-3.5 text-sm font-bold text-white shadow-glow transition-all hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isSaving ? 'Menyimpan...' : 'Konfirmasi Pembayaran'}
+            {isSaving ? (
+              'Menyimpan...'
+            ) : (
+              <>
+                <Icon name="check-circle" size={18} />
+                Konfirmasi Pembayaran
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -686,28 +707,30 @@ export default function POSScreen() {
 
   return (
     <section className="space-y-4 pb-24">
-      <div>
-        <p className="text-sm font-medium text-neutral-500 dark:text-dark-muted">Kasir</p>
-        <h2 className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">Transaksi Baru</h2>
-      </div>
+      <PageHeader eyebrow="Kasir" title="Transaksi Baru" icon="cart" />
 
       {successMessage && (
-        <div className="rounded-md bg-success-50 dark:bg-success-700/20 px-4 py-3 text-sm font-semibold text-success-700 dark:text-success-400">
+        <div className="flex animate-fade-in items-center gap-2 rounded-xl bg-success-50 px-4 py-3 text-sm font-semibold text-success-700 dark:bg-success-700/20 dark:text-success-400">
+          <Icon name="check-circle" size={18} className="shrink-0" />
           {successMessage}
         </div>
       )}
 
       {stockAlert && (
-        <div className="rounded-md bg-warning-50 dark:bg-warning-700/20 px-4 py-3 text-sm font-semibold text-warning-700 dark:text-warning-500">
-          ⚠️ {stockAlert}
+        <div className="flex animate-fade-in items-center gap-2 rounded-xl bg-warning-50 px-4 py-3 text-sm font-semibold text-warning-700 dark:bg-warning-700/20 dark:text-warning-500">
+          <Icon name="alert-triangle" size={18} className="shrink-0" />
+          {stockAlert}
         </div>
       )}
 
       <ProductSearchBar products={products} onSelect={addToCart} />
 
       {cart.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-neutral-300 dark:border-dark-border py-14 text-center">
-          <p className="text-sm text-neutral-500 dark:text-dark-muted">Belum ada produk di keranjang.</p>
+        <div className="flex flex-col items-center rounded-2xl border border-dashed border-neutral-300 py-14 text-center dark:border-dark-border">
+          <span className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50 text-primary-400 dark:bg-primary-900/30 dark:text-primary-300">
+            <Icon name="cart" size={26} />
+          </span>
+          <p className="text-sm font-semibold text-neutral-600 dark:text-dark-muted">Belum ada produk di keranjang.</p>
           <p className="mt-1 text-xs text-neutral-400 dark:text-dark-muted">
             Cari produk di atas untuk mulai transaksi.
           </p>
@@ -717,7 +740,7 @@ export default function POSScreen() {
           {cart.map((item) => (
             <div
               key={item.productId}
-              className="rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card px-4 py-3"
+              className="animate-fade-in rounded-2xl border border-neutral-200/80 bg-white px-4 py-3 shadow-soft dark:border-dark-border dark:bg-dark-card"
             >
               <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
@@ -734,15 +757,16 @@ export default function POSScreen() {
                   </p>
                 </div>
 
-                <div className="min-w-[86px] text-right">
+                <div className="flex min-w-[86px] flex-col items-end">
                   <p className="font-mono text-sm font-bold text-primary">
                     {formatCurrency(item.price * item.qty)}
                   </p>
                   <button
                     type="button"
                     onClick={() => removeFromCart(item.productId)}
-                    className="text-xs text-danger hover:underline"
+                    className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-danger-600 hover:text-danger-700 dark:text-danger-500"
                   >
+                    <Icon name="trash" size={13} />
                     Hapus
                   </button>
                 </div>
@@ -755,10 +779,10 @@ export default function POSScreen() {
                     type="button"
                     onClick={() => updateQty(item.productId, -1)}
                     disabled={item.qty <= 1}
-                    className="flex h-10 w-10 items-center justify-center rounded-md border border-neutral-300 dark:border-dark-border text-lg font-bold text-neutral-600 dark:text-dark-muted hover:bg-neutral-100 dark:hover:bg-dark-elevated disabled:opacity-40"
+                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-300 text-neutral-600 transition-colors hover:bg-neutral-100 disabled:opacity-40 dark:border-dark-border dark:text-dark-muted dark:hover:bg-dark-elevated"
                     aria-label={`Kurangi qty ${item.productName}`}
                   >
-                    -
+                    <Icon name="minus" size={18} strokeWidth={2.5} />
                   </button>
                   <input
                     type="number"
@@ -779,10 +803,10 @@ export default function POSScreen() {
                     type="button"
                     onClick={() => updateQty(item.productId, 1)}
                     disabled={item.qty >= item.stock}
-                    className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-lg font-bold text-white hover:bg-primary-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-40"
                     aria-label={`Tambah qty ${item.productName}`}
                   >
-                    +
+                    <Icon name="plus" size={18} strokeWidth={2.5} />
                   </button>
                 </div>
               </div>
@@ -792,29 +816,32 @@ export default function POSScreen() {
       )}
 
       {cart.length > 0 && (
-        <div className="rounded-lg border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card px-4 py-4">
+        <div className="rounded-2xl border border-neutral-200/80 bg-white px-4 py-4 shadow-card dark:border-dark-border dark:bg-dark-card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-neutral-500 dark:text-dark-muted">
-                {cartCount} item - {cart.length} jenis
+                {cartCount} item · {cart.length} jenis
               </p>
               <p className="text-sm font-semibold text-neutral-700 dark:text-white">Total</p>
             </div>
-            <p className="font-mono text-2xl font-bold text-primary">{formatCurrency(cartTotal)}</p>
+            <p className="font-mono text-2xl font-bold text-primary-700 dark:text-primary-300">{formatCurrency(cartTotal)}</p>
           </div>
           <div className="mt-3 flex gap-2">
             <button
               type="button"
               onClick={clearCart}
-              className="rounded-md border border-neutral-300 dark:border-dark-border px-4 py-2.5 text-sm font-semibold text-neutral-600 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated"
+              aria-label="Kosongkan keranjang"
+              className="flex items-center gap-1.5 rounded-xl border border-neutral-300 px-4 py-3 text-sm font-semibold text-neutral-600 transition-colors hover:bg-neutral-50 dark:border-dark-border dark:text-dark-muted dark:hover:bg-dark-elevated"
             >
+              <Icon name="trash" size={16} />
               Kosongkan
             </button>
             <button
               type="button"
               onClick={openCheckout}
-              className="flex-1 rounded-md bg-primary py-2.5 text-sm font-bold text-white hover:bg-primary-800"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-gradient py-3 text-sm font-bold text-white shadow-glow transition-all hover:brightness-110 active:scale-[0.98]"
             >
+              <Icon name="wallet" size={18} />
               Proses Pembayaran
             </button>
           </div>

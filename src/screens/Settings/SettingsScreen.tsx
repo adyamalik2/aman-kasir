@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
 import { useAppStore } from '@/store/appStore'
 import type { AppTheme } from '@/store/appStore'
 import { useProductStore } from '@/store/productStore'
@@ -9,6 +8,7 @@ import type { StoreProfile } from '@/lib/storeProfile'
 import { generateId } from '@/lib/id-generator'
 import { db } from '@/infra/db/dexie'
 import { DexieCategoryRepository } from '@/repositories/implementations/DexieCategoryRepository'
+import { Icon, BackHeader, type IconName } from '@/components/ui'
 
 const categoryRepo = new DexieCategoryRepository()
 
@@ -274,28 +274,16 @@ export default function SettingsScreen() {
     }
   }
 
-  const themeOptions: { value: AppTheme; label: string; icon: string }[] = [
-    { value: 'light', label: 'Terang', icon: '☀️' },
-    { value: 'dark',  label: 'Gelap',  icon: '🌙' },
-    { value: 'system',label: 'Sistem', icon: '📱' },
+  const themeOptions: { value: AppTheme; label: string; icon: IconName }[] = [
+    { value: 'light', label: 'Terang', icon: 'sun' },
+    { value: 'dark',  label: 'Gelap',  icon: 'moon' },
+    { value: 'system',label: 'Sistem', icon: 'monitor' },
   ]
 
   return (
     <section className="space-y-6">
       {/* Header + Back */}
-      <div className="flex items-center gap-3">
-        <Link
-          to="/lainnya"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 dark:border-dark-border text-neutral-500 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated"
-          aria-label="Kembali"
-        >
-          ‹
-        </Link>
-        <div>
-          <p className="text-sm font-medium text-neutral-500 dark:text-dark-muted">Lainnya</p>
-          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Pengaturan</h2>
-        </div>
-      </div>
+      <BackHeader eyebrow="Lainnya" title="Pengaturan" icon="settings" />
 
       {/* ── Tema Aplikasi ─────────────────────────────────────── */}
       <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card p-5 space-y-3">
@@ -312,7 +300,7 @@ export default function SettingsScreen() {
                   : 'border-neutral-200 dark:border-dark-border bg-neutral-50 dark:bg-dark-elevated text-neutral-500 dark:text-dark-muted hover:border-neutral-300 dark:hover:border-dark-muted'
               }`}
             >
-              <span className="text-xl">{opt.icon}</span>
+              <Icon name={opt.icon} size={22} />
               <span className="text-xs">{opt.label}</span>
             </button>
           ))}
@@ -368,8 +356,8 @@ export default function SettingsScreen() {
         </button>
 
         {toast && (
-          <div className="rounded-md bg-success-50 dark:bg-success-700/20 px-3 py-2 text-sm font-semibold text-success-700 dark:text-success-400">
-            ✓ {toast}
+          <div className="flex items-center gap-2 rounded-xl bg-success-50 px-3 py-2 text-sm font-semibold text-success-700 dark:bg-success-700/20 dark:text-success-400">
+            <Icon name="check-circle" size={16} /> {toast}
           </div>
         )}
       </div>
@@ -405,15 +393,15 @@ export default function SettingsScreen() {
                     <button
                       type="button"
                       onClick={() => void handleSaveEdit()}
-                      className="text-success-700 dark:text-success-400 hover:text-success-500 text-sm font-bold"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-success-600 hover:bg-success-50 dark:text-success-400 dark:hover:bg-success-700/20"
                       title="Simpan"
-                    >✓</button>
+                    ><Icon name="check" size={18} strokeWidth={2.5} /></button>
                     <button
                       type="button"
                       onClick={() => { setEditingCatId(null); setCatError(null) }}
-                      className="text-neutral-400 dark:text-dark-muted hover:text-neutral-700 dark:hover:text-white text-sm font-bold"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 dark:text-dark-muted dark:hover:bg-dark-elevated dark:hover:text-white"
                       title="Batal"
-                    >✕</button>
+                    ><Icon name="x" size={18} strokeWidth={2.5} /></button>
                   </div>
                 ) : (
                   /* Normal row */
@@ -431,9 +419,9 @@ export default function SettingsScreen() {
                       <button
                         type="button"
                         onClick={() => handleStartEdit(row)}
-                        className="rounded p-1 text-neutral-500 dark:text-dark-muted hover:bg-neutral-100 dark:hover:bg-dark-elevated"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 dark:text-dark-muted dark:hover:bg-dark-elevated"
                         title="Edit"
-                      >✏️</button>
+                      ><Icon name="edit" size={16} /></button>
                       <button
                         type="button"
                         onClick={() => void handleDeleteCat(row)}
@@ -443,7 +431,7 @@ export default function SettingsScreen() {
                             : 'text-neutral-500 dark:text-dark-muted hover:bg-neutral-100 dark:hover:bg-dark-elevated'
                         }`}
                         title="Hapus"
-                      >🗑️</button>
+                      ><Icon name="trash" size={16} /></button>
                       {catDeleteConfirm === row.id && (
                         <button
                           type="button"
@@ -544,11 +532,15 @@ export default function SettingsScreen() {
             disabled={resetLoading}
             className="w-full rounded-md border-2 border-danger-500 dark:border-danger-600 px-4 py-3 text-sm font-bold text-danger-700 dark:text-danger-500 hover:bg-danger-50 dark:hover:bg-danger-700/10 disabled:opacity-60"
           >
-            {resetLoading
-              ? 'Mereset...'
-              : resetConfirm < 1
-                ? 'Reset Aplikasi'
-                : '⚠ Ketuk lagi — semua data akan dihapus'}
+            {resetLoading ? (
+              'Mereset...'
+            ) : resetConfirm < 1 ? (
+              'Reset Aplikasi'
+            ) : (
+              <span className="flex items-center justify-center gap-1.5">
+                <Icon name="alert-triangle" size={16} /> Ketuk lagi — semua data akan dihapus
+              </span>
+            )}
           </button>
           {resetConfirm >= 1 && !resetLoading && (
             <button

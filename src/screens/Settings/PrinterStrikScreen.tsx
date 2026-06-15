@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Icon, BackHeader, type IconName } from '@/components/ui'
 import {
   getReceiptSettings,
   setReceiptSettings,
@@ -93,19 +93,7 @@ export default function PrinterStrikScreen() {
   return (
     <section className="space-y-5">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          to="/lainnya"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 dark:border-dark-border text-neutral-500 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated"
-          aria-label="Kembali"
-        >
-          ‹
-        </Link>
-        <div>
-          <p className="text-sm font-medium text-neutral-500 dark:text-dark-muted">Lainnya</p>
-          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Printer dan Struk</h2>
-        </div>
-      </div>
+      <BackHeader eyebrow="Lainnya" title="Printer dan Struk" icon="printer" />
 
       {/* ── Section: Struk ─────────────────────────────────── */}
       <Card title="Tampilan Struk">
@@ -180,11 +168,11 @@ export default function PrinterStrikScreen() {
           <div className="space-y-2">
             {(
               [
-                { value: 'browser', label: '🖥️ Browser Print', desc: 'Print via dialog browser / sistem (tersedia sekarang)' },
-                { value: 'bluetooth', label: '📶 Bluetooth', desc: 'Thermal printer Bluetooth (segera tersedia)', soon: true },
-                { value: 'usb', label: '🔌 USB / Kabel', desc: 'Thermal printer USB langsung (segera tersedia)', soon: true },
-              ] as { value: PrinterSettings['jenisKoneksi']; label: string; desc: string; soon?: boolean }[]
-            ).map(({ value, label, desc, soon }) => (
+                { value: 'browser', icon: 'monitor', label: 'Browser Print', desc: 'Print via dialog browser / sistem (tersedia sekarang)' },
+                { value: 'bluetooth', icon: 'bluetooth', label: 'Bluetooth', desc: 'Thermal printer Bluetooth (segera tersedia)', soon: true },
+                { value: 'usb', icon: 'plug', label: 'USB / Kabel', desc: 'Thermal printer USB langsung (segera tersedia)', soon: true },
+              ] as { value: PrinterSettings['jenisKoneksi']; icon: IconName; label: string; desc: string; soon?: boolean }[]
+            ).map(({ value, icon, label, desc, soon }) => (
               <button
                 key={value}
                 type="button"
@@ -207,6 +195,7 @@ export default function PrinterStrikScreen() {
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
+                    <Icon name={icon} size={16} className="text-neutral-500 dark:text-dark-muted" />
                     <span className="text-sm font-semibold text-neutral-900 dark:text-white">{label}</span>
                     {soon && (
                       <span className="rounded-full bg-neutral-200 dark:bg-dark-border px-2 py-0.5 text-xs font-semibold text-neutral-500 dark:text-dark-muted">
@@ -221,8 +210,9 @@ export default function PrinterStrikScreen() {
           </div>
 
           {form.jenisKoneksi === 'browser' && (
-            <div className="rounded-lg bg-primary/5 dark:bg-primary-900/20 px-3 py-2 text-xs text-primary dark:text-primary-400">
-              💡 Saat "Printer" ditekan di struk, browser akan membuka dialog print sistem. Anda bisa pilih printer atau simpan sebagai PDF.
+            <div className="flex items-start gap-2 rounded-xl bg-primary/5 px-3 py-2 text-xs text-primary dark:bg-primary-900/20 dark:text-primary-400">
+              <Icon name="info" size={14} className="mt-0.5 shrink-0" />
+              <span>Saat "Printer" ditekan di struk, browser akan membuka dialog print sistem. Anda bisa pilih printer atau simpan sebagai PDF.</span>
             </div>
           )}
         </div>
@@ -233,9 +223,9 @@ export default function PrinterStrikScreen() {
         <button
           type="button"
           onClick={handleSaveAndTest}
-          className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white hover:bg-primary-800 active:scale-[0.98] transition-transform"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-gradient py-3 text-sm font-bold text-white shadow-glow transition-all hover:brightness-110 active:scale-[0.98]"
         >
-          💾 Simpan dan Test Struk
+          <Icon name="printer" size={18} /> Simpan dan Test Struk
         </button>
         <button
           type="button"
@@ -246,8 +236,8 @@ export default function PrinterStrikScreen() {
         </button>
 
         {saved && (
-          <div className="rounded-lg bg-success-50 dark:bg-success-700/20 px-3 py-2 text-center text-sm font-semibold text-success-700 dark:text-success-400">
-            ✓ Pengaturan disimpan
+          <div className="flex items-center justify-center gap-2 rounded-xl bg-success-50 px-3 py-2 text-center text-sm font-semibold text-success-700 dark:bg-success-700/20 dark:text-success-400">
+            <Icon name="check-circle" size={16} /> Pengaturan disimpan
           </div>
         )}
 

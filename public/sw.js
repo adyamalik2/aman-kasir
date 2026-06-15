@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'aman-kasir-v2'
+const CACHE_VERSION = 'aman-kasir-v4'
 const APP_SHELL_CACHE = `${CACHE_VERSION}-shell`
 const STATIC_CACHE = `${CACHE_VERSION}-static`
 
@@ -10,6 +10,7 @@ const APP_SHELL = [
   `${BASE}/manifest.webmanifest`,
   `${BASE}/icons/icon-192.png`,
   `${BASE}/icons/icon-512.png`,
+  `${BASE}/icons/icon-maskable-512.png`,
 ]
 
 self.addEventListener('install', (event) => {

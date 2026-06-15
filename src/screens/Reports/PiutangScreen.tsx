@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
 import type { Transaction, Customer } from '@/domain'
+import { Icon, BackHeader } from '@/components/ui'
 import { formatCurrency } from '@/lib/currency'
 import { DexieTransactionRepository } from '@/repositories/implementations/DexieTransactionRepository'
 import { hapticSuccess, hapticWarning } from '@/native/haptics'
@@ -110,18 +110,7 @@ export default function PiutangScreen() {
   return (
     <section className="space-y-4">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          to="/laporan"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-dark-elevated active:bg-neutral-200 dark:active:bg-dark-border"
-        >
-          <span className="text-xl text-primary">‹</span>
-        </Link>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">Laporan</p>
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white">Piutang</h2>
-        </div>
-      </div>
+      <BackHeader to="/laporan" eyebrow="Laporan" title="Piutang" icon="credit-card" />
 
       {/* Export CSV */}
       {allPiutang.length > 0 && (
@@ -196,10 +185,10 @@ export default function PiutangScreen() {
           ))}
         </div>
       ) : shown.length === 0 ? (
-        <div className="py-16 text-center">
-          <p className="text-3xl">
-            {searchQuery.trim() ? '🔍' : tab === 'belum' ? '✅' : '📋'}
-          </p>
+        <div className="flex flex-col items-center py-16 text-center">
+          <span className="mb-1 flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400 dark:bg-dark-elevated">
+            <Icon name={searchQuery.trim() ? 'search' : tab === 'belum' ? 'check-circle' : 'list'} size={26} />
+          </span>
           <p className="mt-2 font-semibold text-neutral-700 dark:text-white">
             {searchQuery.trim()
               ? 'Tidak ada hasil pencarian'
@@ -209,7 +198,7 @@ export default function PiutangScreen() {
             {searchQuery.trim()
               ? 'Coba kata kunci lain'
               : tab === 'belum'
-                ? 'Semua piutang sudah dibayar 👍'
+                ? 'Semua piutang sudah dibayar'
                 : 'Piutang yang sudah dilunasi akan muncul di sini'}
           </p>
         </div>
@@ -226,7 +215,7 @@ export default function PiutangScreen() {
                   <p className="mt-0.5 font-semibold text-neutral-900 dark:text-white">{txn.invoiceNo}</p>
                   {txn.customerId && customerMap.get(txn.customerId) && (
                     <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-primary dark:text-primary-400">
-                      <span>👤</span>
+                      <Icon name="user" size={12} />
                       {customerMap.get(txn.customerId)!.nama}
                       {customerMap.get(txn.customerId)!.telepon && (
                         <span className="font-normal text-neutral-400 dark:text-dark-muted">
@@ -236,19 +225,23 @@ export default function PiutangScreen() {
                     </p>
                   )}
                   {txn.notes && (
-                    <p className="mt-0.5 text-sm text-neutral-600 dark:text-dark-muted">📝 {txn.notes}</p>
+                    <p className="mt-0.5 flex items-center gap-1 text-sm text-neutral-600 dark:text-dark-muted">
+                      <Icon name="file-text" size={13} className="shrink-0" /> {txn.notes}
+                    </p>
                   )}
                   <p className="mt-1 font-mono font-bold text-neutral-900 dark:text-white">
                     {formatCurrency(txn.total)}
                   </p>
                   {isLunas(txn) && txn.lunasAt && (
-                    <p className="mt-0.5 text-xs text-success-700 dark:text-success-400">
-                      ✓ Lunas {formatTanggal(txn.lunasAt)}
+                    <p className="mt-0.5 flex items-center gap-1 text-xs text-success-700 dark:text-success-400">
+                      <Icon name="check" size={12} strokeWidth={2.5} /> Lunas {formatTanggal(txn.lunasAt)}
                       {txn.lunasMethod && <span> · {txn.lunasMethod}</span>}
                     </p>
                   )}
                   {isLunas(txn) && txn.lunasNotes && (
-                    <p className="mt-0.5 text-xs text-neutral-400 dark:text-dark-muted">📝 {txn.lunasNotes}</p>
+                    <p className="mt-0.5 flex items-center gap-1 text-xs text-neutral-400 dark:text-dark-muted">
+                      <Icon name="file-text" size={12} className="shrink-0" /> {txn.lunasNotes}
+                    </p>
                   )}
                 </div>
 
@@ -287,12 +280,14 @@ export default function PiutangScreen() {
               <span className="font-mono font-bold">{formatCurrency(confirmTarget.total)}</span>
             </p>
             {confirmTarget.customerId && customerMap.get(confirmTarget.customerId) && (
-              <p className="mt-1 text-sm font-semibold text-primary dark:text-primary-400">
-                👤 {customerMap.get(confirmTarget.customerId)!.nama}
+              <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-primary dark:text-primary-400">
+                <Icon name="user" size={14} /> {customerMap.get(confirmTarget.customerId)!.nama}
               </p>
             )}
             {confirmTarget.notes && (
-              <p className="mt-1 text-sm text-neutral-500 dark:text-dark-muted">📝 {confirmTarget.notes}</p>
+              <p className="mt-1 flex items-center gap-1 text-sm text-neutral-500 dark:text-dark-muted">
+                <Icon name="file-text" size={13} className="shrink-0" /> {confirmTarget.notes}
+              </p>
             )}
             {/* Metode bayar */}
             <div className="mt-3">
@@ -332,9 +327,15 @@ export default function PiutangScreen() {
                 type="button"
                 onClick={() => void handleTandaiLunas()}
                 disabled={confirming}
-                className="w-full rounded-xl bg-success-700 py-3 text-sm font-bold text-white hover:bg-success-500 disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-success-600 py-3 text-sm font-bold text-white hover:bg-success-700 disabled:opacity-60"
               >
-                {confirming ? 'Menyimpan...' : '✓ Ya, Tandai Lunas'}
+                {confirming ? (
+                  'Menyimpan...'
+                ) : (
+                  <>
+                    <Icon name="check-circle" size={18} /> Ya, Tandai Lunas
+                  </>
+                )}
               </button>
               <button
                 type="button"

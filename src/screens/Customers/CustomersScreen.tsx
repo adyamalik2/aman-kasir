@@ -6,6 +6,7 @@ import { generateId } from '@/lib/id-generator'
 import { hapticSuccess, hapticWarning } from '@/native/haptics'
 import { formatCurrency } from '@/lib/currency'
 import { db } from '@/infra/db/dexie'
+import { Icon, BackHeader, Button } from '@/components/ui'
 
 const repo = new DexieCustomerRepository()
 
@@ -138,35 +139,32 @@ export default function CustomersScreen() {
   return (
     <section className="space-y-4">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          to="/lainnya"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 dark:border-dark-border text-neutral-500 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated"
-          aria-label="Kembali"
-        >
-          ‹
-        </Link>
-        <div className="flex-1">
-          <p className="text-sm font-medium text-neutral-500 dark:text-dark-muted">Lainnya</p>
-          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Pelanggan</h2>
-        </div>
-        <button
-          type="button"
-          onClick={openAdd}
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary-800 dark:hover:bg-primary-700"
-        >
-          + Tambah
-        </button>
-      </div>
+      <BackHeader
+        eyebrow="Lainnya"
+        title="Pelanggan"
+        icon="users"
+        action={
+          <Button size="sm" icon="plus" onClick={openAdd}>
+            Tambah
+          </Button>
+        }
+      />
 
       {/* Search */}
-      <input
-        type="search"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder="Cari nama atau telepon..."
-        className="w-full rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-4 py-3 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-dark-muted focus:border-primary dark:focus:border-primary-400 focus:outline-none"
-      />
+      <div className="relative">
+        <Icon
+          name="search"
+          size={18}
+          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-dark-muted"
+        />
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Cari nama atau telepon..."
+          className="w-full rounded-xl border border-neutral-200 bg-white py-3 pl-10 pr-4 text-sm text-neutral-900 placeholder-neutral-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-card dark:text-white dark:placeholder-dark-muted dark:focus:border-primary-400"
+        />
+      </div>
 
       {error && (
         <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">{error}</div>
@@ -180,8 +178,10 @@ export default function CustomersScreen() {
           ))}
         </div>
       ) : customers.length === 0 ? (
-        <div className="py-16 text-center">
-          <p className="text-4xl">👤</p>
+        <div className="flex flex-col items-center py-16 text-center">
+          <span className="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-50 text-primary-400 dark:bg-primary-900/30 dark:text-primary-300">
+            <Icon name="users" size={30} />
+          </span>
           <p className="mt-2 font-semibold text-neutral-700 dark:text-white">
             {searchQuery ? 'Tidak ada pelanggan ditemukan' : 'Belum ada pelanggan'}
           </p>
@@ -203,8 +203,9 @@ export default function CustomersScreen() {
                 <p className="font-semibold text-neutral-900 dark:text-white truncate">{c.nama}</p>
                 {c.telepon && <p className="text-xs text-neutral-500 dark:text-dark-muted">{c.telepon}</p>}
                 {piutangMap.has(c.id) && (
-                  <p className="mt-0.5 text-xs font-semibold text-warning-700 dark:text-warning-500">
-                    💳 {piutangMap.get(c.id)!.count} piutang · {formatCurrency(piutangMap.get(c.id)!.total)}
+                  <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-warning-700 dark:text-warning-500">
+                    <Icon name="credit-card" size={12} /> {piutangMap.get(c.id)!.count} piutang ·{' '}
+                    {formatCurrency(piutangMap.get(c.id)!.total)}
                   </p>
                 )}
                 {!piutangMap.has(c.id) && c.catatan && (
@@ -214,15 +215,15 @@ export default function CustomersScreen() {
               <div className="flex shrink-0 gap-1">
                 <Link
                   to={`/lainnya/pelanggan/${c.id}`}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary dark:text-primary-400 text-base hover:bg-primary-100 dark:hover:bg-primary-900/50"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50 text-primary hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-400 dark:hover:bg-primary-900/50"
                   title="Detail"
                 >
-                  ›
+                  <Icon name="chevron-right" size={18} />
                 </Link>
-                <button type="button" onClick={() => openEdit(c)}
-                  className="rounded-lg p-2 text-neutral-500 dark:text-dark-muted hover:bg-neutral-100 dark:hover:bg-dark-elevated" title="Edit">✏️</button>
-                <button type="button" onClick={() => setDeleteTarget(c)}
-                  className="rounded-lg p-2 text-neutral-500 dark:text-dark-muted hover:bg-danger-50 dark:hover:bg-danger-700/20 hover:text-danger-700 dark:hover:text-danger-500" title="Hapus">🗑️</button>
+                <button type="button" onClick={() => openEdit(c)} aria-label={`Edit ${c.nama}`}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 dark:text-dark-muted dark:hover:bg-dark-elevated" title="Edit"><Icon name="edit" size={16} /></button>
+                <button type="button" onClick={() => setDeleteTarget(c)} aria-label={`Hapus ${c.nama}`}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 hover:bg-danger-50 hover:text-danger-700 dark:text-dark-muted dark:hover:bg-danger-700/20 dark:hover:text-danger-500" title="Hapus"><Icon name="trash" size={16} /></button>
               </div>
             </li>
           ))}

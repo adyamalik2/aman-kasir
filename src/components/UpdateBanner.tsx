@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useServiceWorker } from '@/hooks/useServiceWorker'
+import { Icon } from '@/components/ui'
 
 /**
  * Banner tetap yang muncul di atas bottom nav saat versi baru tersedia.
@@ -24,9 +25,11 @@ export default function UpdateBanner() {
       aria-live="polite"
       className="fixed inset-x-0 bottom-16 z-30 flex justify-center px-3 pb-2"
     >
-      <div className="flex w-full max-w-2xl items-center gap-3 rounded-xl bg-primary px-4 py-3 shadow-lg">
+      <div className="flex w-full max-w-2xl items-center gap-3 rounded-2xl bg-brand-gradient px-4 py-3 shadow-glow">
         {/* Ikon */}
-        <span className="shrink-0 text-lg" aria-hidden="true">🚀</span>
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white" aria-hidden="true">
+          <Icon name="download" size={18} />
+        </span>
 
         {/* Teks */}
         <div className="min-w-0 flex-1">
@@ -49,10 +52,10 @@ export default function UpdateBanner() {
           <button
             type="button"
             onClick={() => setDismissed(true)}
-            className="shrink-0 rounded-full p-1 text-white/70 hover:text-white"
+            className="flex shrink-0 items-center justify-center rounded-full p-1 text-white/70 hover:text-white"
             aria-label="Tutup notifikasi"
           >
-            ✕
+            <Icon name="x" size={18} />
           </button>
         )}
       </div>

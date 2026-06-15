@@ -12,6 +12,7 @@ import type { ReceiptSnapshot } from '@/components/receipt/receiptUtils'
 import { getStoreProfile } from '@/lib/storeProfile'
 import { VerticalBarChart } from './components/VerticalBarChart'
 import { CsvExportService } from '@/services/export/CsvExportService'
+import { Icon, type IconName } from '@/components/ui'
 
 const csvService = new CsvExportService()
 
@@ -546,10 +547,10 @@ export default function TransaksiScreen() {
                   onClick={() =>
                     setBulkTarget({ label: getDeleteLabel(row), txnIds: row.txnIds })
                   }
-                  className="flex shrink-0 items-center border-l border-neutral-100 dark:border-dark-border px-4 text-xl text-danger-600 dark:text-danger-700 transition-colors hover:bg-danger-50 dark:hover:bg-danger-700/20 hover:text-danger-700 dark:hover:text-danger-500 active:bg-danger-100 dark:active:bg-danger-700/30"
+                  className="flex shrink-0 items-center border-l border-neutral-100 px-4 text-danger-600 transition-colors hover:bg-danger-50 hover:text-danger-700 active:bg-danger-100 dark:border-dark-border dark:text-danger-700 dark:hover:bg-danger-700/20 dark:hover:text-danger-500 dark:active:bg-danger-700/30"
                   title={`Hapus ${row.count} transaksi`}
                 >
-                  🗑
+                  <Icon name="trash" size={18} />
                 </button>
               </li>
             ))}
@@ -578,9 +579,9 @@ export default function TransaksiScreen() {
           <button
             type="button"
             onClick={handleExportCsv}
-            className="flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-1.5 text-xs font-semibold text-neutral-600 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated"
+            className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 dark:border-dark-border dark:bg-dark-card dark:text-dark-muted dark:hover:bg-dark-elevated"
           >
-            ⬇️ Export CSV
+            <Icon name="download" size={14} /> Export CSV
           </button>
         </div>
       <ul className="space-y-2">
@@ -598,18 +599,18 @@ export default function TransaksiScreen() {
                 {(txn.paymentMethod === 'piutang' || (txn.customerId && customerMap.get(txn.customerId))) && (
                   <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
                     {txn.customerId && customerMap.get(txn.customerId) && (
-                      <span className="text-xs font-semibold text-primary dark:text-primary-400">
-                        👤 {customerMap.get(txn.customerId)!.nama}
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary dark:text-primary-400">
+                        <Icon name="user" size={12} /> {customerMap.get(txn.customerId)!.nama}
                       </span>
                     )}
                     {txn.paymentMethod === 'piutang' && (
                       txn.lunasAt ? (
-                        <span className="inline-flex items-center rounded-full bg-success-50 dark:bg-success-700/20 px-1.5 py-0.5 text-[10px] font-semibold text-success-700 dark:text-success-400">
-                          ✓ Lunas
+                        <span className="inline-flex items-center gap-1 rounded-full bg-success-50 px-1.5 py-0.5 text-[10px] font-semibold text-success-700 dark:bg-success-700/20 dark:text-success-400">
+                          <Icon name="check" size={11} strokeWidth={2.5} /> Lunas
                         </span>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-warning-50 dark:bg-warning-700/20 px-1.5 py-0.5 text-[10px] font-semibold text-warning-700 dark:text-warning-500">
-                          ⏳ Belum Lunas
+                        <span className="inline-flex items-center gap-1 rounded-full bg-warning-50 px-1.5 py-0.5 text-[10px] font-semibold text-warning-700 dark:bg-warning-700/20 dark:text-warning-500">
+                          <Icon name="clock" size={11} /> Belum Lunas
                         </span>
                       )
                     )}
@@ -636,28 +637,28 @@ export default function TransaksiScreen() {
                       setLunasMethod('tunai')
                       setLunasNotes('')
                     }}
-                    className="flex h-8 items-center justify-center rounded-lg bg-success-50 dark:bg-success-700/20 px-2 text-xs font-bold text-success-700 dark:text-success-400"
+                    className="flex h-8 items-center justify-center gap-1 rounded-lg bg-success-50 px-2.5 text-xs font-bold text-success-700 dark:bg-success-700/20 dark:text-success-400"
                     title="Tandai lunas"
                   >
-                    ✓ Lunasi
+                    <Icon name="check" size={14} strokeWidth={2.5} /> Lunasi
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={() => void handleOpenReceipt(txn)}
                   disabled={loadingReceiptId === txn.id}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary dark:text-primary-400 disabled:opacity-50"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary disabled:opacity-50 dark:bg-primary-900/30 dark:text-primary-400"
                   title="Lihat struk"
                 >
-                  {loadingReceiptId === txn.id ? '…' : '🧾'}
+                  {loadingReceiptId === txn.id ? '…' : <Icon name="receipt" size={16} />}
                 </button>
                 <button
                   type="button"
                   onClick={() => { setDeleteTarget(txn); setRestoreStock(false) }}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-danger-50 dark:bg-danger-700/20 text-danger-700 dark:text-danger-500"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-danger-50 text-danger-700 dark:bg-danger-700/20 dark:text-danger-500"
                   title="Hapus transaksi"
                 >
-                  🗑
+                  <Icon name="trash" size={16} />
                 </button>
               </div>
             </li>
@@ -758,33 +759,42 @@ export default function TransaksiScreen() {
           <button
             type="button"
             onClick={pop}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-dark-elevated active:bg-neutral-200 dark:active:bg-dark-border"
+            aria-label="Kembali"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-600 transition-colors hover:bg-neutral-50 active:scale-95 dark:border-dark-border dark:bg-dark-card dark:text-dark-muted dark:hover:bg-dark-elevated"
           >
-            <span className="text-xl text-primary">‹</span>
+            <Icon name="chevron-left" size={20} />
           </button>
         ) : (
           <Link
             to="/laporan"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-dark-elevated active:bg-neutral-200 dark:active:bg-dark-border"
+            aria-label="Kembali"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-600 transition-colors hover:bg-neutral-50 active:scale-95 dark:border-dark-border dark:bg-dark-card dark:text-dark-muted dark:hover:bg-dark-elevated"
           >
-            <span className="text-xl text-primary">‹</span>
+            <Icon name="chevron-left" size={20} />
           </Link>
         )}
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">Laporan</p>
-          <h2 className="truncate text-lg font-bold text-neutral-900 dark:text-white">{title}</h2>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-primary-500 dark:text-primary-400">Laporan</p>
+          <h2 className="flex items-center gap-2 truncate text-xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            <Icon name="receipt" size={20} className="shrink-0 text-primary-500" />
+            {title}
+          </h2>
         </div>
       </div>
 
       {/* Search bar global */}
       <div className="relative">
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-dark-muted text-sm">🔍</span>
+        <Icon
+          name="search"
+          size={18}
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-dark-muted"
+        />
         <input
           type="search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Cari no. invoice, pelanggan, catatan..."
-          className="w-full rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card pl-9 pr-4 py-2.5 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-dark-muted focus:border-primary dark:focus:border-primary-400 focus:outline-none"
+          className="w-full rounded-xl border border-neutral-200 bg-white py-2.5 pl-10 pr-4 text-sm text-neutral-900 placeholder-neutral-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-card dark:text-white dark:placeholder-dark-muted dark:focus:border-primary-400"
         />
       </div>
 
@@ -797,8 +807,10 @@ export default function TransaksiScreen() {
         loading ? (
           <div className="py-12 text-center text-sm text-neutral-400 dark:text-dark-muted">Memuat...</div>
         ) : searchResults.length === 0 ? (
-          <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-8 text-center">
-            <p className="text-lg">🔍</p>
+          <div className="flex flex-col items-center rounded-2xl border border-neutral-200 bg-white p-8 text-center dark:border-dark-border dark:bg-dark-card">
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400 dark:bg-dark-elevated">
+              <Icon name="search" size={26} />
+            </span>
             <p className="mt-2 text-sm font-semibold text-neutral-700 dark:text-white">Tidak ada hasil</p>
             <p className="mt-1 text-xs text-neutral-400 dark:text-dark-muted">
               Coba kata kunci lain — no. invoice, nama pelanggan, atau catatan.
@@ -822,8 +834,8 @@ export default function TransaksiScreen() {
             <p className="mt-1 text-sm text-neutral-600 dark:text-dark-muted">
               {deleteTarget.invoiceNo} · {formatCurrency(deleteTarget.total)}
             </p>
-            <p className="mt-2 text-xs text-danger-700 dark:text-danger-500">
-              ⚠️ Transaksi yang dihapus tidak dapat dikembalikan.
+            <p className="mt-2 flex items-center gap-1.5 text-xs text-danger-700 dark:text-danger-500">
+              <Icon name="alert-triangle" size={14} className="shrink-0" /> Transaksi yang dihapus tidak dapat dikembalikan.
             </p>
 
             {/* Checkbox restore stok */}
@@ -847,9 +859,15 @@ export default function TransaksiScreen() {
                 type="button"
                 onClick={() => void handleDelete()}
                 disabled={deleting}
-                className="w-full rounded-lg bg-danger-600 py-3 text-sm font-bold text-white active:bg-danger-700 disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-danger-600 py-3 text-sm font-bold text-white active:bg-danger-700 disabled:opacity-50"
               >
-                {deleting ? 'Menghapus...' : '🗑 Ya, Hapus Transaksi Ini'}
+                {deleting ? (
+                  'Menghapus...'
+                ) : (
+                  <>
+                    <Icon name="trash" size={16} /> Ya, Hapus Transaksi Ini
+                  </>
+                )}
               </button>
               <button
                 type="button"
@@ -873,8 +891,8 @@ export default function TransaksiScreen() {
               <span className="font-bold text-danger-700 dark:text-danger-500">{bulkTarget.txnIds.length} transaksi</span>{' '}
               akan dihapus permanen.
             </p>
-            <p className="mt-2 text-xs text-danger-700 dark:text-danger-500">
-              ⚠️ Tindakan ini tidak dapat dibatalkan.
+            <p className="mt-2 flex items-center gap-1.5 text-xs text-danger-700 dark:text-danger-500">
+              <Icon name="alert-triangle" size={14} className="shrink-0" /> Tindakan ini tidak dapat dibatalkan.
             </p>
 
             {/* Checkbox restore stok */}
@@ -898,11 +916,15 @@ export default function TransaksiScreen() {
                 type="button"
                 onClick={() => void handleBulkDelete()}
                 disabled={bulkDeleting}
-                className="w-full rounded-lg bg-danger-600 py-3 text-sm font-bold text-white active:bg-danger-700 disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-danger-600 py-3 text-sm font-bold text-white active:bg-danger-700 disabled:opacity-50"
               >
-                {bulkDeleting
-                  ? 'Menghapus...'
-                  : `🗑 Ya, Hapus ${bulkTarget.txnIds.length} Transaksi`}
+                {bulkDeleting ? (
+                  'Menghapus...'
+                ) : (
+                  <>
+                    <Icon name="trash" size={16} /> Ya, Hapus {bulkTarget.txnIds.length} Transaksi
+                  </>
+                )}
               </button>
               <button
                 type="button"
@@ -948,22 +970,25 @@ export default function TransaksiScreen() {
               <div>
                 <p className="mb-1.5 text-xs font-semibold text-neutral-600 dark:text-dark-muted">Metode Pembayaran</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { value: 'tunai', label: '💵 Tunai' },
-                    { value: 'transfer', label: '🏦 Transfer' },
-                    { value: 'qris', label: '📲 QRIS' },
-                    { value: 'lainnya', label: '💳 Lainnya' },
-                  ].map((m) => (
+                  {(
+                    [
+                      { value: 'tunai', icon: 'cash', label: 'Tunai' },
+                      { value: 'transfer', icon: 'bank', label: 'Transfer' },
+                      { value: 'qris', icon: 'qr', label: 'QRIS' },
+                      { value: 'lainnya', icon: 'credit-card', label: 'Lainnya' },
+                    ] as { value: string; icon: IconName; label: string }[]
+                  ).map((m) => (
                     <button
                       key={m.value}
                       type="button"
                       onClick={() => setLunasMethod(m.value)}
-                      className={`rounded-xl border py-2.5 text-sm font-semibold transition-colors ${
+                      className={`flex items-center justify-center gap-1.5 rounded-xl border py-3 text-sm font-semibold transition-all active:scale-[0.98] ${
                         lunasMethod === m.value
-                          ? 'border-primary bg-primary text-white'
+                          ? 'border-transparent bg-brand-gradient text-white shadow-glow'
                           : 'border-neutral-300 dark:border-dark-border text-neutral-700 dark:text-white hover:border-primary/50'
                       }`}
                     >
+                      <Icon name={m.icon} size={16} />
                       {m.label}
                     </button>
                   ))}
@@ -985,9 +1010,15 @@ export default function TransaksiScreen() {
                 type="button"
                 onClick={() => void handleLunas()}
                 disabled={lunasLoading}
-                className="w-full rounded-xl bg-success-700 py-3 text-sm font-bold text-white hover:bg-success-500 disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-success-600 py-3 text-sm font-bold text-white hover:bg-success-700 disabled:opacity-50"
               >
-                {lunasLoading ? 'Menyimpan...' : '✓ Konfirmasi Pelunasan'}
+                {lunasLoading ? (
+                  'Menyimpan...'
+                ) : (
+                  <>
+                    <Icon name="check-circle" size={18} /> Konfirmasi Pelunasan
+                  </>
+                )}
               </button>
             </div>
           </div>

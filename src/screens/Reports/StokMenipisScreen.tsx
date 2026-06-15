@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import type { Product } from '@/domain'
 import { formatCurrency } from '@/lib/currency'
 import { CsvExportService } from '@/services/export/CsvExportService'
 import { getLowStock } from './reportApi'
 import { db } from '@/infra/db/dexie'
 import { generateId } from '@/lib/id-generator'
+import { Icon, BackHeader } from '@/components/ui'
 
 const csvService = new CsvExportService()
 
@@ -90,18 +90,7 @@ export default function StokMenipisScreen() {
   return (
     <section className="space-y-4">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          to="/laporan"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-dark-elevated active:bg-neutral-200 dark:active:bg-dark-border"
-        >
-          <span className="text-xl text-primary">‹</span>
-        </Link>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">Laporan</p>
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white">Stok Menipis</h2>
-        </div>
-      </div>
+      <BackHeader to="/laporan" eyebrow="Laporan" title="Stok Menipis" icon="package" />
 
       {products.length > 0 && (
         <button
@@ -120,8 +109,10 @@ export default function StokMenipisScreen() {
       {loading ? (
         <div className="py-12 text-center text-sm text-neutral-400 dark:text-dark-muted">Memuat stok menipis...</div>
       ) : products.length === 0 ? (
-        <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-8 text-center">
-          <p className="text-2xl">✅</p>
+        <div className="flex flex-col items-center rounded-2xl border border-neutral-200 bg-white p-8 text-center dark:border-dark-border dark:bg-dark-card">
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-success-50 text-success-500 dark:bg-success-700/20 dark:text-success-300">
+            <Icon name="check-circle" size={26} />
+          </span>
           <p className="mt-2 text-sm font-semibold text-neutral-700 dark:text-white">Semua stok produk aman</p>
           <p className="mt-1 text-xs text-neutral-400 dark:text-dark-muted">Tidak ada produk yang stoknya di bawah minimum.</p>
         </div>
@@ -193,7 +184,10 @@ export default function StokMenipisScreen() {
                       : 'text-neutral-500 dark:text-dark-muted hover:bg-neutral-200 dark:hover:bg-dark-elevated'
                   }`}
                 >
-                  {m === 'tambah' ? '📦 Tambah' : '✏️ Koreksi'}
+                  <span className="flex items-center justify-center gap-1.5">
+                    <Icon name={m === 'tambah' ? 'plus' : 'edit'} size={14} />
+                    {m === 'tambah' ? 'Tambah' : 'Koreksi'}
+                  </span>
                 </button>
               ))}
             </div>
@@ -211,14 +205,15 @@ export default function StokMenipisScreen() {
             </div>
 
             {restockMode === 'koreksi' && (
-              <div className="rounded-lg bg-warning-50 dark:bg-warning-700/10 px-3 py-2 text-xs text-warning-700 dark:text-warning-500">
-                ⚠️ Koreksi mengurangi stok dan dicatat sebagai <strong>adjustment</strong> di histori.
+              <div className="flex items-start gap-2 rounded-xl bg-warning-50 px-3 py-2 text-xs text-warning-700 dark:bg-warning-700/10 dark:text-warning-500">
+                <Icon name="alert-triangle" size={14} className="mt-0.5 shrink-0" />
+                <span>Koreksi mengurangi stok dan dicatat sebagai <strong>adjustment</strong> di histori.</span>
               </div>
             )}
 
             {restockDone ? (
-              <div className="rounded-lg bg-success-50 dark:bg-success-700/20 px-4 py-3 text-center text-sm font-semibold text-success-700 dark:text-success-400">
-                ✓ {restockDone}
+              <div className="flex items-center justify-center gap-2 rounded-xl bg-success-50 px-4 py-3 text-center text-sm font-semibold text-success-700 dark:bg-success-700/20 dark:text-success-400">
+                <Icon name="check-circle" size={18} /> {restockDone}
               </div>
             ) : (
               <>

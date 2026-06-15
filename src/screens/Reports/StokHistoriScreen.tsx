@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import type { StockMovement, Product } from '@/domain'
 import { db } from '@/infra/db/dexie'
 import { CsvExportService } from '@/services/export/CsvExportService'
+import { Icon, BackHeader, type IconName } from '@/components/ui'
 
 const csvService = new CsvExportService()
 
@@ -17,14 +18,14 @@ function formatDT(iso: string): string {
   })
 }
 
-function typeIcon(type: StockMovement['type']): string {
+function typeIcon(type: StockMovement['type']): IconName {
   switch (type) {
-    case 'sale':       return '🛒'
-    case 'purchase':   return '📦'
-    case 'adjustment': return '✏️'
-    case 'void':       return '↩️'
-    case 'initial':    return '🏁'
-    default:           return '📋'
+    case 'sale':       return 'cart'
+    case 'purchase':   return 'box-open'
+    case 'adjustment': return 'edit'
+    case 'void':       return 'refresh'
+    case 'initial':    return 'flag'
+    default:           return 'list'
   }
 }
 
@@ -86,18 +87,7 @@ export default function StokHistoriScreen() {
   return (
     <section className="space-y-4 pb-4">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          to="/laporan"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-dark-elevated active:bg-neutral-200 dark:active:bg-dark-border"
-        >
-          <span className="text-xl text-primary">‹</span>
-        </Link>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">Laporan</p>
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white">Histori Stok</h2>
-        </div>
-      </div>
+      <BackHeader to="/laporan" eyebrow="Laporan" title="Histori Stok" icon="folder" />
 
       {/* Tombol Export */}
       {!loading && filtered.length > 0 && (
@@ -123,9 +113,9 @@ export default function StokHistoriScreen() {
                 : ''
               csvService.exportHistoriStok(rows, `histori-stok${suffix}.csv`)
             }}
-            className="flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-1.5 text-xs font-semibold text-neutral-600 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated"
+            className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 dark:border-dark-border dark:bg-dark-card dark:text-dark-muted dark:hover:bg-dark-elevated"
           >
-            ⬇️ Export CSV
+            <Icon name="download" size={14} /> Export CSV
           </button>
         </div>
       )}
@@ -167,8 +157,10 @@ export default function StokHistoriScreen() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-8 text-center">
-          <p className="text-2xl">📋</p>
+        <div className="flex flex-col items-center rounded-2xl border border-neutral-200 bg-white p-8 text-center dark:border-dark-border dark:bg-dark-card">
+          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400 dark:bg-dark-elevated">
+            <Icon name="folder" size={26} />
+          </span>
           <p className="mt-2 text-sm font-semibold text-neutral-700 dark:text-white">Belum ada pergerakan stok</p>
           <p className="mt-1 text-xs text-neutral-400 dark:text-dark-muted">
             {filterProductId || filterType
@@ -192,12 +184,12 @@ export default function StokHistoriScreen() {
                 >
                   <div className="flex items-start gap-3">
                     {/* Icon tipe */}
-                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-base ${
+                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
                       isIn
-                        ? 'bg-success-50 dark:bg-success-700/20'
-                        : 'bg-danger-50 dark:bg-danger-700/20'
+                        ? 'bg-success-50 text-success-600 dark:bg-success-700/20 dark:text-success-300'
+                        : 'bg-danger-50 text-danger-600 dark:bg-danger-700/20 dark:text-danger-300'
                     }`}>
-                      {typeIcon(m.type)}
+                      <Icon name={typeIcon(m.type)} size={18} />
                     </div>
 
                     {/* Info */}
@@ -231,8 +223,8 @@ export default function StokHistoriScreen() {
                         {formatDT(m.createdAt)}
                       </p>
                       {m.notes && (
-                        <p className="mt-0.5 text-xs text-neutral-500 dark:text-dark-muted">
-                          📝 {m.notes}
+                        <p className="mt-0.5 flex items-center gap-1 text-xs text-neutral-500 dark:text-dark-muted">
+                          <Icon name="file-text" size={12} className="shrink-0" /> {m.notes}
                         </p>
                       )}
                     </div>

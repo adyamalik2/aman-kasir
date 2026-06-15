@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Icon } from '@/components/ui'
 
 interface DetectedBarcode {
   rawValue: string
@@ -151,7 +152,7 @@ export default function BarcodeScannerModal({ onScan, onClose }: BarcodeScannerM
       {/* Error panel */}
       {status === 'error' && errorMsg && (
         <div className="bg-danger-50 dark:bg-danger-700/20 px-4 py-3">
-          <p className="text-sm font-semibold text-danger-700 dark:text-danger-500">⚠️ Scan kamera tidak tersedia</p>
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-danger-700 dark:text-danger-500"><Icon name="alert-triangle" size={16} /> Scan kamera tidak tersedia</p>
           <p className="mt-1 text-xs text-danger-600 dark:text-danger-500">{errorMsg}</p>
         </div>
       )}

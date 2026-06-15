@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import type { PeriodInput } from '@/lib/period'
+import { Icon, BackHeader } from '@/components/ui'
 import { formatCurrency } from '@/lib/currency'
 import type { ProfitReport } from '@/usecases/reports/types'
 import PeriodFilter from './PeriodFilter'
@@ -49,18 +49,7 @@ export default function LaboranLabaScreen() {
   return (
     <section className="space-y-4 pb-4">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          to="/laporan"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-dark-elevated active:bg-neutral-200 dark:active:bg-dark-border"
-        >
-          <span className="text-xl text-primary">‹</span>
-        </Link>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">Laporan</p>
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white">Laba & Margin</h2>
-        </div>
-      </div>
+      <BackHeader to="/laporan" eyebrow="Laporan" title="Laba & Margin" icon="coins" />
 
       <PeriodFilter period={period} onChange={setPeriod} />
 
@@ -135,8 +124,10 @@ export default function LaboranLabaScreen() {
 function ProdukList({ entries }: { entries: ProfitReport['perProduk'] }) {
   if (entries.length === 0) {
     return (
-      <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-8 text-center">
-        <p className="text-2xl">📊</p>
+      <div className="flex flex-col items-center rounded-2xl border border-neutral-200 bg-white p-8 text-center dark:border-dark-border dark:bg-dark-card">
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50 text-primary-400 dark:bg-primary-900/30 dark:text-primary-300">
+          <Icon name="chart" size={26} />
+        </span>
         <p className="mt-2 text-sm font-semibold text-neutral-700 dark:text-white">Belum ada data penjualan</p>
         <p className="mt-1 text-xs text-neutral-400 dark:text-dark-muted">Data laba akan muncul setelah ada transaksi pada periode ini.</p>
       </div>
@@ -184,8 +175,10 @@ function ProdukList({ entries }: { entries: ProfitReport['perProduk'] }) {
 function KategoriList({ entries }: { entries: ProfitReport['perKategori'] }) {
   if (entries.length === 0) {
     return (
-      <div className="rounded-xl border border-neutral-200 dark:border-dark-border bg-surface dark:bg-dark-card p-8 text-center">
-        <p className="text-2xl">📊</p>
+      <div className="flex flex-col items-center rounded-2xl border border-neutral-200 bg-white p-8 text-center dark:border-dark-border dark:bg-dark-card">
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50 text-primary-400 dark:bg-primary-900/30 dark:text-primary-300">
+          <Icon name="chart" size={26} />
+        </span>
         <p className="mt-2 text-sm font-semibold text-neutral-700 dark:text-white">Belum ada data penjualan</p>
         <p className="mt-1 text-xs text-neutral-400 dark:text-dark-muted">Data laba per kategori akan muncul setelah ada transaksi.</p>
       </div>

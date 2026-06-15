@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import { formatCurrency } from '@/lib/currency'
+import { BackHeader } from '@/components/ui'
 import { resolvePeriod, startOfDay, endOfDay, type PeriodPreset, type PeriodInput } from '@/lib/period'
 import { db } from '@/infra/db/dexie'
 import { VerticalBarChart } from './components/VerticalBarChart'
@@ -230,18 +230,7 @@ export default function RingkasanScreen() {
   return (
     <section className="space-y-4">
       {/* Header + back */}
-      <div className="flex items-center gap-3">
-        <Link
-          to="/laporan"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-dark-elevated active:bg-neutral-200 dark:active:bg-dark-border"
-        >
-          <span className="text-xl text-primary">‹</span>
-        </Link>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">Laporan</p>
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white">Ringkasan Penjualan</h2>
-        </div>
-      </div>
+      <BackHeader to="/laporan" eyebrow="Laporan" title="Ringkasan Penjualan" icon="chart" />
 
       {/* Period filter */}
       <div className="flex gap-1 overflow-x-auto pb-1">

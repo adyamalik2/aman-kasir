@@ -1,8 +1,11 @@
-import { Link } from 'react-router-dom'
+import { ListTile, PageHeader, type IconName } from '@/components/ui'
+
+type Tone = 'primary' | 'accent' | 'success' | 'warning' | 'danger' | 'neutral'
 
 interface MenuItem {
   to: string
-  icon: string
+  icon: IconName
+  tone: Tone
   title: string
   description: string
 }
@@ -10,43 +13,50 @@ interface MenuItem {
 const MENU_ITEMS: MenuItem[] = [
   {
     to: '/laporan/ringkasan',
-    icon: '📊',
+    icon: 'chart',
+    tone: 'primary',
     title: 'Ringkasan Laporan Penjualan',
     description: 'Statistik transaksi, pendapatan & keuntungan dengan grafik',
   },
   {
     to: '/laporan/transaksi',
-    icon: '📋',
+    icon: 'receipt',
+    tone: 'accent',
     title: 'Laporan Transaksi',
     description: 'Riwayat transaksi per hari, bulan, tahun — sampai struk',
   },
   {
     to: '/laporan/terlaris',
-    icon: '⭐',
+    icon: 'star',
+    tone: 'warning',
     title: 'Produk Terlaris',
     description: 'Produk dengan penjualan qty & omzet tertinggi',
   },
   {
     to: '/laporan/stok-menipis',
-    icon: '📦',
+    icon: 'package',
+    tone: 'danger',
     title: 'Stok Menipis',
     description: 'Produk dengan stok di bawah batas minimum',
   },
   {
     to: '/laporan/piutang',
-    icon: '💳',
+    icon: 'credit-card',
+    tone: 'accent',
     title: 'Piutang',
     description: 'Transaksi piutang yang belum & sudah dilunasi',
   },
   {
     to: '/laporan/laba',
-    icon: '💰',
+    icon: 'coins',
+    tone: 'success',
     title: 'Laba & Margin',
     description: 'Laba kotor dan margin per produk & kategori',
   },
   {
     to: '/laporan/histori-stok',
-    icon: '🗂️',
+    icon: 'folder',
+    tone: 'neutral',
     title: 'Histori Stok',
     description: 'Pergerakan stok masuk & keluar per produk',
   },
@@ -55,30 +65,20 @@ const MENU_ITEMS: MenuItem[] = [
 export default function ReportsScreen() {
   return (
     <section className="space-y-4">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 dark:text-dark-muted">Menu</p>
-        <h2 className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">Laporan</h2>
-      </div>
+      <PageHeader eyebrow="Menu" title="Laporan" icon="chart" />
 
-      <ul className="space-y-2">
+      <div className="space-y-2.5">
         {MENU_ITEMS.map((item) => (
-          <li key={item.to}>
-            <Link
-              to={item.to}
-              className="flex items-center gap-4 rounded-xl border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card px-4 py-4 transition-colors hover:bg-neutral-50 dark:hover:bg-dark-elevated active:scale-[0.99]"
-            >
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-900/30 text-xl">
-                {item.icon}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-neutral-900 dark:text-white">{item.title}</p>
-                <p className="mt-0.5 text-xs text-neutral-400 dark:text-dark-muted">{item.description}</p>
-              </div>
-              <span className="shrink-0 text-xl font-light text-neutral-300 dark:text-dark-border">›</span>
-            </Link>
-          </li>
+          <ListTile
+            key={item.to}
+            to={item.to}
+            icon={item.icon}
+            tone={item.tone}
+            title={item.title}
+            description={item.description}
+          />
         ))}
-      </ul>
+      </div>
     </section>
   )
 }

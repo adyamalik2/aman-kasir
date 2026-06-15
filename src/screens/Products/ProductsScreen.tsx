@@ -12,6 +12,7 @@ import { db } from '@/infra/db/dexie'
 import { generateId } from '@/lib/id-generator'
 import type { CreateProductInput } from '@/usecases/product/CreateProductUseCase'
 import type { UpdateProductInput } from '@/usecases/product/UpdateProductUseCase'
+import { Icon, PageHeader } from '@/components/ui'
 
 const deleteUseCase = new DeleteProductUseCase(new DexieProductRepository())
 const categoryRepo = new DexieCategoryRepository()
@@ -980,14 +981,11 @@ export default function ProductsScreen() {
   return (
     <section className="space-y-4 pb-4">
       {/* Page header */}
-      <div>
-        <p className="text-sm font-medium text-neutral-500 dark:text-dark-muted">Master Data</p>
-        <h2 className="mt-1 text-2xl font-bold text-neutral-900 dark:text-white">Produk</h2>
-      </div>
+      <PageHeader eyebrow="Master Data" title="Produk" icon="package" />
 
       {/* Error state */}
       {error && (
-        <div className="rounded-md bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">{error}</div>
+        <div className="rounded-xl bg-danger-50 dark:bg-danger-700/20 px-3 py-2 text-sm text-danger-700 dark:text-danger-500">{error}</div>
       )}
 
       {/* Impor / Ekspor CSV — collapsible, default tertutup */}
@@ -997,10 +995,14 @@ export default function ProductsScreen() {
           onClick={() => setShowImportPanel((v) => !v)}
           className="flex w-full items-center justify-between px-4 py-3 text-left"
         >
-          <span className="text-sm font-semibold text-neutral-700 dark:text-white">📥 Impor / Ekspor CSV</span>
-          <span className={`text-xs text-neutral-400 dark:text-dark-muted transition-transform ${showImportPanel ? 'rotate-180' : ''}`}>
-            ▼
+          <span className="flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-white">
+            <Icon name="upload" size={16} className="text-primary-500" /> Impor / Ekspor CSV
           </span>
+          <Icon
+            name="chevron-down"
+            size={16}
+            className={`text-neutral-400 transition-transform dark:text-dark-muted ${showImportPanel ? 'rotate-180' : ''}`}
+          />
         </button>
 
         {showImportPanel && (
@@ -1049,11 +1051,13 @@ export default function ProductsScreen() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cari nama, SKU, atau barcode produk..."
-          className="w-full rounded-lg border border-neutral-200 dark:border-dark-border bg-white dark:bg-dark-card text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-dark-muted py-2.5 pl-9 pr-4 text-sm focus:border-primary dark:focus:border-primary-400 focus:outline-none"
+          className="w-full rounded-xl border border-neutral-200 bg-white py-2.5 pl-10 pr-4 text-sm text-neutral-900 placeholder-neutral-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-card dark:text-white dark:placeholder-dark-muted dark:focus:border-primary-400"
         />
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-dark-muted text-sm">
-          🔍
-        </span>
+        <Icon
+          name="search"
+          size={18}
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-dark-muted"
+        />
       </div>
 
       {/* Category filter chips */}
@@ -1135,7 +1139,7 @@ export default function ProductsScreen() {
                     aria-label={`Histori stok ${product.name}`}
                     className="flex flex-col items-center justify-center gap-0.5 border-l border-neutral-200 dark:border-dark-border px-3 text-neutral-400 dark:text-dark-muted hover:bg-neutral-50 dark:hover:bg-dark-elevated active:bg-neutral-100 dark:active:bg-dark-elevated"
                   >
-                    <span className="text-sm leading-none">🗂️</span>
+                    <Icon name="folder" size={16} />
                     <span className="text-[10px] font-semibold leading-none">Histori</span>
                   </Link>
                   {/* Tombol koreksi stok */}
@@ -1145,7 +1149,7 @@ export default function ProductsScreen() {
                     aria-label={`Koreksi stok ${product.name}`}
                     className="flex flex-col items-center justify-center gap-0.5 border-l border-neutral-200 dark:border-dark-border px-2.5 text-neutral-400 dark:text-dark-muted hover:bg-danger-50 dark:hover:bg-danger-700/20 hover:text-danger-700 dark:hover:text-danger-500 active:bg-danger-100"
                   >
-                    <span className="text-sm leading-none">✏️</span>
+                    <Icon name="edit" size={16} />
                     <span className="text-[10px] font-semibold leading-none">Koreks</span>
                   </button>
                   {/* Tombol restock */}
@@ -1155,7 +1159,7 @@ export default function ProductsScreen() {
                     aria-label={`Tambah stok ${product.name}`}
                     className="flex flex-col items-center justify-center gap-0.5 border-l border-neutral-200 dark:border-dark-border px-3.5 text-primary dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 active:bg-primary-100 dark:active:bg-primary-900/30"
                   >
-                    <span className="text-lg font-bold leading-none">+</span>
+                    <Icon name="plus" size={18} strokeWidth={2.5} />
                     <span className="text-[10px] font-semibold leading-none">Stok</span>
                   </button>
                 </div>
@@ -1180,10 +1184,14 @@ export default function ProductsScreen() {
             onClick={() => setShowInactive((v) => !v)}
             className="flex w-full items-center justify-between px-4 py-3 text-left"
           >
-            <span className="text-sm font-semibold text-neutral-500 dark:text-dark-muted">
-              🚫 Produk Nonaktif ({inactiveProducts.length})
+            <span className="flex items-center gap-2 text-sm font-semibold text-neutral-500 dark:text-dark-muted">
+              <Icon name="x" size={15} className="text-neutral-400" /> Produk Nonaktif ({inactiveProducts.length})
             </span>
-            <span className={`text-xs text-neutral-400 dark:text-dark-muted transition-transform ${showInactive ? 'rotate-180' : ''}`}>▼</span>
+            <Icon
+              name="chevron-down"
+              size={16}
+              className={`text-neutral-400 transition-transform dark:text-dark-muted ${showInactive ? 'rotate-180' : ''}`}
+            />
           </button>
 
           {showInactive && (
@@ -1221,9 +1229,9 @@ export default function ProductsScreen() {
         aria-label="Tambah Produk"
         data-fixed-bottom-action="true"
         data-floating-action="true"
-        className="fixed bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-colors hover:bg-primary-800 sm:bottom-8 sm:right-8"
+        className="fixed bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-gradient text-white shadow-glow transition-all hover:brightness-110 active:scale-95 sm:bottom-8 sm:right-8"
       >
-        <span className="text-2xl leading-none">+</span>
+        <Icon name="plus" size={26} strokeWidth={2.5} />
       </button>
 
       {/* Form Modal */}
@@ -1281,7 +1289,9 @@ export default function ProductsScreen() {
                     : 'text-neutral-500 dark:text-dark-muted'
                 }`}
               >
-                📦 Tambah
+                <span className="flex items-center justify-center gap-1.5">
+                  <Icon name="plus" size={16} /> Tambah
+                </span>
               </button>
               <button
                 type="button"
@@ -1292,7 +1302,9 @@ export default function ProductsScreen() {
                     : 'text-neutral-500 dark:text-dark-muted'
                 }`}
               >
-                ✏️ Koreksi
+                <span className="flex items-center justify-center gap-1.5">
+                  <Icon name="edit" size={15} /> Koreksi
+                </span>
               </button>
             </div>
 
@@ -1305,15 +1317,16 @@ export default function ProductsScreen() {
             </div>
 
             {restockMode === 'kurangi' && (
-              <div className="rounded-lg bg-warning-50 dark:bg-warning-700/15 px-3 py-2 text-xs text-warning-700 dark:text-warning-500">
-                ✏️ Koreksi untuk barang rusak, hilang, atau salah hitung. Tercatat sebagai penyesuaian stok.
+              <div className="flex items-start gap-2 rounded-xl bg-warning-50 px-3 py-2 text-xs text-warning-700 dark:bg-warning-700/15 dark:text-warning-500">
+                <Icon name="edit" size={14} className="mt-0.5 shrink-0" />
+                <span>Koreksi untuk barang rusak, hilang, atau salah hitung. Tercatat sebagai penyesuaian stok.</span>
               </div>
             )}
 
             {/* Success state */}
             {restockDone ? (
-              <div className="rounded-lg bg-success-50 dark:bg-success-700/20 px-4 py-3 text-center text-sm font-semibold text-success-700 dark:text-success-400">
-                ✓ {restockDone}
+              <div className="flex items-center justify-center gap-2 rounded-xl bg-success-50 px-4 py-3 text-center text-sm font-semibold text-success-700 dark:bg-success-700/20 dark:text-success-400">
+                <Icon name="check-circle" size={18} /> {restockDone}
               </div>
             ) : (
               <>
