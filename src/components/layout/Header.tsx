@@ -12,7 +12,13 @@ export default function Header() {
   const { user, isLoggedIn, isLoading } = useAuthStore()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
+  const [avatarError, setAvatarError] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Reset status error avatar saat foto profil berubah (mis. ganti akun)
+  useEffect(() => {
+    setAvatarError(false)
+  }, [user?.photoURL])
 
   useEffect(() => {
     if (!dropdownOpen) return
@@ -93,10 +99,12 @@ export default function Header() {
                     className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-gradient text-xs font-bold text-white shadow-glow transition-transform active:scale-95"
                     title={user.displayName ?? user.email ?? 'Akun'}
                   >
-                    {user.photoURL ? (
+                    {user.photoURL && !avatarError ? (
                       <img
                         src={user.photoURL}
-                        alt={user.displayName ?? 'avatar'}
+                        alt=""
+                        referrerPolicy="no-referrer"
+                        onError={() => setAvatarError(true)}
                         className="h-9 w-9 rounded-full object-cover"
                       />
                     ) : (
