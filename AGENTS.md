@@ -79,5 +79,16 @@ npm test
 
 ---
 
+## Merawat dokumen
+
+Kalau Anda menemukan jebakan baru di repo ini, atau Malik memutuskan sesuatu
+yang tidak terlihat dari kode, **perbarui berkas ini dalam commit yang sama**.
+Dokumen basi lebih berbahaya daripada tidak ada dokumen.
+
+Keputusan yang berdampak ke seluruh ekosistem dicatat di `KEPUTUSAN.md` repo
+situs utama (`aman-digital`), bukan di sini. Yang di sini khusus repo ini saja.
+
+---
+
 Konteks ekosistem yang lebih luas ada di repo situs utama
 (`aman-digital`): `AGENTS.md`, `KEPUTUSAN.md`, `STATUS.md`.
